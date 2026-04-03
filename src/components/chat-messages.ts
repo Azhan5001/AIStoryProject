@@ -1,16 +1,18 @@
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import './chat-message';
 
-class ChatMessages extends LitElement {
+interface Message {
+  message: string;
+  sender: 'user' | 'robot';
+  id: string;
+}
 
-  static properties = {
-    messages: { type: Array }
-  };
+@customElement('chat-messages')
+export class ChatMessages extends LitElement {
 
-  constructor() {
-    super();
-    this.messages = [];
-  }
+  @property({ type: Array })
+  messages: Message[] = [];
 
   static styles = css`
     .container {
@@ -22,9 +24,9 @@ class ChatMessages extends LitElement {
     }
   `;
 
-  updated(changedProps) {
+  updated(changedProps: Map<string, unknown>) {
     if (changedProps.has('messages')) {
-      const div = this.renderRoot.querySelector('.container');
+      const div = this.renderRoot.querySelector('.container') as HTMLDivElement;
       div.scrollTop = div.scrollHeight;
     }
   }
@@ -42,5 +44,3 @@ class ChatMessages extends LitElement {
     `;
   }
 }
-
-customElements.define('chat-messages', ChatMessages);

@@ -1,20 +1,21 @@
 import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 
-import './pages/chat-page.js'
-import './pages/register-page.js';
-import './pages/login-page.js';
+import './pages/chat-page';
+import './pages/register-page';
+import './pages/login-page';
 
-class AppRoot extends LitElement {
+@customElement('app-root')
+export class AppRoot extends LitElement {
 
   firstUpdated() {
-    const outlet = this.renderRoot.querySelector('#outlet');
+    const outlet = this.renderRoot.querySelector('#outlet')
 
     const router = new Router(outlet);
 
     router.setRoutes([
       { path: '/', redirect: '/login' },
-
       { path: '/login', component: 'login-page' },
       { path: '/register', component: 'register-page' },
       { path: '/chat', component: 'chat-page' }
@@ -22,13 +23,9 @@ class AppRoot extends LitElement {
   }
 
   render() {
-    return html`
-      <div id="outlet"></div>
-    `;
+    return html`<div id="outlet"></div>`;
   }
 }
-
-customElements.define('app-root', AppRoot);
 
 
 

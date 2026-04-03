@@ -1,11 +1,11 @@
 import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 
-class ChatMessage extends LitElement {
+@customElement('chat-message')
+export class ChatMessage extends LitElement {
 
-  static properties = {
-    message: { type: String },
-    sender: { type: String }
-  };
+  @property({ type: String }) message = '';
+  @property({ type: String }) sender: 'user' | 'robot' = 'robot';
 
   static styles = css`
     .message {
@@ -41,12 +41,8 @@ class ChatMessage extends LitElement {
   render() {
     return html`
       <div class="message ${this.sender}">
-        <div class="bubble">
-          ${this.message}
-        </div>
+        <div class="bubble">${this.message}</div>
       </div>
     `;
   }
 }
-
-customElements.define('chat-message', ChatMessage);

@@ -1,20 +1,22 @@
 import { LitElement, html, css } from 'lit';
-import './chat-input.js';
-import './chat-messages.js';
-import { getBotResponse } from './chatBot.js';
+import { customElement, state } from 'lit/decorators.js';
+import './chat-input';
+import './chat-messages';
+import { getBotResponse } from './chatBot'
 
-class ChatBox extends LitElement {
+interface Message {
+  message: string;
+  sender: 'user' | 'robot';
+  id: string;
+}
 
-  static properties = {
-    messages: { type: Array }
-  };
+@customElement('chat-box')
+export class ChatBox extends LitElement {
 
-  constructor() {
-    super();
-    this.messages = [
-      { message: 'Hello!', sender: 'robot', id: '1' }
-    ];
-  }
+  @state()
+  private messages: Message[] = [
+    { message: 'Hello!', sender: 'robot', id: '1' }
+  ];
 
   static styles = css`
     .box {
@@ -26,16 +28,16 @@ class ChatBox extends LitElement {
     }
   `;
 
-  handleMessage(e) {
+  private handleMessage(e: CustomEvent<{ message: string }>) {
     const text = e.detail.message;
 
-    const userMsg = {
+    const userMsg: Message = {
       message: text,
       sender: 'user',
       id: crypto.randomUUID()
     };
 
-    const botMsg = {
+    const botMsg: Message = {
       message: getBotResponse(text),
       sender: 'robot',
       id: crypto.randomUUID()
@@ -56,5 +58,3 @@ class ChatBox extends LitElement {
     `;
   }
 }
-
-customElements.define('chat-box', ChatBox);

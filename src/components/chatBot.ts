@@ -1,4 +1,4 @@
-export function getBotResponse(input) {
+export function getBotResponse(input:any) {
   const text = input.toLowerCase();
 
   if (text.includes('hello') || text.includes('hi')) {

@@ -1,15 +1,11 @@
 import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 
-class ChatInput extends LitElement {
+@customElement('chat-input')
+export class ChatInput extends LitElement {
 
-  static properties = {
-    inputText: { type: String }
-  };
-
-  constructor() {
-    super();
-    this.inputText = '';
-  }
+  @state()
+  private inputText: string = '';
 
   static styles = css`
     .container {
@@ -39,16 +35,17 @@ class ChatInput extends LitElement {
     }
   `;
 
-  handleInput(e) {
-    this.inputText = e.target.value;
+  private handleInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.inputText = target.value;
   }
 
-  handleKey(e) {
+  private handleKey(e: KeyboardEvent) {
     if (e.key === 'Enter') this.send();
     if (e.key === 'Escape') this.inputText = '';
   }
 
-  send() {
+  private send() {
     if (!this.inputText.trim()) return;
 
     this.dispatchEvent(new CustomEvent('send-message', {
@@ -74,5 +71,3 @@ class ChatInput extends LitElement {
     `;
   }
 }
-
-customElements.define('chat-input', ChatInput);
