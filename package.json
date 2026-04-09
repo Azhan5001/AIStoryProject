@@ -1,0 +1,26 @@
+{
+  "name": "aistoryproject",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "frontend": "cd frontend && npm run dev",
+    "backend": "cd backend/src && python -m uvicorn main:app --reload"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azhan5001/AIStoryProject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Azhan5001/AIStoryProject/issues"
+  },
+  "homepage": "https://github.com/Azhan5001/AIStoryProject#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
