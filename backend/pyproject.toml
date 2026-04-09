@@ -1,0 +1,37 @@
+[project]
+name = "ai-r-taletorium"
+version = "0.1.0"
+description = "AI.R Taletorium"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[all]>=0.121.1",
+    "jupyterlab>=4.4.10",
+    "openai>=2.15.0",
+    "pyjwt>=2.10.1",
+    "python-dotenv>=1.2.1",
+    "bcrypt>=4.0.0",
+    "markovify>=0.9.0",
+    "sqlmodel>=0.0.27",
+    "torch>=2.7.0",
+    "torchvision>=0.22.0",
+]
+
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+torchvision = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]

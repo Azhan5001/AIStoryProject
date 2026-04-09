@@ -16,7 +16,7 @@ export class ChatMessages extends LitElement {
 
   static styles = css`
     .container {
-      height: 300px;
+      height: 700px;
       overflow-y: auto;
       border: 1px solid #ccc;
       padding: 10px;
