@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
     "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend/src && python -m uvicorn main:app --reload"
+    "backend": "cd backend/src && uv run uvicorn main:app --reload"
   },
   "repository": {
     "type": "git",
