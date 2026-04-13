@@ -25,19 +25,12 @@ export class LoginPage extends LitElement {
     <div class="login">
       <h2>Login</h2>
       <p>Username</p>
-      <input
-        type="text"
-        placeholder="Username"
-        @input=${(e: any) => this.username = e.target.value}
-      />
+      <input type="text" placeholder="Username" @input=${(e: any) => this.username = e.target.value}/>
       <br>
 
       <p>Password</p>
-      <input
-        type="password"
-        placeholder="Password"
-        @input=${(e: any) => this.password = e.target.value}
-      />
+      <input type="password" placeholder ="Password" @input=${(e:any) => this.password = e.target.value}>
+      
     </div>
         <button @click=${this.handleLogin}>Login</button>
 
