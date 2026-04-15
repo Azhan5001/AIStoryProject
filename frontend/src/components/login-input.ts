@@ -26,7 +26,7 @@ export class LoginForm extends LitElement {
       margin: 8px 0;
       border: 1px solid #ccc;
       border-radius: 10px;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     h2 {
@@ -128,7 +128,6 @@ export class LoginForm extends LitElement {
           <a href="/register">Sign up</a>
         </div>
 
-        <br>
         <br>
         <br>
         <br>
