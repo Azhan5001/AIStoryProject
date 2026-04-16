@@ -5,6 +5,7 @@ import { Router } from '@vaadin/router';
 import './pages/chat-page';
 import './pages/register-page';
 import './pages/login-page';
+import './pages/resetpass-page';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -18,7 +19,8 @@ export class AppRoot extends LitElement {
       { path: '/', redirect: '/login' },
       { path: '/login', component: 'login-page' },
       { path: '/register', component: 'register-page' },
-      { path: '/chat', component: 'chat-page' }
+      { path: '/chat', component: 'chat-page' },
+      { path: '/resetpass',component: 'resetpass-page'}
     ]);
   }
 

@@ -68,9 +68,13 @@ export class LoginForm extends LitElement {
 
     .skip {
       text-align: right;
-      font-size: 14px;
-      color: #000000;
-      margin-top: auto;
+      font-size: 20px;
+      color: #252424;
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      font-weight: bold;
+      z-index: 10;
     }
 
     .skip a{
@@ -89,6 +93,21 @@ export class LoginForm extends LitElement {
         font-weight: bold;
         font-size: 18px;
     }
+    
+    .forgot {
+    margin-top: 4px;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #252424;
+    cursor: pointer;
+    text-align: right;
+  }
+
+  .forgot:hover {
+    text-decoration: underline;
+    color: #555;
+  }
   `;
 
   handleLogin() {
@@ -119,6 +138,8 @@ export class LoginForm extends LitElement {
           @input=${(e: any) => this.password = e.target.value}
         />
 
+        <div class="forgot"><a href ="/resetpass">Forgot Password?</div>
+
         <button @click=${this.handleLogin}>
           Login
         </button>
@@ -128,10 +149,7 @@ export class LoginForm extends LitElement {
           <a href="/register">Sign up</a>
         </div>
 
-        <br>
-        <br>
-        <br>
-        <br>
+        
         <div class="skip">
           <a href="/chat">Skip for now ></a>
         </div>
