@@ -119,6 +119,10 @@ export class LoginForm extends LitElement {
     Router.go('/chat');
   }
 
+  goForgot() {
+  Router.go('/resetpass');
+}
+
   render() {
     return html`
       <div class="form">
@@ -138,7 +142,7 @@ export class LoginForm extends LitElement {
           @input=${(e: any) => this.password = e.target.value}
         />
 
-        <div class="forgot"><a href ="/resetpass">Forgot Password?</div>
+        <div class="forgot" @click=${this.goForgot}>Forgot Password?</div>
 
         <button @click=${this.handleLogin}>
           Login

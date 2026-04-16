@@ -20,7 +20,7 @@ export class AppRoot extends LitElement {
       { path: '/login', component: 'login-page' },
       { path: '/register', component: 'register-page' },
       { path: '/chat', component: 'chat-page' },
-      { path: '/resetpass',component: 'resetpass-page'}
+      { path: '/resetpass', component: 'reset-password-page'}
     ]);
   }
 
