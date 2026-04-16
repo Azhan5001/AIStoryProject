@@ -8,29 +8,44 @@ export class RegisterInput extends LitElement {
   @property() type = 'text';
   @property() placeholder = '';
 
-static styles = css`
+  static styles = css`
+    * {
+      box-sizing: border-box;
+    }
 
     .wrapper {
       display: flex;
       flex-direction: column;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
       gap: 6px;
+      width: 100%;
     }
 
     label {
-     font-weight: bold;
-     font-size: 14px;
-     color: #333;
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
     }
 
     input {
-      padding: 16px 8px;
-      border-radius: 16px;
-      width: 400px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      background-color: #f0f0f0;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background-color: #ffffff;
       outline: none;
+      font-size: 16px;
       color: #333;
+      transition: border 0.2s;
+    }
+
+    input:focus {
+      border-color: #2C2C2C;
+    }
+
+    input::placeholder {
+      color: #999;
+      font-weight: 300;
     }
   `;
 
@@ -41,16 +56,16 @@ static styles = css`
     }));
   }
 
-    render() {
-        return html`
-        <div class="wrapper">
-          <label>${this.label}</label>
-            <input 
-                type="${this.type}" 
-                placeholder="${this.placeholder}" 
-                @input=${this.handleInput}>
-            </input>
-        </div>
-      `;
-    }
+  render() {
+    return html`
+      <div class="wrapper">
+        <label>${this.label}</label>
+        <input 
+          type="${this.type}" 
+          placeholder="${this.placeholder}" 
+          @input=${this.handleInput}
+        />
+      </div>
+    `;
   }
+}
