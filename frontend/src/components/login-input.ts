@@ -22,15 +22,17 @@ export class LoginForm extends LitElement {
 
     input {
       width: 100%;
-      padding: 16px;
-      margin: 8px 0;
+      height: 50px;
+      padding: 0 16px;
       border: 1px solid #ccc;
       border-radius: 10px;
       font-size: 16px;
+      margin-bottom: 20px;
+      margin-top: 10px;
     }
 
     h2 {
-     margin-bottom: 10px;
+     margin-bottom: 24px;
      color: #4b4848;
      font-size: 26px;
      font-family: 'Times New Roman', Times, serif;
@@ -90,8 +92,8 @@ export class LoginForm extends LitElement {
     }
 
     label{
-        font-weight: bold;
-        font-size: 18px;
+      font-weight: bold;
+      font-size: 16px;
     }
     
     .forgot {

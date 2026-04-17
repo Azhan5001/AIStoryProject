@@ -16,7 +16,7 @@ export class ResetPasswordPage extends LitElement {
       <div class="login-background">
       <div class="container">
         <reset-password></reset-password>
-      </div>
+        </div>
     </div>
     `;
   }
