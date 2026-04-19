@@ -1,6 +1,6 @@
 import { LitElement, html} from 'lit';
 import { customElement } from 'lit/decorators.js';
-import '../components/login-input';
+import '../components/login-form';
 import { css } from 'lit';
 import styles from '../styles/login-page.css?inline';
 import { unsafeCSS } from 'lit';

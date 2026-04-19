@@ -59,3 +59,20 @@ button {
 button:hover {
     background: #1976d2;
 }
+
+.logout {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 16px;
+    background: #2C2C2C;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout:hover {
+    background: #444;
+}

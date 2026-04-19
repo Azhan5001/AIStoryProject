@@ -111,14 +111,22 @@ export class ResetPassword extends LitElement {
     .card{
       margin-left: auto;
       margin-right: 10%;
-      width: 100%;
+      width:100%;
       max-width: 450px;
+    }
+
+    @media (max-width: 768px){
+    .card{
+      width: 90%;
+      margin: 0 auto;
+    }
     }
 
     label{
       font-weight: bold;
       font-size: 16px;
       display: block;
+      margin-top: 16px;
       margin-bottom: 10px;
     }
 

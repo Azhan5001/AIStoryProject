@@ -6,6 +6,7 @@ import './pages/chat-page';
 import './pages/register-page';
 import './pages/login-page';
 import './pages/resetpass-page';
+import './pages/avatar-page';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -20,6 +21,7 @@ export class AppRoot extends LitElement {
       { path: '/login', component: 'login-page' },
       { path: '/register', component: 'register-page' },
       { path: '/chat', component: 'chat-page' },
+      { path: '/avatar', component: 'avatar-page' },
       { path: '/resetpass', component: 'reset-password-page'}
     ]);
   }
