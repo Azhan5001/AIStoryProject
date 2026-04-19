@@ -97,7 +97,7 @@ export class LoginForm extends LitElement {
     }
     
     .forgot {
-    margin-top: 4px;
+    margin-top: -10px;
     margin-bottom: 8px;
     font-size: 16px;
     font-weight: bold;
