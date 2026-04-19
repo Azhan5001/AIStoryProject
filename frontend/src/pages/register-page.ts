@@ -17,10 +17,26 @@ class RegisterPage extends LitElement {
     Router.go('/login');
   }
 
+  toggleTheme() {
+    this.classList.toggle('dark-mode');
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('register-theme', this.classList.contains('dark-mode') ? 'dark' : 'light');
+  }
+
+  connectedCallback(): void {
+      super.connectedCallback();
+      const saved = localStorage.getItem('register-theme');
+      if (saved == 'dark') {
+        this.classList.add('dark-mode');
+      }
+  }
+
   render() {
     return html`
       <div class="container">
-
+          <button class="theme-toggle" @click=${this.toggleTheme}>
+          ${this.classList.contains('dark-mode') ? '☀️' : '🌙'}
+          </button>
         <div class="register-background"></div>
 
         <div class="register-page">
@@ -48,10 +64,6 @@ class RegisterPage extends LitElement {
             </register-input>
 
             <button @click=${() => this.handleRegister()}>Register</button>
-
-            <p class="login-prompt">
-            Already have an account? <a href="/login">Login</a>
-          </p>
           </div>
         </div>
         <a href="/chat" class="skip-link-fixed">Skip for now ></a>
