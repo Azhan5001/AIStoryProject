@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
-import './chat-input';
+import './app-input';
 import './chat-messages';
 import { sendMessage, getMessages } from '../api/api';
 
@@ -14,7 +14,7 @@ interface Message {
 export class ChatBox extends LitElement {
 
   @property({ type: Number })
-  storyId = 1; // ⚠️ for now hardcode
+  storyId = 1;
 
   @state()
   private messages: Message[] = [];
@@ -27,9 +27,41 @@ export class ChatBox extends LitElement {
       padding: 10px;
       background: white;
     }
+
+    /* 👇 INPUT + BUTTON STYLING HERE */
+    .input-area {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    app-input {
+      flex: 1; 
+      min-width: 0;
+    }
+
+    app-input input {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 14px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1976d2;
+    }
   `;
 
-  // 🧠 Load messages when component starts
   async connectedCallback() {
     super.connectedCallback();
     await this.loadMessages();
@@ -45,21 +77,34 @@ export class ChatBox extends LitElement {
     }));
   }
 
-  // 🧠 MAIN FUNCTION
-  private async handleMessage(e: CustomEvent<{ message: string }>) {
-    const text = e.detail.message;
-
-    // 1. SHOW USER MESSAGE IMMEDIATELY (fast UI)
+  private async handleMessage(text: string) {
+    // 1. Show instantly
     this.messages = [
       ...this.messages,
       { message: text, sender: 'user', id: crypto.randomUUID() }
     ];
 
-    // 2. SEND TO BACKEND
+    // 2. Send to backend
     await sendMessage(this.storyId, text);
 
-    // 3. RELOAD FULL CHAT (this includes AI response)
+    // 3. Reload (includes AI response)
     await this.loadMessages();
+  }
+
+  // Triggered when ENTER is pressed
+  private onInputSubmit(e: CustomEvent<{ value: string }>) {
+    this.handleMessage(e.detail.value);
+  }
+
+  // Triggered when BUTTON is clicked
+  private onButtonClick() {
+    const input = this.renderRoot.querySelector('app-input') as any;
+
+    const value = input?.getValue();
+    if (!value?.trim()) return;
+
+    this.handleMessage(value);
+    input.clear();
   }
 
   render() {
@@ -67,9 +112,10 @@ export class ChatBox extends LitElement {
       <div class="box">
         <chat-messages .messages=${this.messages}></chat-messages>
 
-        <chat-input
-          @send-message=${this.handleMessage}
-        ></chat-input>
+        <div class="input-area">
+          <app-input @input-submit=${this.onInputSubmit}></app-input>
+          <button @click=${this.onButtonClick}>Send</button>
+        </div>
       </div>
     `;
   }
