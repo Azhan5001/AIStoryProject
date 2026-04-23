@@ -22,12 +22,14 @@ export class AvatarPage extends LitElement {
   static styles = css`
     /* ── Tokens ─────────────────────────────────────────── */
 :host {
+  --surface: #FFFCF0;
   --border:    #2a2520;
   --border-hi: #3d3730;
   --gold:      #c9a84c;
   --gold-dim:  #7a6230;
   --text:      #e8e0d0;
   --muted:     #6b6358;
+  --shadow-glow: 0px 0px 5px 5px;
   --radius:    10px;
   --font-head: 'Cinzel', 'Palatino Linotype', serif;
   --font-body: 'Cormorant Garamond', 'Georgia', serif;
@@ -178,13 +180,14 @@ export class AvatarPage extends LitElement {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
+      
     }
 
     .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: var(--bg);
       border-radius: 14px;
       padding: 24px;
+      box-shadow: var(--shadow-glow);
     }
 
     .panel-title {

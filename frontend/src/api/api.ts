@@ -39,6 +39,42 @@ export async function login(username: string, password: string): Promise<number>
   return user.user_id;
 }
 
+export async function register(
+  username: string,
+  email: string,
+  password: string
+): Promise<number> {
+
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username, email, password })
+  });
+
+  if (res.status !== 201) {
+    let message = 'Registration failed';
+
+    try {
+      const data = await res.json();
+
+      if (Array.isArray(data.detail)) {
+        message = data.detail.map((e: any) => e.msg).join(', ');
+      } else {
+        message = data.detail || message;
+      }
+    } catch {}
+
+    throw new Error(message);
+  }
+
+  const user: User = await res.json();
+
+  localStorage.setItem('user_id', String(user.user_id));
+
+  return user.user_id;
+}
 
 // GET STORIES
 export async function getUserStories(): Promise<Story[]> {
