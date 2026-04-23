@@ -20,7 +20,7 @@ export class ChatMessages extends LitElement {
       overflow-y: auto;
       border: 1px solid #ccc;
       padding: 10px;
-      background: #fafafa;
+
     }
   `;
 

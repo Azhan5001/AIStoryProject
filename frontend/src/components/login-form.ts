@@ -2,7 +2,9 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import './app-input';
+
 import { login } from '../api/api';
+import '../styles/theme.css';
 
 @customElement('login-input')
 export class LoginForm extends LitElement {
@@ -29,6 +31,7 @@ static styles = css`
   :host {
     width: 30rem;
     margin-right: 3rem;
+    color: var(--text);
   }
 
   .form {
@@ -46,19 +49,21 @@ static styles = css`
     width: 100%;
     height: 50px;
     padding: 0 16px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     border-radius: 10px;
     font-size: 16px;
     margin-top: 10px;
     margin-bottom: 5px;
+    background: var(--surface);
+    color: var(--text);
   }
 
   app-input input.error {
-    border-color: red;
+    border-color: var(--error);
   }
 
   app-input .error-text {
-    color: red;
+    color: var(--error);
     font-size: 13px;
     min-height: 16px;
     display: block;
@@ -67,15 +72,15 @@ static styles = css`
 
   h2 {
     margin-bottom: 24px;
-    color: #4b4848;
     font-size: 26px;
     font-family: 'Times New Roman', Times, serif;
+    color: var(--text);
   }
 
   button {
     width: 100%;
     padding: 16px 8px;
-    background: #2C2C2C;
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: 12px;
@@ -89,7 +94,6 @@ static styles = css`
     cursor: not-allowed;
   }
 
-  /* NEW: wrapper for error + forgot */
   .row {
     display: flex;
     justify-content: space-between;
@@ -98,7 +102,7 @@ static styles = css`
   }
 
   .login-error {
-    color: red;
+    color: var(--error);
     font-size: 14px;
     flex: 1;
   }
@@ -106,41 +110,37 @@ static styles = css`
   .signup {
     margin-top: 12px;
     font-size: 16px;
-    color: #a59570;
+    color: var(--accent);
     text-align: center;
   }
 
   .signup a {
-    color: #252424;
+    color: var(--link);
     text-decoration: none;
     font-weight: bold;
   }
 
   .signup a:hover {
-    color: #555;
+    color: var(--link-hover);
     text-decoration: underline;
   }
 
   .skip {
     text-align: right;
     font-size: 20px;
-    color: #252424;
     position: absolute;
     bottom: 40px;
     right: 40px;
     font-weight: bold;
-    z-index: 10;
   }
 
   .skip a {
-    color: #252424;
+    color: var(--link);
     text-decoration: none;
-    font-weight: bold;
-    font-size: 20px;
   }
 
   .skip a:hover {
-    color: #555;
+    color: var(--link-hover);
     text-decoration: underline;
   }
 
@@ -150,18 +150,17 @@ static styles = css`
   }
 
   .forgot {
-    margin-top: 0;
     margin-bottom: 8px;
     font-size: 16px;
     font-weight: bold;
-    color: #252424;
+    color: var(--link);
     cursor: pointer;
     text-align: right;
   }
 
   .forgot:hover {
     text-decoration: underline;
-    color: #555;
+    color: var(--link-hover);
   }
 `;
 

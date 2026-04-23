@@ -1,0 +1,40 @@
+/* DEFAULT (light / your current theme) */
+:root {
+  --bg: #FFFCF0;
+  --surface: #ffffff;
+  --text: #000;
+
+  --img-object: url('/images/Objects-1.png');
+  --img-castle: url('/images/OBJECTS.png');
+
+  --primary: #2C2C2C;
+  --accent: #d5ad0f;
+
+  --border: #ccc; /*Dont need this*/
+  --error: #c0392b;
+
+  --link: #252424;
+  --link-hover: #555;
+
+  --input-border: #ccc;
+
+
+}
+
+:root[data-theme="dark"] {
+  --bg: #0d0c0a;
+  --surface: #141210;
+  --text: #e8e0d0;
+
+  --img-object: url('/images/Vector.png');
+  --img-castle: url('/images/OBJECTS-2.png');
+
+  --primary: #c9a84c;
+  --accent: #d5ad0f;
+
+  --border: #3d3730;
+  --error: #e74c3c;
+
+  --link: #c9a84c;
+  --link-hover: #e8e0d0;
+}

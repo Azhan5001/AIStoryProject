@@ -1,0 +1,1843 @@
+﻿
+--- FILE: \api\api.ts ---
+
+import type { User, Story, Message } from '../types/types';
+
+const BASE_URL = 'http://localhost:8000';
+
+export async function sendMessage(storyId: number, text: string) {
+  await fetch(`${BASE_URL}/story/${storyId}/message/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      content: text,
+      role: 'user'
+    })
+  });
+}
+
+export async function getMessages(storyId: number) {
+  const res = await fetch(`${BASE_URL}/story/${storyId}/message/`);
+  return res.json();
+}
+
+export async function login(username: string, password: string): Promise<number> {
+  const res = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username, password })
+  });
+
+  if (!res.ok) throw new Error('Login failed');
+
+  const user = await res.json();
+
+  // âœ… store only user_id
+  localStorage.setItem('user_id', String(user.user_id));
+
+  return user.user_id;
+}
+
+
+// GET STORIES
+export async function getUserStories(): Promise<Story[]> {
+  const user = JSON.parse(localStorage.getItem('user')!) as User;
+
+  const res = await fetch(
+    `${BASE_URL}/story/?user_id=${user.user_id}`
+  );
+
+  if (!res.ok) throw new Error('Failed to fetch stories');
+
+  return res.json();
+}
+
+export async function getStoryMessages(storyId: number): Promise<Message[]> {
+  const res = await fetch(
+    `${BASE_URL}/story/${storyId}/message/`
+  );
+
+  if (!res.ok) throw new Error('Failed to fetch messages');
+
+  return res.json();
+}
+
+--- FILE: \components\app-input.ts ---
+
+import { LitElement, html } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('app-input')
+export class AppInput extends LitElement {
+
+  @property() value: string = '';
+  @property() placeholder: string = '';
+  @property() type: string = 'text';
+
+  @property({ type: Boolean }) required = false;
+  @property() validateType: 'none' | 'email' | 'password' = 'none';
+
+  @property() error: string = '';
+
+  private handleInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.value = target.value || ''; // ensure string
+
+    if (this.error) this.error = '';
+
+    this.dispatchEvent(new CustomEvent('value-change', {
+      detail: this.value,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  private handleKey(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      this.dispatchEvent(new CustomEvent('input-submit', {
+        detail: { value: this.value },
+        bubbles: true,
+        composed: true
+      }));
+    }
+  }
+
+  public validate(): boolean {
+    const val = this.value.trim();
+
+    // âœ… Required check
+    if (this.required && !val) {
+      this.error = 'This field is required';
+      return false;
+    }
+
+    // âœ… Skip further checks if empty and not required
+    if (!val) return true;
+
+    // âœ… Email validation
+    if (this.validateType === 'email') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(val)) {
+        this.error = 'Invalid email format';
+        return false;
+      }
+    }
+
+    // âœ… Password validation
+    if (this.validateType === 'password') {
+      if (val.length < 6) {
+        this.error = 'Password must be at least 6 characters';
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  public getValue() {
+    const input = this.querySelector('input') as HTMLInputElement;
+    return input?.value ?? '';
+  }
+
+  public clear() {
+    this.value = '';
+    this.error = '';
+  }
+
+  createRenderRoot() {
+    return this;
+  }
+
+  render() {
+    return html`
+      <input
+        class=${this.error ? 'error' : ''}
+        .value=${this.value}
+        type=${this.type}
+        placeholder=${this.placeholder}
+        @input=${this.handleInput}
+        @keydown=${this.handleKey}
+      />
+      ${this.error
+        ? html`<div class="error-text">${this.error}</div>`
+        : ''}
+    `;
+  }
+}
+
+--- FILE: \components\chat-box.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state, property } from 'lit/decorators.js';
+import './app-input';
+import './chat-messages';
+import { sendMessage, getMessages } from '../api/api';
+
+interface Message {
+  message: string;
+  sender: 'user' | 'robot';
+  id: string;
+}
+
+@customElement('chat-box')
+export class ChatBox extends LitElement {
+
+  @property({ type: Number })
+  storyId = 1;
+
+  @state()
+  private messages: Message[] = [];
+
+  static styles = css`
+    .box {
+      width: 500px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+    }
+
+    /* ðŸ‘‡ INPUT + BUTTON STYLING HERE */
+    .input-area {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    app-input {
+      flex: 1; 
+      min-width: 0;
+    }
+
+    app-input input {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 10px 14px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1976d2;
+    }
+  `;
+
+  async connectedCallback() {
+    super.connectedCallback();
+    await this.loadMessages();
+  }
+
+  async loadMessages() {
+    const apiMessages = await getMessages(this.storyId);
+
+    this.messages = apiMessages.map((msg: any) => ({
+      message: msg.content,
+      sender: msg.role === 'user' ? 'user' : 'robot',
+      id: msg.message_id
+    }));
+  }
+
+  private async handleMessage(text: string) {
+    // 1. Show instantly
+    this.messages = [
+      ...this.messages,
+      { message: text, sender: 'user', id: crypto.randomUUID() }
+    ];
+
+    // 2. Send to backend
+    await sendMessage(this.storyId, text);
+
+    // 3. Reload (includes AI response)
+    await this.loadMessages();
+  }
+
+  // Triggered when ENTER is pressed
+  private onInputSubmit(e: CustomEvent<{ value: string }>) {
+    this.handleMessage(e.detail.value);
+  }
+
+  // Triggered when BUTTON is clicked
+  private onButtonClick() {
+    const input = this.renderRoot.querySelector('app-input') as any;
+
+    const value = input?.getValue();
+    if (!value?.trim()) return;
+
+    this.handleMessage(value);
+    input.clear();
+  }
+
+  render() {
+    return html`
+      <div class="box">
+        <chat-messages .messages=${this.messages}></chat-messages>
+
+        <div class="input-area">
+          <app-input @input-submit=${this.onInputSubmit}></app-input>
+          <button @click=${this.onButtonClick}>Send</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\chat-message.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('chat-message')
+export class ChatMessage extends LitElement {
+
+  @property({ type: String }) message = '';
+  @property({ type: String }) sender: 'user' | 'robot' = 'robot';
+
+  static styles = css`
+    .message {
+      display: flex;
+      margin: 6px;
+    }
+
+    .user {
+      justify-content: flex-end;
+      color: white;
+    }
+
+    .robot {
+      justify-content: flex-start;
+      color: black;
+    }
+
+    .bubble {
+      padding: 8px 12px;
+      border-radius: 12px;
+      max-width: 60%;
+    }
+
+    .user .bubble {
+      background: #4caf50;
+    }
+
+    .robot .bubble {
+      background: #eee;
+    }
+  `;
+
+  render() {
+    return html`
+      <div class="message ${this.sender}">
+        <div class="bubble">${this.message}</div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\chat-messages.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import './chat-message';
+
+interface Message {
+  message: string;
+  sender: 'user' | 'robot';
+  id: string;
+}
+
+@customElement('chat-messages')
+export class ChatMessages extends LitElement {
+
+  @property({ type: Array })
+  messages: Message[] = [];
+
+  static styles = css`
+    .container {
+      height: 700px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fafafa;
+    }
+  `;
+
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has('messages')) {
+      const div = this.renderRoot.querySelector('.container') as HTMLDivElement;
+      div.scrollTop = div.scrollHeight;
+    }
+  }
+
+  render() {
+    return html`
+      <div class="container">
+        ${this.messages.map(msg => html`
+          <chat-message
+            .message=${msg.message}
+            .sender=${msg.sender}
+          ></chat-message>
+        `)}
+      </div>
+    `;
+  }
+}
+
+
+
+--- FILE: \components\login-form.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+import './app-input';
+import { login } from '../api/api';
+
+@customElement('login-input')
+export class LoginForm extends LitElement {
+
+  @state() username: string = '';
+  @state() password: string = '';
+  @state() errorMessage = '';
+  @state() loading = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      Router.go('/chat');
+    }
+  }
+
+static styles = css`
+  * {
+    box-sizing: border-box;
+  }
+
+  :host {
+    width: 30rem;
+    margin-right: 3rem;
+  }
+
+  .form {
+    width: 100%;
+    max-width: 450px;
+    min-height: 400px;
+  }
+
+  app-input {
+    display: block;
+    width: 100%;
+  }
+
+  app-input input {
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+
+  app-input input.error {
+    border-color: red;
+  }
+
+  app-input .error-text {
+    color: red;
+    font-size: 13px;
+    min-height: 16px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  h2 {
+    margin-bottom: 24px;
+    color: #4b4848;
+    font-size: 26px;
+    font-family: 'Times New Roman', Times, serif;
+  }
+
+  button {
+    width: 100%;
+    padding: 16px 8px;
+    background: #2C2C2C;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 12px;
+    font-size: 18px;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* NEW: wrapper for error + forgot */
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .login-error {
+    color: red;
+    font-size: 14px;
+    flex: 1;
+  }
+
+  .signup {
+    margin-top: 12px;
+    font-size: 16px;
+    color: #a59570;
+    text-align: center;
+  }
+
+  .signup a {
+    color: #252424;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .signup a:hover {
+    color: #555;
+    text-decoration: underline;
+  }
+
+  .skip {
+    text-align: right;
+    font-size: 20px;
+    color: #252424;
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    font-weight: bold;
+    z-index: 10;
+  }
+
+  .skip a {
+    color: #252424;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .skip a:hover {
+    color: #555;
+    text-decoration: underline;
+  }
+
+  label {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .forgot {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #252424;
+    cursor: pointer;
+    text-align: right;
+  }
+
+  .forgot:hover {
+    text-decoration: underline;
+    color: #555;
+  }
+`;
+
+  async handleLogin(e: Event) {
+    e.preventDefault();
+    console.log('USERNAME:', this.username);
+    console.log('PASSWORD:', this.password);
+
+    this.errorMessage = '';
+
+    const inputs = this.renderRoot.querySelectorAll('app-input') as any;
+
+    let valid = true;
+    inputs.forEach((input: any) => {
+      if (!input.validate()) valid = false;
+    });
+
+    if (!valid) return;
+
+    try {
+      this.loading = true;
+
+      await login(this.username, this.password);
+
+      Router.go('/chat');
+
+    } catch (err) {
+      this.errorMessage = 'Invalid username or password';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  goForgot() {
+    Router.go('/resetpass');
+  }
+
+  render() {
+    return html`
+      <form class="form" @submit=${this.handleLogin}>
+        <h2>Login</h2>
+
+        <label>Username</label>
+        <app-input
+          .value=${this.username}
+          placeholder="Enter your username"
+          required
+          @value-change=${(e: any) => this.username = e.detail}
+        ></app-input>
+
+        <label>Password</label>
+        <app-input
+          .value=${this.password}
+          type="password"
+          placeholder="password123!"
+          required
+          validateType="password"
+          @value-change=${(e: any) => this.password = e.detail}
+        ></app-input>
+
+        <div class="row">
+          <span class="login-error">${this.errorMessage || ''}</span>
+
+          <div class="forgot" @click=${this.goForgot}>
+            Forgot Password?
+          </div>
+        </div>
+
+        <button type="submit" ?disabled=${this.loading}>
+          ${this.loading ? 'Logging in...' : 'Login'}
+        </button>
+
+        <div class="signup">
+          Don't have an account?
+          <a href="/register">Sign up</a>
+        </div>
+
+        <div class="skip">
+          <a href="/chat">Skip for now ></a>
+        </div>
+      </form>
+    `;
+  }
+}
+
+--- FILE: \components\register-input.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('register-input')
+export class RegisterInput extends LitElement {
+
+  @property() label = '';
+  @property() type = 'text';
+  @property() placeholder = '';
+
+  static styles = css`
+    * {
+      box-sizing: border-box;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+      gap: 6px;
+      width: 100%;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+    }
+
+    input {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      background-color: #ffffff;
+      outline: none;
+      font-size: 16px;
+      color: #333;
+      transition: border 0.2s;
+    }
+
+    input:focus {
+      border-color: #2C2C2C;
+    }
+
+    input::placeholder {
+      color: #999;
+      font-weight: 300;
+    }
+  `;
+
+  private handleInput(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.dispatchEvent(new CustomEvent('input-changed', {
+      detail: target.value
+    }));
+  }
+
+  render() {
+    return html`
+      <div class="wrapper">
+        <label>${this.label}</label>
+        <input 
+          type="${this.type}" 
+          placeholder="${this.placeholder}" 
+          @input=${this.handleInput}
+        />
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\reset-password.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { state, customElement } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+import styles from '../styles/login-page.css?inline';
+
+import { unsafeCSS } from 'lit';
+
+@customElement('reset-password')
+export class ResetPassword extends LitElement {
+
+  @state() password = '';
+  @state() confirmPassword = '';
+  @state() message = '';
+  @state() showSuccess = false;
+
+  static styles =[
+    css`${unsafeCSS(styles)}`,
+    css`
+    .message{
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+    
+    .message-content{
+      background: white;
+      border-radius: 12px;
+      text-align: center;
+      width: 300px;
+      min-height: 100px;
+      padding: 24px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .message h3{
+     color: #4b4848;
+     font-weight: bold;
+     font-size: 30px;
+     font-family: 'Times New Roman', Times, serif;
+     margin-bottom: 18px;
+    }
+
+    p{
+      font-size: 16px;
+      color: #8e7c53;
+    }
+
+    .reset-button {
+      background: #2C2C2C;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      padding: 10px 5px;
+      margin-top: 18px;
+    }
+
+    .backLogin {
+      margin-top: 12px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .backLogin a {
+      color: #252424;
+      text-decoration: none;
+      font-weight: bold;
+      
+    }
+
+    .backLogin a:hover{
+        color: #555;
+        text-decoration: underline;
+    }
+
+    .ok-button{
+      padding: 4px 10px;
+      font-size: 15px;
+      margin-top: 20px;
+    }
+
+    input, .reset-button{
+      width: 100%;
+      box-sizing: border-box;
+      height: 50px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input{
+      padding: 0 16px;
+      border: 1px solid #ccc;
+      margin-bottom: 12px;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      min-height: 100vh;
+      justify-content: center;
+    }
+
+    .card{
+      margin-left: auto;
+      margin-right: 10%;
+      width:100%;
+      max-width: 450px;
+    }
+
+    @media (max-width: 768px){
+    .card{
+      width: 90%;
+      margin: 0 auto;
+    }
+    }
+
+    label{
+      font-weight: bold;
+      font-size: 16px;
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 10px;
+    }
+
+    .card h2 {
+      margin-bottom: 6px;
+      color: #4b4848;
+    }
+
+    .card p {
+      margin-bottom: 20px;
+    }
+    `
+  ];
+  
+
+  handleReset() {
+    
+
+    this.showSuccess = true;
+  }
+
+  goToLogin(){
+    Router.go('/login');
+  }
+
+  render() {
+    return html`
+      <div class="container">
+        <div class="card">
+          <h2>Forgot Password?</h2>
+          <p>Nevermind, create a new password.</p>
+
+          <label>New Password</label>
+          <input 
+            type="password"
+            placeholder="Enter Password"
+            .value=${this.password}
+            @input=${(e: any) => this.password = e.target.value}
+          />
+
+          <label>Confirm Password</label>
+          <input 
+            type="password"
+            placeholder="Confirm Password"
+            .value=${this.confirmPassword}
+            @input=${(e: any) => this.confirmPassword = e.target.value}
+          />
+
+          <button class="reset-button" @click=${this.handleReset}>
+            Reset Password
+          </button>
+
+          <div class="backLogin">
+            <a @click=${this.goToLogin}>Cancel</a>
+          </div>
+
+        </div>
+
+        ${this.showSuccess ? html`
+          <div class="message">
+            <div class="message-content">
+              <h3>Success</h3>
+              <p>Password successfully reset!</p>
+              <button class="ok-button" @click=${this.goToLogin}>OK</button>
+            </div>
+          </div>
+      ` : ''}
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\story-sidebar.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { getUserStories } from '../api/api';
+import { Router } from '@vaadin/router';
+
+interface Story {
+  story_id: number;
+}
+
+@customElement('story-sidebar')
+export class StorySidebar extends LitElement {
+
+  @state()
+  private stories: Story[] = [];
+
+  @state()
+  private selectedId: number | null = null;
+
+  static styles = css`
+    :host {
+      width: 260px;
+      background: #202123;
+      color: white;
+      height: 100vh;
+      overflow-y: auto;
+      display: block;
+    }
+
+    .item {
+      padding: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #2a2b32;
+    }
+
+    .item:hover {
+      background: #2a2b32;
+    }
+
+    .active {
+      background: #343541;
+    }
+  `;
+
+  async connectedCallback() {
+    super.connectedCallback();
+
+    this.stories = await getUserStories();
+
+    if (this.stories.length > 0) {
+      const latest = this.stories[this.stories.length - 1];
+
+      this.selectedId = latest.story_id;
+      Router.go(`/story/${latest.story_id}`);
+    }
+  }
+
+  private selectStory(id: number) {
+    this.selectedId = id;
+    Router.go(`/story/${id}`);
+  }
+
+  render() {
+    return html`
+      ${this.stories.map(
+        s => html`
+          <div
+            class="item ${this.selectedId === s.story_id ? 'active' : ''}"
+            @click=${() => this.selectStory(s.story_id)}
+          >
+            Story ${s.story_id}
+          </div>
+        `
+      )}
+    `;
+  }
+}
+
+--- FILE: \pages\avatar-page.ts ---
+
+import { LitElement, html, css } from 'lit';
+import type { TemplateResult } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+
+const races: string[] = [
+  'Human',
+  'Elf',
+  'Dwarf',
+  'Orc',
+  'Halfling',
+  'Dragonborn'
+];
+
+const classes: string[] = [
+  'Warrior',
+  'Mage',
+  'Rogue',
+  'Archer',
+  'Paladin',
+  'Necromancer',
+  'Monk'
+];
+
+const randomNames: string[] = [
+  'Arin',
+  'Lyra',
+  'Thorin',
+  'Kael',
+  'Zara',
+  'Eldon',
+  'Mira',
+  'Riven'
+];
+
+@customElement('avatar-page')
+export class AvatarPage extends LitElement {
+
+  static styles = css`
+    :host {
+      display: block;
+      height: 100vh;
+      width: 100vw;
+      background: 
+        url('/images/Objects-1.png') right top no-repeat,
+        url('/images/OBJECTS.png') center/cover no-repeat, 
+      #FFFCF0;
+      background-size: 15% auto, cover;
+      padding: 20px;
+      box-sizing: border-box;
+      font-family: sans-serif;
+      color: #000;
+    }
+
+
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top {
+      background: white;
+      padding: 16px;
+      border-radius: 16px;
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: bold;
+    }
+
+    .random {
+      background: #facc15;
+    }
+
+    .middle {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+    }
+
+    .section {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .section h3 {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 20px;
+      justify-items: center;
+    }
+
+    .card-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid #d1d5db;
+      background: #e5e7eb;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.1);
+    }
+
+    .selected {
+      border-color: #3b82f6;
+      box-shadow: 0 0 15px rgba(59,130,246,0.6);
+    }
+
+    .label {
+      margin-top: 8px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .bottom {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .create {
+      background: #3b82f6;
+      color: white;
+      font-size: 18px;
+      padding: 16px 50px;
+    }
+  `;
+
+  @state() private name: string = '';
+  @state() private race: string | null = null;
+  @state() private charClass: string | null = null;
+  @state() private error: string = '';
+
+  private generateName(): void {
+    const random = randomNames[Math.floor(Math.random() * randomNames.length)];
+    this.name = random;
+  }
+
+  private handleCreate(): void {
+    if (!this.name || !this.race || !this.charClass) {
+      this.error = 'Please fill all fields before creating your character!';
+      return;
+    }
+
+    const description = `A ${this.race} ${this.charClass} ready for adventure.`;
+
+    console.log('Character Created!');
+    console.log('Name:', this.name);
+    console.log('Description:', description);
+
+    this.error = '';
+  }
+
+  private renderCard(
+    label: string,
+    selected: boolean,
+    onClick: () => void
+  ): TemplateResult {
+    return html`
+      <div class="card-wrapper" @click=${onClick}>
+        <div class="card ${selected ? 'selected' : ''}"></div>
+        <div class="label">${label}</div>
+      </div>
+    `;
+  }
+
+  render(): TemplateResult {
+    return html`
+      <div class="container">
+
+        <div class="top">
+          <input
+            type="text"
+            placeholder="Enter character name..."
+            .value=${this.name}
+            @input=${(e: Event) => {
+              const target = e.target as HTMLInputElement;
+              this.name = target.value;
+            }}
+          />
+          <button class="random" @click=${this.generateName}>ðŸŽ²</button>
+        </div>
+
+        <div class="middle">
+          <div class="section">
+            <h3>Choose Race</h3>
+            <div class="grid">
+              ${races.map((r) =>
+                this.renderCard(r, this.race === r, () => (this.race = r))
+              )}
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Choose Class</h3>
+            <div class="grid">
+              ${classes.map((c) =>
+                this.renderCard(c, this.charClass === c, () => (this.charClass = c))
+              )}
+            </div>
+          </div>
+        </div>
+
+        ${this.error
+          ? html`<div class="error">${this.error}</div>`
+          : ''}
+
+        <div class="bottom">
+          <button class="create" @click=${this.handleCreate}>
+            Create Character
+          </button>
+        </div>
+
+      </div>
+    `;
+  }
+}
+
+--- FILE: \pages\chat-page.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+import '../components/chat-box';
+import '../styles/chat-page.css'
+
+@customElement('chat-page')
+export class ChatPage extends LitElement {
+
+  private handleLogout() {
+    localStorage.removeItem('user_id'); // clear stored user
+    Router.go('/login'); // redirect to login page
+  }
+
+  render() {
+    return html`
+      <button class="logout" @click=${this.handleLogout}>
+        Logout
+      </button>
+
+      <chat-box></chat-box>
+    `;
+  }
+}
+
+--- FILE: \pages\login-page.ts ---
+
+import { LitElement, html} from 'lit';
+import { customElement } from 'lit/decorators.js';
+import '../components/login-form';
+import { css } from 'lit';
+import styles from '../styles/login-page.css?inline';
+import { unsafeCSS } from 'lit';
+
+@customElement('login-page')
+export class LoginPage extends LitElement {
+
+ static styles = css`${unsafeCSS(styles)}`;
+
+  render() {
+    return html`
+      <div class="login-background">
+        <div class="container">
+          <div class="login-page">
+            <login-input></login-input>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \pages\register-page.ts ---
+
+import { LitElement, html } from 'lit';
+import { Router } from '@vaadin/router';
+import '../components/register-input';
+import { css } from 'lit';
+import styles from '../styles/register-page.css?inline';
+import { unsafeCSS } from 'lit';
+
+class RegisterPage extends LitElement {
+  static styles = css`${unsafeCSS(styles)}`;
+
+  username = '';
+  email = '';
+  password = '';
+
+  handleRegister() {
+    console.log('Register: ', this.username, this.email, this.password);
+    Router.go('/login');
+  }
+
+  toggleTheme() {
+    this.classList.toggle('dark-mode');
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('register-theme', this.classList.contains('dark-mode') ? 'dark' : 'light');
+  }
+
+  connectedCallback(): void {
+      super.connectedCallback();
+      const saved = localStorage.getItem('register-theme');
+      if (saved == 'dark') {
+        this.classList.add('dark-mode');
+      }
+  }
+
+  render() {
+    return html`
+      <div class="container">
+          <button class="theme-toggle" @click=${this.toggleTheme}>
+          ${this.classList.contains('dark-mode') ? 'â˜€ï¸' : 'ðŸŒ™'}
+          </button>
+        <div class="register-background"></div>
+
+        <div class="register-page">
+          <div class="form-container">
+            <h2>Registration</h2>
+
+            <register-input 
+              label="Username" 
+              placeholder="Username" 
+              @input-changed=${(e: any) => this.username = e.detail}>
+            </register-input>
+
+            <register-input 
+              label="Email" 
+              placeholder="Email" 
+              type="email" 
+              @input-changed=${(e: any) => this.email = e.detail}>
+            </register-input>
+
+            <register-input 
+              label="Password" 
+              placeholder="Password" 
+              type="password" 
+              @input-changed=${(e: any) => this.password = e.detail}>
+            </register-input>
+
+            <button @click=${() => this.handleRegister()}>Register</button>
+          </div>
+        </div>
+        <a href="/chat" class="skip-link-fixed">Skip for now ></a>
+      </div>
+    `;
+  }
+}
+
+customElements.define('register-page', RegisterPage);
+
+--- FILE: \pages\resetpass-page.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import '../components/reset-password';
+import styles from '../styles/login-page.css?inline';
+import { unsafeCSS } from 'lit';
+
+@customElement('reset-password-page')
+export class ResetPasswordPage extends LitElement {
+
+  static styles = css`
+  ${unsafeCSS(styles)}
+`;
+
+  render() {
+    return html`
+      <div class="login-background">
+      <div class="container">
+        <reset-password></reset-password>
+        </div>
+    </div>
+    `;
+  }
+}
+
+--- FILE: \styles\chat-page.css ---
+
+
+.message {
+    display: flex;
+    margin: 6px;
+}
+
+.user {
+    justify-content: flex-end;
+    color: white;
+}
+
+.robot {
+    justify-content: flex-start;
+    color: black;
+}
+
+.bubble {
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 60%;
+}
+
+.user .bubble {
+    background: #4caf50;
+}
+
+.robot .bubble {
+    background: #eee;
+}
+.box {
+    width: 500px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    background: white;
+}
+.container {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+input {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 8px 12px;
+    background: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1976d2;
+}
+
+.logout {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 16px;
+    background: #2C2C2C;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.logout:hover {
+    background: #444;
+}
+
+--- FILE: \styles\login-page.css ---
+
+html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+}
+
+.container{
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    margin:auto;
+    overflow: hidden;
+}
+
+@media (max-width: 768px){
+    .container {
+      justify-content: center;
+    }
+    }
+
+.login-page{
+    flex:1;
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 140px;
+    align-items: center;
+    z-index: 1;
+}
+
+.login-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: url('/images/Objects-1.png') right top no-repeat,
+              url('/images/OBJECTS.png') center/cover no-repeat, 
+              #FFFCF0;
+  background-size: 15% auto, cover;
+  z-index: 0;
+}
+
+--- FILE: \styles\register-page.css ---
+
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+}
+
+:host {
+  --bg-primary: #FFFCF0;
+  --text-primary: #1a1a1a;
+  --text-secondary: #4b4848;
+  --btn-bg: #2C2C2C;
+  --btn-text: #ffffff;
+  --border-color: #e0e0e0;
+  --input-bg: #f5f5f5;
+  --link-color: #252424;
+  --hover-bg: #1a1a1a;
+
+  --img-object: url('/images/Objects-1.png');
+  --img-castle: url('/images/OBJECTS.png');
+}
+
+:host(.dark-mode) {
+  --bg-primary: #121212;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --btn-bg: #3a3a3a;
+  --btn-text: #f0f0f0;
+  --border-color: #333333;
+  --input-bg: #2a2a2a;
+  --link-color: #d0d0d0;
+  --hover-bg: #555555;
+
+  --img-object: url('/images/Vector.png');
+  --img-castle: url('/images/OBJECTS-2.png');
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --bg-primary: #121212;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --btn-bg: #3a3a3a;
+    --btn-text: #f0f0f0;
+    --border-color: #333333;
+    --input-bg: #2a2a2a;
+    --link-color: #d0d0d0;
+    --hover-bg: #555555;
+
+    --img-object: url('/images/Vector.png');
+    --img-castle: url('/images/OBJECTS-2.png');
+  }
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: #FFFCF0;
+  color: #1a1a1a;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  background-color: transparent;
+}
+
+.register-background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--img-object) right top no-repeat,
+              var(--img-castle) center/cover no-repeat, 
+              var(--bg-primary);
+  background-size: 15% auto, cover;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.register-page {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 140px;
+  position: relative;
+  z-index: 1;
+}
+
+.form-container {
+  width: 100%;
+  max-width: 450px;
+  background: transparent;
+}
+
+h2 {
+  margin-bottom: 24px;
+  color: var(--text-secondary);
+  font-size: 26px;
+  font-family: 'Crimson Text', serif;
+}
+
+.skip-link-fixed {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--link-color);
+  text-decoration: none;
+  z-index: 10;
+  transition: color 0.2s;
+}
+
+.skip-link-fixed:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .skip-link-fixed {
+    bottom: 20px;
+    right: 20px;
+    font-size: 18px;
+  }
+}
+
+button {
+  width: 100%;
+  padding: 16px 8px;
+  margin-top: 32px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: var(--hover-bg);
+}
+
+.theme-toggle{
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  background: var(--hover-bg);
+}
+
+@media (max-width: 768px) {
+  .register-page {
+    padding-right: 24px;
+    padding-left: 24px;
+    justify-content: center;
+  }
+
+  .register-background {
+    background-size: 40% auto, 90% auto;
+  }
+
+  .skip-link-fixed{
+    bottom: 20px;right: 20px;
+    font-size: 18px;
+  }
+
+  .theme-toggle {
+    bottom: 20px;
+    left: 20px;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+}
+
+--- FILE: \types\types.ts ---
+
+export interface User {
+  user_id: number;
+  username: string;
+  email: string;
+  access_level: string;
+  created_at: string;
+}
+
+export interface Story {
+  story_id: number;
+  user_id: number;
+  avatar_id: number;
+  story_setting_id: number;
+  created_at: string;
+}
+
+export interface Message {
+  message_id: number;
+  story_id: number;
+  content: string;
+  role: string;
+  created_at: string;
+}
+
+--- FILE: \app.ts ---
+
+import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+
+import './pages/chat-page';
+import './pages/register-page';
+import './pages/login-page';
+import './pages/resetpass-page';
+import './pages/avatar-page';
+
+@customElement('app-root')
+export class AppRoot extends LitElement {
+
+  firstUpdated() {
+    const outlet = this.renderRoot.querySelector('#outlet')
+
+    const router = new Router(outlet);
+
+    router.setRoutes([
+      { path: '/', redirect: '/login' },
+      { path: '/login', component: 'login-page' },
+      { path: '/register', component: 'register-page' },
+      { path: '/chat', component: 'chat-page' },
+      { path: '/avatar', component: 'avatar-page' },
+      { path: '/resetpass', component: 'reset-password-page'}
+    ]);
+  }
+
+  render() {
+    return html`<div id="outlet"></div>`;
+  }
+}
+
+--- FILE: \index.css ---
+
+:root {
+  color-scheme: light dark;
+  background-color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: #16171d;
+  }
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 320px;
+  min-height: 100svh;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}

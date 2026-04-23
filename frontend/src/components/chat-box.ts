@@ -25,7 +25,7 @@ export class ChatBox extends LitElement {
       border: 1px solid #ccc;
       border-radius: 10px;
       padding: 10px;
-      background: white;
+
     }
 
     /* 👇 INPUT + BUTTON STYLING HERE */
