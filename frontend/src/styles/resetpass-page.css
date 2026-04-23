@@ -1,0 +1,68 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+
+  /* Background */
+  --img-object: url('/images/Objects-1.png');
+  --img-castle: url('/images/OBJECTS.png');
+  --bg-primary: #FFFCF0;
+
+  --btn-bg: #2c2c2c;
+}
+
+:host([theme="dark"]) {
+  --img-object: url('/images/Vector.png');
+  --img-castle: url('/images/OBJECTS-2.png');
+  --bg-primary: #121212;
+  --btn-bg: white;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+
+  background:
+    var(--img-object) right top no-repeat,
+    var(--img-castle) center / cover no-repeat,
+    var(--bg-primary);
+
+  background-size: 15% auto, cover;
+}
+
+.container {
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.theme-toggle {
+  position: absolute;
+  bottom: 40px;
+  left: 40px;
+
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+
+  font-size: 24px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+
+  z-index: 20;
+}

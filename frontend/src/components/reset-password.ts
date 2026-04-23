@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
-import { state, customElement } from 'lit/decorators.js';
+import { state, customElement , property} from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import styles from '../styles/login-page.css?inline';
+import styles from '../styles/resetpass-page.css?inline';
 
 import { unsafeCSS } from 'lit';
 
@@ -12,10 +12,16 @@ export class ResetPassword extends LitElement {
   @state() confirmPassword = '';
   @state() message = '';
   @state() showSuccess = false;
+  @property({ type: Boolean }) darkMode = false;
 
   static styles =[
     css`${unsafeCSS(styles)}`,
     css`
+    :host {
+      display: block;
+      width:100%;
+    }
+
     .message{
       position: fixed;
       width: 100%;

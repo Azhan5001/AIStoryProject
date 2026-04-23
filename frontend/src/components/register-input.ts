@@ -9,6 +9,14 @@ export class RegisterInput extends LitElement {
   @property() placeholder = '';
 
   static styles = css`
+  :host {
+    --label-color: #333;
+    }
+  
+  :host(.dark-mode) {
+    --label-color: #eee;
+  }
+
     * {
       box-sizing: border-box;
     }
@@ -24,7 +32,7 @@ export class RegisterInput extends LitElement {
     label {
       font-weight: bold;
       font-size: 16px;
-      color: #333;
+      color: var(--label-color);
     }
 
     input {

@@ -1,7 +1,7 @@
 html, body {
-      height: 100%;
-      margin: 0;
-    }
+  height: 100%;
+  margin: 0;
+}
 
 :host {
   display: block;
@@ -20,18 +20,18 @@ html, body {
 }
 
 @media (max-width: 768px){
-    .container {
-      justify-content: center;
-    }
-    }
+  .container {
+    justify-content: center;
+  }
+}
 
 .login-page{
-    flex:1;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 140px;
-    align-items: center;
-    z-index: 1;
+  flex:1;
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 140px;
+  align-items: center;
+  z-index: 1;
 }
 
 .login-background {
