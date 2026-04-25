@@ -42,6 +42,42 @@ export async function login(username: string, password: string): Promise<number>
   return user.user_id;
 }
 
+export async function register(
+  username: string,
+  email: string,
+  password: string
+): Promise<number> {
+
+  const res = await fetch(`${BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ username, email, password })
+  });
+
+  if (res.status !== 201) {
+    let message = 'Registration failed';
+
+    try {
+      const data = await res.json();
+
+      if (Array.isArray(data.detail)) {
+        message = data.detail.map((e: any) => e.msg).join(', ');
+      } else {
+        message = data.detail || message;
+      }
+    } catch {}
+
+    throw new Error(message);
+  }
+
+  const user: User = await res.json();
+
+  localStorage.setItem('user_id', String(user.user_id));
+
+  return user.user_id;
+}
 
 // GET STORIES
 export async function getUserStories(): Promise<Story[]> {
@@ -198,7 +234,7 @@ export class ChatBox extends LitElement {
       border: 1px solid #ccc;
       border-radius: 10px;
       padding: 10px;
-      background: white;
+
     }
 
     /* ðŸ‘‡ INPUT + BUTTON STYLING HERE */
@@ -369,7 +405,7 @@ export class ChatMessages extends LitElement {
       overflow-y: auto;
       border: 1px solid #ccc;
       padding: 10px;
-      background: #fafafa;
+
     }
   `;
 
@@ -394,7 +430,33 @@ export class ChatMessages extends LitElement {
   }
 }
 
+--- FILE: \components\chatBot.ts ---
 
+export function getBotResponse(input:any) {
+  const text = input.toLowerCase();
+
+  if (text.includes('hello') || text.includes('hi')) {
+    return 'Hello! How can I help you?';
+  }
+
+  if (text.includes('date')) {
+    return `Today is ${new Date().toDateString()}`;
+  }
+
+  if (text.includes('time')) {
+    return `Current time is ${new Date().toLocaleTimeString()}`;
+  }
+
+  if (text.includes('name')) {
+    return 'I am your Lit chatbot ðŸ¤–';
+  }
+
+  if (text.includes('bye')) {
+    return 'Goodbye! ðŸ‘‹';
+  }
+
+  return "I don't understand that yet ðŸ˜…";
+}
 
 --- FILE: \components\login-form.ts ---
 
@@ -402,7 +464,9 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import './app-input';
+
 import { login } from '../api/api';
+import '../styles/theme.css';
 
 @customElement('login-input')
 export class LoginForm extends LitElement {
@@ -429,6 +493,7 @@ static styles = css`
   :host {
     width: 30rem;
     margin-right: 3rem;
+    color: var(--text);
   }
 
   .form {
@@ -446,19 +511,21 @@ static styles = css`
     width: 100%;
     height: 50px;
     padding: 0 16px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--input-border);
     border-radius: 10px;
     font-size: 16px;
     margin-top: 10px;
     margin-bottom: 5px;
+    background: var(--surface);
+    color: var(--text);
   }
 
   app-input input.error {
-    border-color: red;
+    border-color: var(--error);
   }
 
   app-input .error-text {
-    color: red;
+    color: var(--error);
     font-size: 13px;
     min-height: 16px;
     display: block;
@@ -467,15 +534,15 @@ static styles = css`
 
   h2 {
     margin-bottom: 24px;
-    color: #4b4848;
     font-size: 26px;
     font-family: 'Times New Roman', Times, serif;
+    color: var(--text);
   }
 
   button {
     width: 100%;
     padding: 16px 8px;
-    background: #2C2C2C;
+    background: var(--primary);
     color: white;
     border: none;
     border-radius: 12px;
@@ -489,7 +556,6 @@ static styles = css`
     cursor: not-allowed;
   }
 
-  /* NEW: wrapper for error + forgot */
   .row {
     display: flex;
     justify-content: space-between;
@@ -498,7 +564,7 @@ static styles = css`
   }
 
   .login-error {
-    color: red;
+    color: var(--error);
     font-size: 14px;
     flex: 1;
   }
@@ -506,41 +572,37 @@ static styles = css`
   .signup {
     margin-top: 12px;
     font-size: 16px;
-    color: #a59570;
+    color: var(--accent);
     text-align: center;
   }
 
   .signup a {
-    color: #252424;
+    color: var(--link);
     text-decoration: none;
     font-weight: bold;
   }
 
   .signup a:hover {
-    color: #555;
+    color: var(--link-hover);
     text-decoration: underline;
   }
 
   .skip {
     text-align: right;
     font-size: 20px;
-    color: #252424;
     position: absolute;
     bottom: 40px;
     right: 40px;
     font-weight: bold;
-    z-index: 10;
   }
 
   .skip a {
-    color: #252424;
+    color: var(--link);
     text-decoration: none;
-    font-weight: bold;
-    font-size: 20px;
   }
 
   .skip a:hover {
-    color: #555;
+    color: var(--link-hover);
     text-decoration: underline;
   }
 
@@ -550,18 +612,17 @@ static styles = css`
   }
 
   .forgot {
-    margin-top: 0;
     margin-bottom: 8px;
     font-size: 16px;
     font-weight: bold;
-    color: #252424;
+    color: var(--link);
     cursor: pointer;
     text-align: right;
   }
 
   .forgot:hover {
     text-decoration: underline;
-    color: #555;
+    color: var(--link-hover);
   }
 `;
 
@@ -647,86 +708,348 @@ static styles = css`
   }
 }
 
---- FILE: \components\register-input.ts ---
+--- FILE: \components\register-form.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+import './app-input';
 
-@customElement('register-input')
-export class RegisterInput extends LitElement {
+import { register } from '../api/api'; // âœ… FIXED
+import '../styles/theme.css';
 
-  @property() label = '';
-  @property() type = 'text';
-  @property() placeholder = '';
+@customElement('register-form')
+export class RegisterForm extends LitElement {
+
+  @state() username: string = '';
+  @state() email: string = '';
+  @state() password: string = '';
+  @state() confirmPassword: string = '';
+
+  @state() errorMessage = '';
+  @state() loading = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      Router.go('/chat');
+    }
+  }
 
   static styles = css`
-    * {
-      box-sizing: border-box;
+    /* KEEP YOUR EXISTING CSS EXACTLY */
+    * { box-sizing: border-box; }
+
+    :host {
+      width: 30rem;
+      margin-right: 3rem;
+      color: var(--text);
     }
 
-    .wrapper {
-      display: flex;
-      flex-direction: column;
-      margin-bottom: 20px;
-      gap: 6px;
+    .form {
       width: 100%;
+      max-width: 450px;
+      min-height: 400px;
+    }
+
+    app-input {
+      display: block;
+      width: 100%;
+    }
+
+    app-input input {
+      width: 100%;
+      height: 50px;
+      padding: 0 16px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    app-input input.error {
+      border-color: var(--error);
+    }
+
+    app-input .error-text {
+      color: var(--error);
+      font-size: 13px;
+      min-height: 16px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      margin-bottom: 24px;
+      font-size: 26px;
+      font-family: 'Times New Roman', Times, serif;
+      color: var(--text);
+    }
+
+    button {
+      width: 100%;
+      padding: 16px 8px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-size: 18px;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .register-error {
+      color: var(--error);
+      font-size: 14px;
+    }
+
+    .signup {
+      margin-top: 12px;
+      font-size: 16px;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .signup a {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .signup a:hover {
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+
+    .skip {
+      text-align: right;
+      font-size: 20px;
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      font-weight: bold;
+    }
+
+    .skip a {
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    .skip a:hover {
+      color: var(--link-hover);
+      text-decoration: underline;
     }
 
     label {
       font-weight: bold;
       font-size: 16px;
-      color: #333;
-    }
-
-    input {
-      width: 100%;
-      padding: 16px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      background-color: #ffffff;
-      outline: none;
-      font-size: 16px;
-      color: #333;
-      transition: border 0.2s;
-    }
-
-    input:focus {
-      border-color: #2C2C2C;
-    }
-
-    input::placeholder {
-      color: #999;
-      font-weight: 300;
     }
   `;
 
-  private handleInput(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.dispatchEvent(new CustomEvent('input-changed', {
-      detail: target.value
-    }));
+  async handleRegister(e: Event) {
+    e.preventDefault();
+
+    this.errorMessage = '';
+
+    const inputs = this.renderRoot.querySelectorAll('app-input') as any;
+
+    let valid = true;
+    inputs.forEach((input: any) => {
+      if (!input.validate()) valid = false;
+    });
+
+    // ðŸ”´ Extra validation (register-specific)
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
+      return;
+    }
+
+    if (!valid) return;
+
+    try {
+      this.loading = true;
+
+      await register(this.username, this.email, this.password); // âœ… FIXED
+
+      // Option 1: redirect to login
+      Router.go('/login');
+
+      // Option 2 (better UX): auto login â†’ chat
+      // Router.go('/chat');
+
+    } catch (err: any) {
+      this.errorMessage = err?.message || 'Registration failed';
+    } finally {
+      this.loading = false;
+    }
   }
 
   render() {
     return html`
-      <div class="wrapper">
-        <label>${this.label}</label>
-        <input 
-          type="${this.type}" 
-          placeholder="${this.placeholder}" 
-          @input=${this.handleInput}
-        />
-      </div>
+      <form class="form" @submit=${this.handleRegister} novalidate>
+        <h2>Register</h2>
+
+        <label>Username</label>
+        <app-input
+          .value=${this.username}
+          placeholder="Enter your username"
+          required
+          @value-change=${(e: any) => this.username = e.detail}
+        ></app-input>
+
+        <label>Email</label>
+        <app-input
+          .value=${this.email}
+          type="email"
+          placeholder="Enter your email"
+          required
+          validateType="email"
+          @value-change=${(e: any) => this.email = e.detail}
+        ></app-input>
+
+        <label>Password</label>
+        <app-input
+          .value=${this.password}
+          type="password"
+          placeholder="password123!"
+          required
+          validateType="password"
+          @value-change=${(e: any) => this.password = e.detail}
+        ></app-input>
+
+        <label>Confirm Password</label>
+        <app-input
+          .value=${this.confirmPassword}
+          type="password"
+          placeholder="Re-enter password"
+          required
+          @value-change=${(e: any) => this.confirmPassword = e.detail}
+        ></app-input>
+
+        <div class="row">
+          <span class="login-error">${this.errorMessage}</span>
+        </div>
+
+        <button type="submit" ?disabled=${this.loading}>
+          ${this.loading ? 'Registering...' : 'Register'}
+        </button>
+
+        <div class="signup">
+          Already have an account?
+          <a href="/login">Login</a>
+        </div>
+
+        <div class="skip">
+          <a href="/chat">Skip for now ></a>
+        </div>
+      </form>
     `;
   }
 }
 
+
+
+// import { LitElement, html, css } from 'lit';
+// import { customElement, property } from 'lit/decorators.js';
+
+// @customElement('register-input')
+// export class RegisterInput extends LitElement {
+
+//   @property() label = '';
+//   @property() type = 'text';
+//   @property() placeholder = '';
+
+//   static styles = css`
+//   :host {
+//     --label-color: #333;
+//     }
+  
+//   :host(.dark-mode) {
+//     --label-color: #eee;
+//   }
+
+//     * {
+//       box-sizing: border-box;
+//     }
+
+//     .wrapper {
+//       display: flex;
+//       flex-direction: column;
+//       margin-bottom: 20px;
+//       gap: 6px;
+//       width: 100%;
+//     }
+
+//     label {
+//       font-weight: bold;
+//       font-size: 16px;
+//       color: var(--label-color);
+//     }
+
+//     input {
+//       width: 100%;
+//       padding: 16px;
+//       border-radius: 12px;
+//       border: 1px solid #ccc;
+//       background-color: #ffffff;
+//       outline: none;
+//       font-size: 16px;
+//       color: #333;
+//       transition: border 0.2s;
+//     }
+
+//     input:focus {
+//       border-color: #2C2C2C;
+//     }
+
+//     input::placeholder {
+//       color: #999;
+//       font-weight: 300;
+//     }
+//   `;
+
+//   private handleInput(e: Event) {
+//     const target = e.target as HTMLInputElement;
+//     this.dispatchEvent(new CustomEvent('input-changed', {
+//       detail: target.value
+//     }));
+//   }
+
+//   render() {
+//     return html`
+//       <div class="wrapper">
+//         <label>${this.label}</label>
+//         <input 
+//           type="${this.type}" 
+//           placeholder="${this.placeholder}" 
+//           @input=${this.handleInput}
+//         />
+//       </div>
+//     `;
+//   }
+// }
+
 --- FILE: \components\reset-password.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { state, customElement } from 'lit/decorators.js';
+import { state, customElement , property} from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import styles from '../styles/login-page.css?inline';
+import styles from '../styles/resetpass-page.css?inline';
 
 import { unsafeCSS } from 'lit';
 
@@ -737,10 +1060,16 @@ export class ResetPassword extends LitElement {
   @state() confirmPassword = '';
   @state() message = '';
   @state() showSuccess = false;
+  @property({ type: Boolean }) darkMode = false;
 
   static styles =[
     css`${unsafeCSS(styles)}`,
     css`
+    :host {
+      display: block;
+      width:100%;
+    }
+
     .message{
       position: fixed;
       width: 100%;
@@ -1003,263 +1332,772 @@ export class StorySidebar extends LitElement {
   }
 }
 
+--- FILE: \components\test.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+import './app-input';
+
+import { login } from '../api/api';
+import '../styles/theme.css';
+
+@customElement('register-form')
+export class RegisterForm extends LitElement {
+
+  @state() username: string = '';
+  @state() password: string = '';
+  @state() email: string ='';
+  @state() errorMessage = '';
+  @state() loading = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      Router.go('/chat');
+    }
+  }
+
+static styles = css`
+  * {
+    box-sizing: border-box;
+  }
+
+  :host {
+    width: 30rem;
+    margin-right: 3rem;
+    color: var(--text);
+  }
+
+  .form {
+    width: 100%;
+    max-width: 450px;
+    min-height: 400px;
+  }
+
+  app-input {
+    display: block;
+    width: 100%;
+  }
+
+  app-input input {
+    width: 100%;
+    height: 50px;
+    padding: 0 16px;
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+    font-size: 16px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  app-input input.error {
+    border-color: var(--error);
+  }
+
+  app-input .error-text {
+    color: var(--error);
+    font-size: 13px;
+    min-height: 16px;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  h2 {
+    margin-bottom: 24px;
+    font-size: 26px;
+    font-family: 'Times New Roman', Times, serif;
+    color: var(--text);
+  }
+
+  button {
+    width: 100%;
+    padding: 16px 8px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin-top: 12px;
+    font-size: 18px;
+  }
+
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .login-error {
+    color: var(--error);
+    font-size: 14px;
+    flex: 1;
+  }
+
+  .signup {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  .signup a {
+    color: var(--link);
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  .signup a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+  }
+
+  .skip {
+    text-align: right;
+    font-size: 20px;
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    font-weight: bold;
+  }
+
+  .skip a {
+    color: var(--link);
+    text-decoration: none;
+  }
+
+  .skip a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+  }
+
+  label {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .forgot {
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--link);
+    cursor: pointer;
+    text-align: right;
+  }
+
+  .forgot:hover {
+    text-decoration: underline;
+    color: var(--link-hover);
+  }
+`;
+
+  async handleLogin(e: Event) {
+    e.preventDefault();
+    console.log('USERNAME:', this.username);
+    console.log('PASSWORD:', this.password);
+
+    this.errorMessage = '';
+
+    const inputs = this.renderRoot.querySelectorAll('app-input') as any;
+
+    let valid = true;
+    inputs.forEach((input: any) => {
+      if (!input.validate()) valid = false;
+    });
+
+    if (!valid) return;
+
+    try {
+      this.loading = true;
+
+      await login(this.username, this.password);
+
+      Router.go('/chat');
+
+    } catch (err) {
+      this.errorMessage = 'Invalid username or password';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+
+  render() {
+    return html`
+      <form class="form" @submit=${this.handleLogin}>
+        <h2>Register</h2>
+
+        <label>Username</label>
+        <app-input
+          .value=${this.username}
+          placeholder="Enter your username"
+          required
+          @value-change=${(e: any) => this.username = e.detail}
+        ></app-input>
+
+        <label>Email</label>
+        <app-input
+          .value=${this.email}
+          type="email"
+          placeholder="Enter your Email"
+          required
+          validateType="email"
+          @value-change=${(e: any) => this.email = e.detail}
+        ></app-input>
+
+        <label>Password</label>
+        <app-input
+          .value=${this.password}
+          type="password"
+          placeholder="password123!"
+          required
+          validateType="password"
+          @value-change=${(e: any) => this.password = e.detail}
+        ></app-input>
+
+        <div class="row">
+          <span class="login-error">${this.errorMessage || ''}</span>
+        </div>
+
+        <button type="submit" ?disabled=${this.loading}>
+          ${this.loading ? 'Registering...' : 'Register'}
+        </button>
+
+        <div class="signup">
+          Don't have an account?
+          <a href="/register">Sign up</a>
+        </div>
+
+        <div class="skip">
+          <a href="/chat">Skip for now ></a>
+        </div>
+      </form>
+    `;
+  }
+}
+
+--- FILE: \components\theme-toggle.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+
+@customElement('theme-toggle')
+export class ThemeToggle extends LitElement {
+
+  @state()
+  private isDark = false;
+
+  static styles = css`
+    button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+    }
+  `;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    // 1. Check saved preference
+    const saved = localStorage.getItem('theme');
+
+    if (saved) {
+      this.isDark = saved === 'dark';
+    } else {
+      // 2. Use system preference
+      this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    this.applyTheme();
+  }
+
+  private toggleTheme() {
+    this.isDark = !this.isDark;
+
+    // Save preference
+    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+
+    this.applyTheme();
+  }
+
+  private applyTheme() {
+    const root = document.documentElement;
+
+    if (this.isDark) {
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+  }
+
+  render() {
+    return html`
+      <button @click=${this.toggleTheme}>
+        ${this.isDark ? 'â˜€ï¸ Light Mode' : 'ðŸŒ™ Dark Mode'}
+      </button>
+    `;
+  }
+}
+
 --- FILE: \pages\avatar-page.ts ---
 
 import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import '../components/theme-toggle';
 
-const races: string[] = [
-  'Human',
-  'Elf',
-  'Dwarf',
-  'Orc',
-  'Halfling',
-  'Dragonborn'
-];
+const images = import.meta.glob('../assets/*.jpg', {
+  eager: true,
+  import: 'default'
+}) as Record<string, string>;
 
-const classes: string[] = [
-  'Warrior',
-  'Mage',
-  'Rogue',
-  'Archer',
-  'Paladin',
-  'Necromancer',
-  'Monk'
-];
+function getImage(name: string): string {
+  return images[`../assets/${name.toLowerCase()}.jpg`] || '';
+}
 
-const randomNames: string[] = [
-  'Arin',
-  'Lyra',
-  'Thorin',
-  'Kael',
-  'Zara',
-  'Eldon',
-  'Mira',
-  'Riven'
-];
+const races: string[] = ['Human', 'Elf', 'Dwarf', 'Orc', 'Halfling', 'Dragonborn'];
+const classes: string[] = ['Warrior', 'Mage', 'Rogue', 'Archer', 'Paladin', 'Necromancer', 'Monk'];
+const randomNames: string[] = ['Arin', 'Lyra', 'Thorin', 'Kael', 'Zara', 'Eldon', 'Mira', 'Riven'];
 
 @customElement('avatar-page')
 export class AvatarPage extends LitElement {
 
   static styles = css`
-    :host {
+    /* â”€â”€ Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+:host {
+  --surface: #FFFCF0;
+  --border:    #2a2520;
+  --border-hi: #3d3730;
+  --gold:      #c9a84c;
+  --gold-dim:  #7a6230;
+  --text:      #e8e0d0;
+  --muted:     #6b6358;
+  --shadow-glow: 0px 0px 5px 5px;
+  --radius:    10px;
+  --font-head: 'Cinzel', 'Palatino Linotype', serif;
+  --font-body: 'Cormorant Garamond', 'Georgia', serif;
+
+  display: flex;                /* âœ… REQUIRED */
+  justify-content: center;      /* horizontal center */
+  align-items: center;          /* vertical center */
+
+  min-height: 100vh;            /* better than height */
+  width: 100vw;
+
+  background: 
+    url('/images/Objects-1.png') right top no-repeat,
+    url('/images/OBJECTS.png') center/cover no-repeat, 
+    var(--bg);
+
+  background-size: 15% auto, cover;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: sans-serif;
+  color: #000;
+}
+    main{
       display: block;
-      height: 100vh;
-      width: 100vw;
-      background: 
-        url('/images/Objects-1.png') right top no-repeat,
-        url('/images/OBJECTS.png') center/cover no-repeat, 
-      #FFFCF0;
-      background-size: 15% auto, cover;
-      padding: 20px;
+      min-height: 20%;
+      border-radius:20px;
+      width: 50%;
+      /* subtle noise grain */
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 16px;
       box-sizing: border-box;
-      font-family: sans-serif;
-      color: #000;
+      padding: 40px 24px 60px;
     }
 
-
-
+    /* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .container {
-      max-width: 1200px;
+      max-width: 1100px;
       margin: 0 auto;
-      height: 100%;
       display: flex;
       flex-direction: column;
+      gap: 36px;
     }
 
-    .top {
-      background: white;
-      padding: 16px;
-      border-radius: 16px;
+    /* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .page-header {
+      text-align: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-header h1 {
+      font-family: var(--font-head);
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 4px;
+    }
+
+    .page-header p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin: 0;
+    }
+
+    /* â”€â”€ Identity Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .identity-row {
       display: flex;
       gap: 12px;
-      margin-bottom: 20px;
+      align-items: stretch;
     }
 
-    input {
-      flex: 1;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    button {
-      cursor: pointer;
-      border: none;
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: bold;
-    }
-
-    .random {
-      background: #facc15;
-    }
-
-    .middle {
-      flex: 1;
+    .field-wrap {
       display: flex;
-      gap: 20px;
-    }
-
-    .section {
+      flex-direction: column;
+      gap: 6px;
       flex: 1;
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
     }
 
-    .section h3 {
-      text-align: center;
-      margin-bottom: 16px;
+    .field-wrap.gender { flex: 0 0 160px; }
+
+    label {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input[type="text"], select, textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      padding: 12px 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]::placeholder { color: var(--muted); }
+
+    input[type="text"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--gold-dim);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%236b6358'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    select option { background: #1a1714; }
+
+    .dice-btn {
+      flex: 0 0 auto;
+      align-self: flex-end;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--gold);
+      font-size: 1.3rem;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      line-height: 1;
+    }
+
+    .dice-btn:hover {
+      border-color: var(--gold-dim);
+      background: rgba(201, 168, 76, 0.07);
+    }
+
+    /* â”€â”€ Selection Panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      
+    }
+
+    .panel {
+      background: var(--bg);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .panel-title {
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0 0 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 20px;
-      justify-items: center;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 14px;
     }
 
+    /* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .card-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 8px;
       cursor: pointer;
     }
 
     .card {
-      width: 100px;
-      height: 100px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      border: 3px solid #d1d5db;
-      background: #e5e7eb;
-      transition: 0.2s;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      background: #1c1814;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
     }
 
-    .card:hover {
-      transform: scale(1.1);
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.85) saturate(0.7);
+      transition: filter 0.2s;
     }
 
-    .selected {
-      border-color: #3b82f6;
-      box-shadow: 0 0 15px rgba(59,130,246,0.6);
+    .card-wrapper:hover .card {
+      transform: translateY(-2px);
+      border-color: var(--border-hi);
     }
 
-    .label {
-      margin-top: 8px;
-      font-weight: 600;
+    .card-wrapper:hover .card img {
+      filter: brightness(1) saturate(1);
+    }
+
+    .card.selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18), 0 0 18px rgba(201, 168, 76, 0.12);
+    }
+
+    .card.selected img {
+      filter: brightness(1.05) saturate(1.1);
+    }
+
+    .card-label {
+      font-family: var(--font-head);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
       text-align: center;
+      transition: color 0.2s;
     }
 
+    .card-wrapper:hover .card-label,
+    .card-wrapper:has(.selected) .card-label {
+      color: var(--text);
+    }
+
+    /* â”€â”€ Description â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .desc-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    textarea::placeholder { color: var(--muted); }
+
+    /* â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .error {
-      color: red;
+      font-family: var(--font-head);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--error);
       text-align: center;
-      margin-top: 10px;
-      font-weight: bold;
     }
 
+    /* â”€â”€ CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .bottom {
-      margin-top: 20px;
       display: flex;
       justify-content: center;
     }
 
-    .create {
-      background: #3b82f6;
-      color: white;
-      font-size: 18px;
-      padding: 16px 50px;
+    .create-btn {
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius);
+      color: var(--gold);
+      font-family: var(--font-head);
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 16px 56px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+
+    .create-btn:hover {
+      background: rgba(201, 168, 76, 0.1);
+      border-color: var(--gold);
+      box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
+    }
+
+    /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    @media (max-width: 680px) {
+      .panels { grid-template-columns: 1fr; }
+      .identity-row { flex-wrap: wrap; }
+      .field-wrap.gender { flex: 1 1 120px; }
     }
   `;
 
   @state() private name: string = '';
+  @state() private gender: string = '';
   @state() private race: string | null = null;
   @state() private charClass: string | null = null;
+  @state() private description: string = '';
   @state() private error: string = '';
 
   private generateName(): void {
-    const random = randomNames[Math.floor(Math.random() * randomNames.length)];
-    this.name = random;
+    this.name = randomNames[Math.floor(Math.random() * randomNames.length)];
   }
 
   private handleCreate(): void {
-    if (!this.name || !this.race || !this.charClass) {
-      this.error = 'Please fill all fields before creating your character!';
+    if (!this.name || !this.gender || !this.race || !this.charClass) {
+      this.error = 'All fields are required to forge your character.';
       return;
     }
 
-    const description = `A ${this.race} ${this.charClass} ready for adventure.`;
+    const finalDescription =
+      this.description ||
+      `A ${this.gender} ${this.race} ${this.charClass} ready for adventure.`;
 
-    console.log('Character Created!');
-    console.log('Name:', this.name);
-    console.log('Description:', description);
-
+    console.log({ name: this.name, gender: this.gender, race: this.race, class: this.charClass, description: finalDescription });
     this.error = '';
   }
 
-  private renderCard(
-    label: string,
-    selected: boolean,
-    onClick: () => void
-  ): TemplateResult {
+  private renderCard(label: string, selected: boolean, onClick: () => void): TemplateResult {
     return html`
       <div class="card-wrapper" @click=${onClick}>
-        <div class="card ${selected ? 'selected' : ''}"></div>
-        <div class="label">${label}</div>
+        <div class="card ${selected ? 'selected' : ''}">
+          <img src="${getImage(label)}" alt="${label}" />
+        </div>
+        <div class="card-label">${label}</div>
       </div>
     `;
   }
 
   render(): TemplateResult {
     return html`
+    <main>
+      <theme-toggle></theme-toggle>
       <div class="container">
 
-        <div class="top">
-          <input
-            type="text"
-            placeholder="Enter character name..."
-            .value=${this.name}
-            @input=${(e: Event) => {
-              const target = e.target as HTMLInputElement;
-              this.name = target.value;
-            }}
-          />
-          <button class="random" @click=${this.generateName}>ðŸŽ²</button>
+        <header class="page-header">
+          <h1>Create Your Character</h1>
+          <p>Choose wisely. Your legend begins here.</p>
+        </header>
+
+        <div class="identity-row">
+          <div class="field-wrap">
+            <label>Name</label>
+            <input
+              type="text"
+              placeholder="Enter character nameâ€¦"
+              .value=${this.name}
+              @input=${(e: Event) => { this.name = (e.target as HTMLInputElement).value; }}
+            />
+          </div>
+
+          <div class="field-wrap gender">
+            <label>Gender</label>
+            <select
+              @change=${(e: Event) => { this.gender = (e.target as HTMLSelectElement).value; }}
+            >
+              <option value="">Select</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+
+          <button class="dice-btn" @click=${this.generateName} title="Random name">ðŸŽ²</button>
         </div>
 
-        <div class="middle">
-          <div class="section">
-            <h3>Choose Race</h3>
+        <div class="panels">
+          <div class="panel">
+            <p class="panel-title">Race</p>
             <div class="grid">
-              ${races.map((r) =>
-                this.renderCard(r, this.race === r, () => (this.race = r))
-              )}
+              ${races.map(r => this.renderCard(r, this.race === r, () => (this.race = r)))}
             </div>
           </div>
 
-          <div class="section">
-            <h3>Choose Class</h3>
+          <div class="panel">
+            <p class="panel-title">Class</p>
             <div class="grid">
-              ${classes.map((c) =>
-                this.renderCard(c, this.charClass === c, () => (this.charClass = c))
-              )}
+              ${classes.map(c => this.renderCard(c, this.charClass === c, () => (this.charClass = c)))}
             </div>
           </div>
         </div>
 
-        ${this.error
-          ? html`<div class="error">${this.error}</div>`
-          : ''}
+        <div class="desc-section">
+          <label>Character Description <span style="color:var(--muted)">(optional)</span></label>
+          <textarea
+            placeholder="Personality, backstory, abilitiesâ€¦"
+            .value=${this.description}
+            @input=${(e: Event) => { this.description = (e.target as HTMLTextAreaElement).value; }}
+          ></textarea>
+        </div>
+
+        ${this.error ? html`<div class="error">${this.error}</div>` : ''}
 
         <div class="bottom">
-          <button class="create" @click=${this.handleCreate}>
-            Create Character
-          </button>
+          <button class="create-btn" @click=${this.handleCreate}>Forge Character</button>
         </div>
 
       </div>
+    </main>
     `;
   }
 }
@@ -1270,7 +2108,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import '../components/chat-box';
-import '../styles/chat-page.css'
+
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {
@@ -1279,6 +2117,102 @@ export class ChatPage extends LitElement {
     localStorage.removeItem('user_id'); // clear stored user
     Router.go('/login'); // redirect to login page
   }
+
+ static styles = css` 
+  :host {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    inset: 0;
+    height: 100vh;
+    width: 100vw;
+    background: 
+    var(--bg);
+  }
+
+  .message {
+      display: flex;
+      margin: 6px;
+  }
+
+  .user {
+      justify-content: flex-end;
+      color: white;
+  }
+
+  .robot {
+      justify-content: flex-start;
+      color: black;
+  }
+
+  .bubble {
+      padding: 8px 12px;
+      border-radius: 12px;
+      max-width: 60%;
+  }
+
+  .user .bubble {
+      background: #4caf50;
+  }
+
+  .robot .bubble {
+      background: #eee;
+  }
+  .box {
+      width: 500px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      background: white;
+  }
+  .container {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+  }
+
+  input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+  }
+
+  button {
+      padding: 8px 12px;
+      background: #2196f3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+  }
+
+  button:hover {
+      background: #1976d2;
+  }
+
+  .logout {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 16px;
+      background: #2C2C2C;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+  }
+
+  .logout:hover {
+      background: #444;
+  }
+
+    private handleLogout() {
+      localStorage.removeItem('user_id'); // clear stored user
+      Router.go('/login'); // redirect to login page
+    }
+    `
 
   render() {
     return html`
@@ -1296,19 +2230,68 @@ export class ChatPage extends LitElement {
 import { LitElement, html} from 'lit';
 import { customElement } from 'lit/decorators.js';
 import '../components/login-form';
+import '../components/theme-toggle';
 import { css } from 'lit';
-import styles from '../styles/login-page.css?inline';
-import { unsafeCSS } from 'lit';
 
 @customElement('login-page')
 export class LoginPage extends LitElement {
 
- static styles = css`${unsafeCSS(styles)}`;
+ static styles = css`
+    html, body {
+        height: 100%;
+        margin: 0;
+      }
+
+  :host {
+    display: block;
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+  }
+
+  .container{
+      background-color: transparent;
+      display: flex;
+      width: 100%;
+      height: 100%;
+      margin:auto;
+      overflow: hidden;
+  }
+
+  @media (max-width: 768px){
+      .container {
+        justify-content: center;
+      }
+      }
+
+  .login-page{
+      flex:1;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 140px;
+      align-items: center;
+      z-index: 1;
+  }
+
+  .login-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--img-object) right top no-repeat,
+                var(--img-castle) center/cover no-repeat, 
+                var(--bg);
+    background-size: 15% auto, cover;
+    z-index: 0;
+  }
+
+ `;
 
   render() {
     return html`
       <div class="login-background">
         <div class="container">
+        <theme-toggle></theme-toggle>
           <div class="login-page">
             <login-input></login-input>
           </div>
@@ -1320,464 +2303,337 @@ export class LoginPage extends LitElement {
 
 --- FILE: \pages\register-page.ts ---
 
-import { LitElement, html } from 'lit';
-import { Router } from '@vaadin/router';
-import '../components/register-input';
-import { css } from 'lit';
-import styles from '../styles/register-page.css?inline';
-import { unsafeCSS } from 'lit';
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import '../components/register-form';
+import '../components/theme-toggle';
 
-class RegisterPage extends LitElement {
-  static styles = css`${unsafeCSS(styles)}`;
+@customElement('register-page')
+export class RegisterPage extends LitElement {
 
-  username = '';
-  email = '';
-  password = '';
+  static styles = css`
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
 
-  handleRegister() {
-    console.log('Register: ', this.username, this.email, this.password);
-    Router.go('/login');
-  }
+    :host {
+      display: block;
+      position: fixed;
+      inset: 0;
+      height: 100vh;
+    }
 
-  toggleTheme() {
-    this.classList.toggle('dark-mode');
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('register-theme', this.classList.contains('dark-mode') ? 'dark' : 'light');
-  }
+    .container {
+      background-color: transparent;
+      display: flex;
+      width: 100%;
+      height: 100%;
+      margin: auto;
+      overflow: hidden;
+    }
 
-  connectedCallback(): void {
-      super.connectedCallback();
-      const saved = localStorage.getItem('register-theme');
-      if (saved == 'dark') {
-        this.classList.add('dark-mode');
+    @media (max-width: 768px) {
+      .container {
+        justify-content: center;
       }
-  }
+    }
+
+    .login-page {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 140px;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .login-background {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--img-object) right top no-repeat,
+                  var(--img-castle) center/cover no-repeat,
+                  var(--bg);
+      background-size: 15% auto, cover;
+      z-index: 0;
+    }
+  `;
 
   render() {
     return html`
-      <div class="container">
-          <button class="theme-toggle" @click=${this.toggleTheme}>
-          ${this.classList.contains('dark-mode') ? 'â˜€ï¸' : 'ðŸŒ™'}
-          </button>
-        <div class="register-background"></div>
+      <div class="login-background">
+        <div class="container">
+          <theme-toggle></theme-toggle>
 
-        <div class="register-page">
-          <div class="form-container">
-            <h2>Registration</h2>
-
-            <register-input 
-              label="Username" 
-              placeholder="Username" 
-              @input-changed=${(e: any) => this.username = e.detail}>
-            </register-input>
-
-            <register-input 
-              label="Email" 
-              placeholder="Email" 
-              type="email" 
-              @input-changed=${(e: any) => this.email = e.detail}>
-            </register-input>
-
-            <register-input 
-              label="Password" 
-              placeholder="Password" 
-              type="password" 
-              @input-changed=${(e: any) => this.password = e.detail}>
-            </register-input>
-
-            <button @click=${() => this.handleRegister()}>Register</button>
+          <div class="login-page">
+            <register-form></register-form>
           </div>
         </div>
-        <a href="/chat" class="skip-link-fixed">Skip for now ></a>
       </div>
     `;
   }
 }
 
-customElements.define('register-page', RegisterPage);
+
+
+// import { LitElement, html } from 'lit';
+// import { Router } from '@vaadin/router';
+// import '../components/register-form';
+// import { css } from 'lit';
+// import styles from '../styles/register-page.css?inline';
+// import { unsafeCSS } from 'lit';
+
+// class RegisterPage extends LitElement {
+//   static styles = css`${unsafeCSS(styles)}`;
+
+//   username = '';
+//   email = '';
+//   password = '';
+
+//   handleRegister() {
+//     console.log('Register: ', this.username, this.email, this.password);
+//     Router.go('/login');
+//   }
+
+//   toggleTheme() {
+//     this.classList.toggle('dark-mode');
+//     document.body.classList.toggle('dark-mode');
+//     localStorage.setItem('register-theme', this.classList.contains('dark-mode') ? 'dark' : 'light');
+//   }
+
+//   connectedCallback(): void {
+//       super.connectedCallback();
+//       const saved = localStorage.getItem('register-theme');
+//       if (saved == 'dark') {
+//         this.classList.add('dark-mode');
+//       }
+//   }
+
+//   render() {
+//     return html`
+//       <div class="container">
+//           <button class="theme-toggle" @click=${this.toggleTheme}>
+//           ${this.classList.contains('dark-mode') ? 'â˜€ï¸' : 'ðŸŒ™'}
+//           </button>
+//         <div class="register-background"></div>
+
+//         <div class="register-page">
+//           <div class="form-container">
+//             <h2>Registration</h2>
+
+//             <register-input 
+//               label="Username" 
+//               placeholder="Username" 
+//               @input-changed=${(e: any) => this.username = e.detail}>
+//             </register-input>
+
+//             <register-input 
+//               label="Email" 
+//               placeholder="Email" 
+//               type="email" 
+//               @input-changed=${(e: any) => this.email = e.detail}>
+//             </register-input>
+
+//             <register-input 
+//               label="Password" 
+//               placeholder="Password" 
+//               type="password" 
+//               @input-changed=${(e: any) => this.password = e.detail}>
+//             </register-input>
+
+//             <button @click=${() => this.handleRegister()}>Register</button>
+//           </div>
+//         </div>
+//         <a href="/chat" class="skip-link-fixed">Skip for now ></a>
+//       </div>
+//     `;
+//   }
+// }
+
+// customElements.define('register-page', RegisterPage);
 
 --- FILE: \pages\resetpass-page.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import '../components/reset-password';
-import styles from '../styles/login-page.css?inline';
+import styles from '../styles/resetpass-page.css?inline';
 import { unsafeCSS } from 'lit';
 
 @customElement('reset-password-page')
 export class ResetPasswordPage extends LitElement {
 
-  static styles = css`
-  ${unsafeCSS(styles)}
-`;
+  static styles = css`${unsafeCSS(styles)}`;
+
+  @state() darkMode = false;
+
+  toggleTheme() {
+    this.darkMode = !this.darkMode;
+
+    this.setAttribute(
+      'theme',
+      this.darkMode ? 'dark' : 'light'
+    );
+  }
 
   render() {
     return html`
-      <div class="login-background">
-      <div class="container">
-        <reset-password></reset-password>
+      <div class="background">
+
+        <button class="theme-toggle" @click=${this.toggleTheme}>
+          ${this.darkMode ? 'â˜€ï¸' : 'ðŸŒ™'}
+        </button>
+
+        <div class="container">
+          <reset-password></reset-password>
         </div>
-    </div>
+
+      </div>
     `;
   }
 }
 
---- FILE: \styles\chat-page.css ---
-
-
-.message {
-    display: flex;
-    margin: 6px;
-}
-
-.user {
-    justify-content: flex-end;
-    color: white;
-}
-
-.robot {
-    justify-content: flex-start;
-    color: black;
-}
-
-.bubble {
-    padding: 8px 12px;
-    border-radius: 12px;
-    max-width: 60%;
-}
-
-.user .bubble {
-    background: #4caf50;
-}
-
-.robot .bubble {
-    background: #eee;
-}
-.box {
-    width: 500px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    padding: 10px;
-    background: white;
-}
-.container {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-input {
-    flex: 1;
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-button {
-    padding: 8px 12px;
-    background: #2196f3;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #1976d2;
-}
-
-.logout {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 10px 16px;
-    background: #2C2C2C;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.logout:hover {
-    background: #444;
-}
-
---- FILE: \styles\login-page.css ---
-
-html, body {
-      height: 100%;
-      margin: 0;
-    }
-
-:host {
-  display: block;
-  position: fixed;
-  inset: 0;
-  height: 100vh;
-}
-
-.container{
-    background-color: transparent;
-    display: flex;
-    width: 100%;
-    height: 100%;
-    margin:auto;
-    overflow: hidden;
-}
-
-@media (max-width: 768px){
-    .container {
-      justify-content: center;
-    }
-    }
-
-.login-page{
-    flex:1;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 140px;
-    align-items: center;
-    z-index: 1;
-}
-
-.login-background {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: url('/images/Objects-1.png') right top no-repeat,
-              url('/images/OBJECTS.png') center/cover no-repeat, 
-              #FFFCF0;
-  background-size: 15% auto, cover;
-  z-index: 0;
-}
-
---- FILE: \styles\register-page.css ---
-
-:host {
-  display: block;
-  position: fixed;
-  inset: 0;
-  height: 100vh;
-}
-
-:host {
-  --bg-primary: #FFFCF0;
-  --text-primary: #1a1a1a;
-  --text-secondary: #4b4848;
-  --btn-bg: #2C2C2C;
-  --btn-text: #ffffff;
-  --border-color: #e0e0e0;
-  --input-bg: #f5f5f5;
-  --link-color: #252424;
-  --hover-bg: #1a1a1a;
-
-  --img-object: url('/images/Objects-1.png');
-  --img-castle: url('/images/OBJECTS.png');
-}
-
-:host(.dark-mode) {
-  --bg-primary: #121212;
-  --text-primary: #e0e0e0;
-  --text-secondary: #b0b0b0;
-  --btn-bg: #3a3a3a;
-  --btn-text: #f0f0f0;
-  --border-color: #333333;
-  --input-bg: #2a2a2a;
-  --link-color: #d0d0d0;
-  --hover-bg: #555555;
-
-  --img-object: url('/images/Vector.png');
-  --img-castle: url('/images/OBJECTS-2.png');
-}
-
-@media (prefers-color-scheme: dark) {
-  :host {
-    --bg-primary: #121212;
-    --text-primary: #e0e0e0;
-    --text-secondary: #b0b0b0;
-    --btn-bg: #3a3a3a;
-    --btn-text: #f0f0f0;
-    --border-color: #333333;
-    --input-bg: #2a2a2a;
-    --link-color: #d0d0d0;
-    --hover-bg: #555555;
-
-    --img-object: url('/images/Vector.png');
-    --img-castle: url('/images/OBJECTS-2.png');
-  }
-}
+--- FILE: \styles\resetpass-page.css ---
 
 html, body {
   height: 100%;
   margin: 0;
-  background-color: #FFFCF0;
-  color: #1a1a1a;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+:host {
+  display: block;
+  position: fixed;
+  inset: 0;
+  height: 100vh;
+
+  /* Background */
+  --img-object: url('/images/Objects-1.png');
+  --img-castle: url('/images/OBJECTS.png');
+  --bg-primary: #FFFCF0;
+
+  --btn-bg: #2c2c2c;
+}
+
+:host([theme="dark"]) {
+  --img-object: url('/images/Vector.png');
+  --img-castle: url('/images/OBJECTS-2.png');
+  --bg-primary: #121212;
+  --btn-bg: white;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+
+  background:
+    var(--img-object) right top no-repeat,
+    var(--img-castle) center / cover no-repeat,
+    var(--bg-primary);
+
+  background-size: 15% auto, cover;
 }
 
 .container {
-  display: flex;
-  width: 100%;
-  height: 100%;
-  margin: auto;
-  background-color: transparent;
-}
-
-.register-background {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--img-object) right top no-repeat,
-              var(--img-castle) center/cover no-repeat, 
-              var(--bg-primary);
-  background-size: 15% auto, cover;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.register-page {
-  flex: 1;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-right: 140px;
   position: relative;
-  z-index: 1;
-}
-
-.form-container {
-  width: 100%;
-  max-width: 450px;
-  background: transparent;
-}
-
-h2 {
-  margin-bottom: 24px;
-  color: var(--text-secondary);
-  font-size: 26px;
-  font-family: 'Crimson Text', serif;
-}
-
-.skip-link-fixed {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  font-size: 20px;
-  font-weight: bold;
-  color: var(--link-color);
-  text-decoration: none;
   z-index: 10;
-  transition: color 0.2s;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.skip-link-fixed:hover {
-  text-decoration: underline;
-}
-
-@media (max-width: 768px) {
-  .skip-link-fixed {
-    bottom: 20px;
-    right: 20px;
-    font-size: 18px;
-  }
-}
-
-button {
-  width: 100%;
-  padding: 16px 8px;
-  margin-top: 32px;
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 18px;
-  transition: background 0.2s;
-}
-
-button:hover {
-  background: var(--hover-bg);
-}
-
-.theme-toggle{
+.theme-toggle {
   position: absolute;
   bottom: 40px;
   left: 40px;
+
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--btn-bg);
-  color: var(--btn-text);
   border: none;
+
   font-size: 24px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   margin: 0;
-  transition: transform 0.2s, background 0.2s;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+
+  z-index: 20;
 }
 
-.theme-toggle:hover {
-  transform: scale(1.1);
-  background: var(--hover-bg);
+--- FILE: \styles\theme.css ---
+
+/* DEFAULT (light / your current theme) */
+:root {
+  --bg: #FFFCF0;
+  --surface: #ffffff;
+  --text: #000;
+
+  --img-object: url('/images/Objects-1.png');
+  --img-castle: url('/images/OBJECTS.png');
+
+  --primary: #2C2C2C;
+  --accent: #d5ad0f;
+
+  --border: #ccc; /*Dont need this*/
+  --error: #c0392b;
+
+  --link: #252424;
+  --link-hover: #555;
+
+  --input-border: #ccc;
+
+
 }
 
-@media (max-width: 768px) {
-  .register-page {
-    padding-right: 24px;
-    padding-left: 24px;
-    justify-content: center;
-  }
+:root[data-theme="dark"] {
+  --bg: #0d0c0a;
+  --surface: #141210;
+  --text: #e8e0d0;
 
-  .register-background {
-    background-size: 40% auto, 90% auto;
-  }
+  --img-object: url('/images/Vector.png');
+  --img-castle: url('/images/OBJECTS-2.png');
 
-  .skip-link-fixed{
-    bottom: 20px;right: 20px;
-    font-size: 18px;
-  }
+  --primary: #c9a84c;
+  --accent: #d5ad0f;
 
-  .theme-toggle {
-    bottom: 20px;
-    left: 20px;
-    width: 44px;
-    height: 44px;
-    font-size: 20px;
-  }
+  --border: #3d3730;
+  --error: #e74c3c;
+
+  --link: #c9a84c;
+  --link-hover: #e8e0d0;
 }
 
 --- FILE: \types\types.ts ---
 
+// ../types/types.ts
+
 export interface User {
   user_id: number;
   username: string;
-  email: string;
-  access_level: string;
-  created_at: string;
+  email?: string; // optional since login might not return it
 }
 
 export interface Story {
   story_id: number;
   user_id: number;
-  avatar_id: number;
-  story_setting_id: number;
-  created_at: string;
+  title: string;
+  created_at?: string; // optional depending on backend
 }
+
+export type MessageRole = 'user' | 'assistant';
 
 export interface Message {
   message_id: number;
   story_id: number;
   content: string;
-  role: string;
-  created_at: string;
+  role: MessageRole;
+  created_at?: string; // optional timestamp
 }
 
 --- FILE: \app.ts ---
