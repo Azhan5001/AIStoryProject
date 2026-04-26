@@ -146,6 +146,8 @@ export class RegisterForm extends LitElement {
     label {
       font-weight: bold;
       font-size: 16px;
+      display: block;
+      margin-top: 16px;
     }
   `;
 
