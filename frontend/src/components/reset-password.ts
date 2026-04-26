@@ -1,9 +1,8 @@
 import { LitElement, html, css } from 'lit';
-import { state, customElement , property} from 'lit/decorators.js';
+import { state, customElement} from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import styles from '../styles/resetpass-page.css?inline';
+import '../styles/theme.css';
 
-import { unsafeCSS } from 'lit';
 
 @customElement('reset-password')
 export class ResetPassword extends LitElement {
@@ -12,99 +11,18 @@ export class ResetPassword extends LitElement {
   @state() confirmPassword = '';
   @state() message = '';
   @state() showSuccess = false;
-  @property({ type: Boolean }) darkMode = false;
+  
 
-  static styles =[
-    css`${unsafeCSS(styles)}`,
-    css`
-    :host {
-      display: block;
-      width:100%;
-    }
-
-    .message{
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0,0,0,0.4);
-      z-index: 1000;
-    }
-    
-    .message-content{
-      background: white;
-      border-radius: 12px;
-      text-align: center;
-      width: 300px;
-      min-height: 100px;
-      padding: 24px;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .message h3{
-     color: #4b4848;
-     font-weight: bold;
-     font-size: 30px;
-     font-family: 'Times New Roman', Times, serif;
-     margin-bottom: 18px;
-    }
-
-    p{
-      font-size: 16px;
-      color: #8e7c53;
-    }
-
-    .reset-button {
-      background: #2C2C2C;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      width: 100%;
-      padding: 10px 5px;
-      margin-top: 18px;
-    }
-
-    .backLogin {
-      margin-top: 12px;
-      font-size: 16px;
-      text-align: center;
-    }
-
-    .backLogin a {
-      color: #252424;
-      text-decoration: none;
-      font-weight: bold;
-      
-    }
-
-    .backLogin a:hover{
-        color: #555;
-        text-decoration: underline;
-    }
-
-    .ok-button{
-      padding: 4px 10px;
-      font-size: 15px;
-      margin-top: 20px;
-    }
-
-    input, .reset-button{
-      width: 100%;
+  static styles = css`
+    * {
       box-sizing: border-box;
-      height: 50px;
-      border-radius: 10px;
-      font-size: 16px;
     }
 
-    input{
-      padding: 0 16px;
-      border: 1px solid #ccc;
-      margin-bottom: 12px;
+    :host {
+      margin-right: 3rem;
+      color: var(--text);
+      display: block;
+      width: 100%;
     }
 
     .container {
@@ -121,6 +39,102 @@ export class ResetPassword extends LitElement {
       max-width: 450px;
     }
 
+    .message{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+    
+    .message-content{
+      background: white;
+      border-radius: 12px;
+      text-align: center;
+      width: 300px;
+      padding: 24px;
+    }
+
+    .message h3{
+     color: #4b4848;
+     font-weight: bold;
+     font-size: 30px;
+     font-family: 'Times New Roman', Times, serif;
+     margin-bottom: 18px;
+    }
+
+    p{
+      font-size: 16px;
+      color: #8e7c53;
+    }
+
+    .reset-button {
+      width: 100%;
+      padding: 16px 8px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 16px;
+      font-size: 18px;
+    }
+
+    .backLogin {
+      margin-top: 12px;
+      font-size: 16px;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .backLogin a {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: bold;
+      
+    }
+
+    .backLogin a:hover{
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+
+    .ok-button{
+      width: 100%;
+      padding: 10px 4px;
+      font-size: 15px;
+      margin-top: 20px;
+      background:var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+    }
+
+    input, .reset-button{
+      width: 100%;
+      box-sizing: border-box;
+      height: 50px;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input{
+      width: 100%;
+      height: 50px;
+      padding: 0 16px;
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      background: var(--surface);
+      color: var(--text);
+    }
+
     @media (max-width: 768px){
     .card{
       width: 90%;
@@ -133,19 +147,20 @@ export class ResetPassword extends LitElement {
       font-size: 16px;
       display: block;
       margin-top: 16px;
-      margin-bottom: 10px;
     }
 
     .card h2 {
-      margin-bottom: 6px;
-      color: #4b4848;
+      font-size: 26px;
+      font-family: 'Times New Roman', Times, serif;
+      color: var(--text);
     }
 
     .card p {
-      margin-bottom: 20px;
+      color: var(--accent);
+      margin-bottom: 24px;
     }
     `
-  ];
+  ;
   
 
   handleReset() {

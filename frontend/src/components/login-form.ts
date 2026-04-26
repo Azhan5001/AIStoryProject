@@ -147,6 +147,8 @@ static styles = css`
   label {
     font-weight: bold;
     font-size: 16px;
+    display: block;
+    margin-top: 16px;
   }
 
   .forgot {
