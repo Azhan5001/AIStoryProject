@@ -81,14 +81,11 @@ export async function register(
 
 // GET STORIES
 export async function getUserStories(): Promise<Story[]> {
-  const user = JSON.parse(localStorage.getItem('user')!) as User;
+  const userId = localStorage.getItem('user_id');
+  if (!userId) throw new Error('Not logged in');
 
-  const res = await fetch(
-    `${BASE_URL}/story/?user_id=${user.user_id}`
-  );
-
+  const res = await fetch(`${BASE_URL}/story/?user_id=${userId}`);
   if (!res.ok) throw new Error('Failed to fetch stories');
-
   return res.json();
 }
 
@@ -121,7 +118,7 @@ export class AppInput extends LitElement {
 
   private handleInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    this.value = target.value || ''; // ensure string
+    this.value = target.value || '';
 
     if (this.error) this.error = '';
 
@@ -145,16 +142,13 @@ export class AppInput extends LitElement {
   public validate(): boolean {
     const val = this.value.trim();
 
-    // âœ… Required check
     if (this.required && !val) {
       this.error = 'This field is required';
       return false;
     }
 
-    // âœ… Skip further checks if empty and not required
     if (!val) return true;
 
-    // âœ… Email validation
     if (this.validateType === 'email') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(val)) {
@@ -163,7 +157,6 @@ export class AppInput extends LitElement {
       }
     }
 
-    // âœ… Password validation
     if (this.validateType === 'password') {
       if (val.length < 6) {
         this.error = 'Password must be at least 6 characters';
@@ -190,6 +183,52 @@ export class AppInput extends LitElement {
 
   render() {
     return html`
+      <style>
+        app-input {
+          display: block;
+        }
+
+        app-input input {
+          width: 100%;
+          padding: 10px 14px;
+          box-sizing: border-box;
+          border-radius: 10px;
+
+          /* light beige background from the HTML reference (.story-textarea bg) */
+          background: var(--bg, #FFFCF0);
+          border: 1.5px solid var(--sand, #d9cdb8);
+
+          font-family: 'Lora', Georgia, serif;
+          font-size: 14px;
+          color: var(--text, #2a2118);
+
+          outline: none;
+          transition: border-color 0.2s;
+        }
+
+        app-input input::placeholder {
+          color: var(--ink-muted, #8a7a68);
+          font-style: italic;
+        }
+
+        /* Gold border on focus â€” matches .story-textarea:focus */
+        app-input input:focus {
+          border-color: var(--gold, #b8953a);
+        }
+
+        app-input input.error {
+          border-color: var(--error, #c0392b);
+        }
+
+        app-input .error-text {
+          font-family: 'Lora', Georgia, serif;
+          font-size: 12px;
+          color: var(--error, #c0392b);
+          margin-top: 4px;
+          padding-left: 2px;
+        }
+      </style>
+
       <input
         class=${this.error ? 'error' : ''}
         .value=${this.value}
@@ -213,10 +252,17 @@ import './app-input';
 import './chat-messages';
 import { sendMessage, getMessages } from '../api/api';
 
+// ðŸ§ª TEST BOT (remove later easily)
+import { getBotResponse } from './chatBot';
+
+// ðŸ”‘ SWITCH HERE
+const USE_FAKE_BOT = true;
+
 interface Message {
   message: string;
   sender: 'user' | 'robot';
   id: string;
+  shouldAnimate?: boolean;
 }
 
 @customElement('chat-box')
@@ -225,49 +271,178 @@ export class ChatBox extends LitElement {
   @property({ type: Number })
   storyId = 1;
 
-  @state()
-  private messages: Message[] = [];
+  @state() private messages: Message[] = [];
+  @state() private loading = false;
 
   static styles = css`
-    .box {
-      width: 500px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-
-    }
-
-    /* ðŸ‘‡ INPUT + BUTTON STYLING HERE */
-    .input-area {
+    :host {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
     }
+
+    /* â”€â”€ Card â”€â”€ */
+    .box {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background: var(--surface, #ffffff);
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    /* â”€â”€ Header strip â”€â”€ */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--surface, #ffffff);
+      border-bottom: 1px solid var(--sand, #d9cdb8);
+      flex-shrink: 0;
+    }
+
+    .chat-header-icon {
+      color: var(--gold, #b8953a);
+      font-size: 16px;
+    }
+
+    .chat-header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text, #2a2118);
+      letter-spacing: 0.03em;
+    }
+
+    .chat-header-sub {
+      margin-left: auto;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 12px;
+      color: var(--ink-muted, #8a7a68);
+      font-style: italic;
+    }
+
+    /* Pulsing gold dot while loading */
+    .thinking-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold, #b8953a);
+      margin-left: auto;
+      flex-shrink: 0;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   transform: scale(1);    }
+      50%       { opacity: 0.4; transform: scale(0.72); }
+    }
+
+    /* â”€â”€ Messages â”€â”€ */
+    .messages-area {
+      flex: 1;
+      overflow: hidden;
+      background: var(--bg, #FFFCF0);
+    }
+
+    chat-messages {
+      display: block;
+      height: 100%;
+    }
+
+    /* â”€â”€ Input bar â”€â”€ */
+    .input-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 18px 12px;
+      background: var(--surface, #ffffff);
+      border-top: 1px solid var(--sand, #d9cdb8);
+      flex-shrink: 0;
+    }
+
+    .input-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text, #2a2118);
+    }
+
+    .input-label .spark { color: var(--gold, #b8953a); }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     app-input {
-      flex: 1; 
+      flex: 1;
       min-width: 0;
     }
 
-    app-input input {
-      width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    button {
-      padding: 10px 14px;
-      background: #2196f3;
-      color: white;
+    /* Send button â€” mirrors .generate-btn exactly from the HTML */
+    .send-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--ink, #2a2118);
+      color: #ffffff;
       border: none;
-      border-radius: 6px;
+      border-radius: 12px;
+      padding: 0 20px;
+      height: 42px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s, transform 0.1s;
     }
 
-    button:hover {
-      background: #1976d2;
+    /* Gold shimmer overlay, matches .generate-btn::before */
+    .send-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(184,149,58,0.25) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .send-btn:hover  { background: var(--ink-light, #5a4a38); }
+    .send-btn:active { transform: scale(0.97); }
+    .send-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .send-btn .spark { color: var(--gold-light, #d4a94a); font-size: 12px; }
+
+    /* Tip row */
+    .tip-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 11px;
+      color: var(--ink-muted, #8a7a68);
+      font-style: italic;
+    }
+
+    .tip-row strong {
+      font-style: normal;
+      color: var(--gold-dark, #8a6e28);
     }
   `;
 
@@ -278,40 +453,52 @@ export class ChatBox extends LitElement {
 
   async loadMessages() {
     const apiMessages = await getMessages(this.storyId);
-
     this.messages = apiMessages.map((msg: any) => ({
       message: msg.content,
       sender: msg.role === 'user' ? 'user' : 'robot',
-      id: msg.message_id
+      id: msg.message_id,
+      shouldAnimate: false
     }));
   }
 
   private async handleMessage(text: string) {
-    // 1. Show instantly
+    if (!text.trim() || this.loading) return;
+
     this.messages = [
       ...this.messages,
-      { message: text, sender: 'user', id: crypto.randomUUID() }
+      { message: text, sender: 'user', id: crypto.randomUUID(), shouldAnimate: false }
     ];
+    this.loading = true;
 
-    // 2. Send to backend
-    await sendMessage(this.storyId, text);
+    if (USE_FAKE_BOT) {
+      // ðŸ§ª TEST MODE
+      await new Promise(res => setTimeout(res, 500));
+      const reply = await getBotResponse(text);
+      this.messages = [
+        ...this.messages,
+        { message: reply, sender: 'robot', id: crypto.randomUUID(), shouldAnimate: true }
+      ];
+    } else {
+      // ðŸš€ REAL API MODE
+      await sendMessage(this.storyId, text);
+      await this.loadMessages();
+    }
 
-    // 3. Reload (includes AI response)
-    await this.loadMessages();
+    this.loading = false;
   }
 
-  // Triggered when ENTER is pressed
   private onInputSubmit(e: CustomEvent<{ value: string }>) {
-    this.handleMessage(e.detail.value);
+    const input = this.renderRoot.querySelector('app-input') as any;
+    const val = e.detail.value?.trim();
+    if (!val) return;
+    this.handleMessage(val);
+    input?.clear();
   }
 
-  // Triggered when BUTTON is clicked
-  private onButtonClick() {
+  private onSendClick() {
     const input = this.renderRoot.querySelector('app-input') as any;
-
-    const value = input?.getValue();
-    if (!value?.trim()) return;
-
+    const value = input?.getValue()?.trim();
+    if (!value) return;
     this.handleMessage(value);
     input.clear();
   }
@@ -319,12 +506,43 @@ export class ChatBox extends LitElement {
   render() {
     return html`
       <div class="box">
-        <chat-messages .messages=${this.messages}></chat-messages>
 
-        <div class="input-area">
-          <app-input @input-submit=${this.onInputSubmit}></app-input>
-          <button @click=${this.onButtonClick}>Send</button>
+        <div class="chat-header">
+          <span class="chat-header-icon">âœ¦</span>
+          <span class="chat-header-title">Story Chat</span>
+          ${this.loading
+            ? html`<div class="thinking-dot"></div>`
+            : html`<span class="chat-header-sub">Scene ${this.storyId}</span>`}
         </div>
+
+        <div class="messages-area">
+          <chat-messages .messages=${this.messages}></chat-messages>
+        </div>
+
+        <div class="input-bar">
+          <div class="input-label">
+            <span class="spark">âœ¦</span>
+            Continue the story
+          </div>
+          <div class="input-row">
+            <app-input
+              placeholder="What happens next..."
+              @input-submit=${this.onInputSubmit}
+            ></app-input>
+            <button
+              class="send-btn"
+              ?disabled=${this.loading}
+              @click=${this.onSendClick}
+            >
+              <span class="spark">âœ¦</span>
+              ${this.loading ? 'Writing...' : 'Send'}
+            </button>
+          </div>
+          <div class="tip-row">
+            ðŸ’¡ <span><strong>Tip:</strong> Press Enter to send your message.</span>
+          </div>
+        </div>
+
       </div>
     `;
   }
@@ -333,49 +551,115 @@ export class ChatBox extends LitElement {
 --- FILE: \components\chat-message.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 @customElement('chat-message')
 export class ChatMessage extends LitElement {
 
   @property({ type: String }) message = '';
   @property({ type: String }) sender: 'user' | 'robot' = 'robot';
+  @property({ type: Boolean }) shouldAnimate = false;
+
+  @state() private displayedText = '';
+
+  private typingSpeed = 20;
 
   static styles = css`
     .message {
       display: flex;
-      margin: 6px;
+      margin: 6px 0;
     }
 
-    .user {
-      justify-content: flex-end;
-      color: white;
-    }
-
-    .robot {
-      justify-content: flex-start;
-      color: black;
-    }
+    .user  { justify-content: flex-end; }
+    .robot { justify-content: flex-start; }
 
     .bubble {
-      padding: 8px 12px;
-      border-radius: 12px;
-      max-width: 60%;
+      padding: 10px 16px;
+      border-radius: 14px;
+      max-width: 68%;
+      line-height: 1.65;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      word-break: break-word;
     }
 
+    /* â”€â”€ User bubble: warm sand, no dark colors â”€â”€ */
     .user .bubble {
-      background: #4caf50;
+      background: var(--parchment, #ede6d6);
+      color: var(--text, #2a2118);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: 14px 14px 4px 14px;
     }
 
+    /* â”€â”€ Robot bubble: cream with a subtle gold left border, italic â”€â”€ */
     .robot .bubble {
-      background: #eee;
+      background: var(--surface, #ffffff);
+      color: var(--text, #2a2118);
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-left: 3px solid var(--gold, #b8953a);
+      border-radius: 14px 14px 14px 4px;
+      font-style: italic;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    /* Gold âœ¦ spark prefix on AI messages (CSS only, no DOM change) */
+    .robot .bubble::before {
+      content: 'âœ¦ ';
+      color: var(--gold, #b8953a);
+      font-style: normal;
+      font-size: 11px;
+    }
+
+    /* Blinking pen cursor â€” gold to match theme */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: var(--gold, #b8953a);
+      margin-left: 3px;
+      vertical-align: middle;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75%      { opacity: 0; }
     }
   `;
 
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has('message') || changedProps.has('shouldAnimate')) {
+      if (this.sender === 'robot' && this.shouldAnimate) {
+        this.startTyping();
+      } else {
+        this.displayedText = this.message;
+      }
+    }
+  }
+
+  private async startTyping() {
+    this.displayedText = '';
+    for (let i = 0; i < this.message.length; i++) {
+      this.displayedText += this.message[i];
+      await this.sleep(this.typingSpeed);
+    }
+    this.shouldAnimate = false; // stop cursor
+  }
+
+  private sleep(ms: number) {
+    return new Promise(res => setTimeout(res, ms));
+  }
+
   render() {
+    const isTyping = this.sender === 'robot' && this.displayedText.length < this.message.length;
+
     return html`
       <div class="message ${this.sender}">
-        <div class="bubble">${this.message}</div>
+        <div class="bubble">
+          ${this.displayedText}
+          ${isTyping ? html`<span class="cursor"></span>` : ''}
+        </div>
       </div>
     `;
   }
@@ -391,6 +675,7 @@ interface Message {
   message: string;
   sender: 'user' | 'robot';
   id: string;
+  shouldAnimate?: boolean;
 }
 
 @customElement('chat-messages')
@@ -400,29 +685,104 @@ export class ChatMessages extends LitElement {
   messages: Message[] = [];
 
   static styles = css`
-    .container {
-      height: 700px;
-      overflow-y: auto;
-      border: 1px solid #ccc;
-      padding: 10px;
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
 
+    /* Scrollable messages column */
+    .container {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar matches the HTML reference */
+    .container::-webkit-scrollbar        { width: 5px; }
+    .container::-webkit-scrollbar-track  { background: transparent; }
+    .container::-webkit-scrollbar-thumb  {
+      background: var(--sand, #d9cdb8);
+      border-radius: 3px;
+    }
+
+    /* â”€â”€ Empty state â”€â”€ */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--ink-muted, #8a7a68);
+    }
+
+    /* Mirrors .scene-icon-wrap from the HTML */
+    .empty-icon-wrap {
+      width: 72px;
+      height: 72px;
+      background: var(--surface, #ffffff);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .empty-title {
+      font-family: 'Cinzel', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text, #2a2118);
+    }
+
+    .empty-desc {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--ink-muted, #8a7a68);
+      line-height: 1.6;
+      max-width: 260px;
     }
   `;
 
   updated(changedProps: Map<string, unknown>) {
     if (changedProps.has('messages')) {
       const div = this.renderRoot.querySelector('.container') as HTMLDivElement;
-      div.scrollTop = div.scrollHeight;
+      if (div) {
+        requestAnimationFrame(() => { div.scrollTop = div.scrollHeight; });
+      }
     }
   }
 
   render() {
+    if (!this.messages.length) {
+      return html`
+        <div class="container">
+          <div class="empty-state">
+            <div class="empty-icon-wrap">ðŸ°</div>
+            <div class="empty-title">Your story begins here</div>
+            <p class="empty-desc">Describe a scene, ask for the next chapter,<br>or simply say hello to begin.</p>
+          </div>
+        </div>
+      `;
+    }
+
     return html`
       <div class="container">
         ${this.messages.map(msg => html`
           <chat-message
             .message=${msg.message}
             .sender=${msg.sender}
+            .shouldAnimate=${msg.shouldAnimate ?? false}
           ></chat-message>
         `)}
       </div>
@@ -1262,52 +1622,358 @@ import { Router } from '@vaadin/router';
 
 interface Story {
   story_id: number;
+  title?: string;
 }
 
 @customElement('story-sidebar')
 export class StorySidebar extends LitElement {
 
-  @state()
-  private stories: Story[] = [];
-
-  @state()
-  private selectedId: number | null = null;
+  @state() private stories: Story[] = [];
+  @state() private selectedId: number | null = null;
+  @state() private collapsed = false;
+  @state() private searchQuery = '';
 
   static styles = css`
     :host {
-      width: 260px;
-      background: #202123;
-      color: white;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
-      overflow-y: auto;
-      display: block;
+      width: 272px;
+      flex-shrink: 0;
+      background: #ffffff;
+      border-right: 1px solid #d9cdb8;
+      overflow: hidden;
+      transition: width 0.25s ease;
+      font-family: 'Lora', Georgia, serif;
+      box-sizing: border-box;
+      position: relative;
     }
 
-    .item {
-      padding: 14px;
+    :host(.collapsed) {
+      width: 56px;
+    }
+
+    /* â”€â”€â”€ Logo row â”€â”€â”€ */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 12px;
+      border-bottom: 1px solid #ede6d6;
+      flex-shrink: 0;
+      min-width: 0;
+      height: 60px;
+    }
+
+    .logo-icon {
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Cinzel', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: #2a2118;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      flex: 1;
+      min-width: 0;
+      opacity: 1;
+      transition: opacity 0.15s ease;
+    }
+
+    :host(.collapsed) .logo-text {
+      opacity: 0;
+      width: 0;
+    }
+
+    /* New story button â€” hidden when collapsed */
+    .new-btn {
+      background: none;
+      border: none;
       cursor: pointer;
-      border-bottom: 1px solid #2a2b32;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #8a7a68;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+      opacity: 1;
+      transition: opacity 0.15s;
     }
 
-    .item:hover {
-      background: #2a2b32;
+    .new-btn:hover {
+      background: #ede6d6;
+      color: #2a2118;
     }
 
-    .active {
-      background: #343541;
+    :host(.collapsed) .new-btn {
+      display: none;
     }
+
+    /* Toggle button â€” ALWAYS visible, always the last item in logo row */
+    .toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #8a7a68;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .toggle-btn:hover {
+      background: #ede6d6;
+      color: #2a2118;
+    }
+
+    /* â”€â”€â”€ Search â”€â”€â”€ */
+    .search-wrap {
+      padding: 12px 12px 6px;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: opacity 0.15s, padding 0.2s, height 0.2s;
+      height: auto;
+    }
+
+    :host(.collapsed) .search-wrap {
+      opacity: 0;
+      pointer-events: none;
+      height: 0;
+      padding: 0;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #FFFCF0;
+      border: 1px solid #d9cdb8;
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+
+    .search-icon {
+      font-size: 13px;
+      color: #8a7a68;
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      border: none;
+      background: none;
+      outline: none;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 13px;
+      color: #2a2118;
+      width: 100%;
+    }
+
+    .search-input::placeholder {
+      color: #8a7a68;
+      font-style: italic;
+    }
+
+    /* â”€â”€â”€ Nav â”€â”€â”€ */
+    .nav-section {
+      padding: 6px 0 2px;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: opacity 0.15s;
+    }
+
+    :host(.collapsed) .nav-section {
+      opacity: 0;
+      pointer-events: none;
+      height: 0;
+      padding: 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #5a4a38;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 1px 8px;
+      transition: background 0.15s;
+    }
+
+    .nav-item:hover { background: #FFFCF0; }
+    .nav-icon { font-size: 14px; flex-shrink: 0; }
+
+    /* â”€â”€â”€ Section label â”€â”€â”€ */
+    .section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: #8a7a68;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 10px 18px 4px;
+      flex-shrink: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      transition: opacity 0.15s;
+    }
+
+    :host(.collapsed) .section-label {
+      opacity: 0;
+      height: 0;
+      padding: 0;
+    }
+
+    /* â”€â”€â”€ Story list â”€â”€â”€ */
+    .stories-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .stories-list::-webkit-scrollbar { width: 4px; }
+    .stories-list::-webkit-scrollbar-track { background: transparent; }
+    .stories-list::-webkit-scrollbar-thumb {
+      background: #d9cdb8;
+      border-radius: 2px;
+    }
+
+    .story-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 18px;
+      margin: 2px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      min-width: 0;
+    }
+
+    .story-item:hover { background: #FFFCF0; }
+    .story-item.active { background: #ede6d6; }
+
+    .story-item-icon {
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .story-item-label {
+      font-family: 'Lora', Georgia, serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #5a4a38;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .story-item.active .story-item-label {
+      color: #2a2118;
+      font-weight: 600;
+    }
+
+    :host(.collapsed) .story-item {
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+    :host(.collapsed) .story-item-label {
+      display: none;
+    }
+
+    .empty-list {
+      padding: 20px 18px;
+      font-size: 13px;
+      color: #8a7a68;
+      font-style: italic;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    :host(.collapsed) .empty-list { display: none; }
+
+    /* â”€â”€â”€ Footer â”€â”€â”€ */
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid #ede6d6;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    :host(.collapsed) .sidebar-footer {
+      justify-content: center;
+      padding: 14px 0;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #ede6d6;
+      border: 1.5px solid #d9cdb8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    :host(.collapsed) .user-info { display: none; }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2a2118;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-role { font-size: 11px; color: #8a7a68; }
+
+    .crown { font-size: 16px; flex-shrink: 0; }
+    :host(.collapsed) .crown { display: none; }
   `;
 
   async connectedCallback() {
     super.connectedCallback();
-
-    this.stories = await getUserStories();
-
-    if (this.stories.length > 0) {
-      const latest = this.stories[this.stories.length - 1];
-
-      this.selectedId = latest.story_id;
-      Router.go(`/story/${latest.story_id}`);
+    try {
+      this.stories = await getUserStories();
+      if (this.stories.length > 0) {
+        const latest = this.stories[this.stories.length - 1];
+        this.selectedId = latest.story_id;
+        Router.go(`/story/${latest.story_id}`);
+      }
+    } catch (e) {
+      console.error('Failed to load stories', e);
     }
   }
 
@@ -1316,18 +1982,95 @@ export class StorySidebar extends LitElement {
     Router.go(`/story/${id}`);
   }
 
+  private toggleCollapse() {
+    this.collapsed = !this.collapsed;
+    this.classList.toggle('collapsed', this.collapsed);
+  }
+
+  private handleSearch(e: Event) {
+    this.searchQuery = (e.target as HTMLInputElement).value;
+  }
+
+  private get filteredStories() {
+    if (!this.searchQuery.trim()) return this.stories;
+    const q = this.searchQuery.toLowerCase();
+    return this.stories.filter(s =>
+      (s.title ?? `Story ${s.story_id}`).toLowerCase().includes(q)
+    );
+  }
+
   render() {
+    const stories = this.filteredStories;
+
     return html`
-      ${this.stories.map(
-        s => html`
-          <div
-            class="item ${this.selectedId === s.story_id ? 'active' : ''}"
-            @click=${() => this.selectStory(s.story_id)}
-          >
-            Story ${s.story_id}
-          </div>
-        `
-      )}
+      <!-- Logo row â€” toggle btn is ALWAYS rendered last, never hidden -->
+      <div class="logo">
+        <span class="logo-icon">ðŸ°</span>
+        <span class="logo-text">StoryRealm</span>
+        <button class="new-btn" title="New story"
+          @click=${() => Router.go('/story/new')}>âœï¸</button>
+        <button class="toggle-btn"
+          title=${this.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          @click=${this.toggleCollapse}>
+          ${this.collapsed ? 'â†’' : 'â†'}
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-wrap">
+        <div class="search-box">
+          <span class="search-icon">ðŸ”</span>
+          <input
+            class="search-input"
+            type="text"
+            placeholder="Search stories..."
+            .value=${this.searchQuery}
+            @input=${this.handleSearch}
+          />
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav class="nav-section">
+        <div class="nav-item">
+          <span class="nav-icon">ðŸ“š</span>
+          My Stories
+        </div>
+        <div class="nav-item">
+          <span class="nav-icon">âœ¦</span>
+          Explore
+        </div>
+      </nav>
+
+      <!-- Stories -->
+      <div class="section-label">Recent</div>
+      <div class="stories-list">
+        ${stories.length === 0
+          ? html`<div class="empty-list">No stories yet.<br>Start writing!</div>`
+          : stories.map(s => html`
+              <div
+                class="story-item ${this.selectedId === s.story_id ? 'active' : ''}"
+                title=${s.title ?? `Story ${s.story_id}`}
+                @click=${() => this.selectStory(s.story_id)}
+              >
+                <span class="story-item-icon">ðŸ“–</span>
+                <span class="story-item-label">
+                  ${s.title ?? `Story ${s.story_id}`}
+                </span>
+              </div>
+            `)
+        }
+      </div>
+
+      <!-- Footer -->
+      <div class="sidebar-footer">
+        <div class="avatar">ðŸ‘¤</div>
+        <div class="user-info">
+          <div class="user-name">My Account</div>
+          <div class="user-role">Explorer</div>
+        </div>
+        <span class="crown">ðŸ‘‘</span>
+      </div>
     `;
   }
 }
@@ -1684,9 +2427,8 @@ export class AvatarPage extends LitElement {
   --border-hi: #3d3730;
   --gold:      #c9a84c;
   --gold-dim:  #7a6230;
-  --text:      #e8e0d0;
   --muted:     #6b6358;
-  --shadow-glow: 0px 0px 5px 5px;
+  --shadow-glow: 0px 0px 5px 5px #e8e0d0;
   --radius:    10px;
   --font-head: 'Cinzel', 'Palatino Linotype', serif;
   --font-body: 'Cormorant Garamond', 'Georgia', serif;
@@ -1781,16 +2523,19 @@ export class AvatarPage extends LitElement {
 
     input[type="text"], select, textarea {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: none;
       border-radius: var(--radius);
       color: var(--text);
       font-family: var(--font-body);
       font-size: 1rem;
       padding: 12px 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
       outline: none;
       width: 100%;
       box-sizing: border-box;
+
+      /* âœ… match panel style */
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s;
     }
 
     input[type="text"]::placeholder { color: var(--muted); }
@@ -1798,8 +2543,10 @@ export class AvatarPage extends LitElement {
     input[type="text"]:focus,
     select:focus,
     textarea:focus {
-      border-color: var(--gold-dim);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
     }
 
     select {
@@ -1816,8 +2563,9 @@ export class AvatarPage extends LitElement {
     .dice-btn {
       flex: 0 0 auto;
       align-self: flex-end;
-      background: transparent;
-      border: 1px solid var(--border);
+      background: var(--bg);
+      box-shadow: var(--shadow-glow);
+      border: none;
       border-radius: var(--radius);
       color: var(--gold);
       font-size: 1.3rem;
@@ -2108,119 +2856,143 @@ import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import '../components/chat-box';
-
+import '../components/story-sidebar';
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {
 
   private handleLogout() {
-    localStorage.removeItem('user_id'); // clear stored user
-    Router.go('/login'); // redirect to login page
+    localStorage.removeItem('user_id');
+    Router.go('/login');
   }
 
- static styles = css` 
-  :host {
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-    inset: 0;
-    height: 100vh;
-    width: 100vw;
-    background: 
-    var(--bg);
-  }
-
-  .message {
+  static styles = css`
+    /* â”€â”€ Full-screen layout: sidebar + main â”€â”€ */
+    :host {
       display: flex;
-      margin: 6px;
-  }
-
-  .user {
-      justify-content: flex-end;
-      color: white;
-  }
-
-  .robot {
-      justify-content: flex-start;
-      color: black;
-  }
-
-  .bubble {
-      padding: 8px 12px;
-      border-radius: 12px;
-      max-width: 60%;
-  }
-
-  .user .bubble {
-      background: #4caf50;
-  }
-
-  .robot .bubble {
-      background: #eee;
-  }
-  .box {
-      width: 500px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      background: white;
-  }
-  .container {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-  }
-
-  input {
-      flex: 1;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-  }
-
-  button {
-      padding: 8px 12px;
-      background: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-  }
-
-  button:hover {
-      background: #1976d2;
-  }
-
-  .logout {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 10px 16px;
-      background: #2C2C2C;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-  }
-
-  .logout:hover {
-      background: #444;
-  }
-
-    private handleLogout() {
-      localStorage.removeItem('user_id'); // clear stored user
-      Router.go('/login'); // redirect to login page
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background: var(--bg, #FFFCF0);
+      font-family: 'Lora', Georgia, serif;
     }
-    `
+
+    /* â”€â”€ Main area to the right of the sidebar â”€â”€ */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg, #FFFCF0);
+    }
+
+    /* â”€â”€ Top bar â”€â”€ */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--bg, #FFFCF0);
+      border-bottom: 1px solid var(--sand, #d9cdb8);
+      flex-shrink: 0;
+    }
+
+    .tab-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface, #ffffff);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text, #2a2118);
+    }
+
+    .tab-pill .spark {
+      color: var(--gold, #b8953a);
+      font-size: 15px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile-pic {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--gold, #b8953a);
+      background: linear-gradient(135deg, #7ab3d4 30%, #3a7bd5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-radius: 10px;
+      padding: 7px 14px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 13px;
+      color: var(--ink-muted, #8a7a68);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--sand, #d9cdb8);
+      background: var(--parchment, #ede6d6);
+      color: var(--text, #2a2118);
+    }
+
+    /* â”€â”€ Content: the chat fills this â”€â”€ */
+    .content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 28px;
+      gap: 0;
+    }
+  `;
 
   render() {
     return html`
-      <button class="logout" @click=${this.handleLogout}>
-        Logout
-      </button>
+      <story-sidebar></story-sidebar>
 
-      <chat-box></chat-box>
+      <div class="main">
+
+        <!-- Top bar -->
+        <header class="topbar">
+          <div class="tab-pill">
+            <span class="spark">âœ¦</span>
+            Story Chat
+          </div>
+          <div class="topbar-right">
+            <div class="profile-pic">âœˆï¸</div>
+            <button class="logout-btn" @click=${this.handleLogout}>
+              â†© Logout
+            </button>
+          </div>
+        </header>
+
+        <!-- Chat fills the rest -->
+        <div class="content">
+          <chat-box></chat-box>
+        </div>
+
+      </div>
     `;
   }
 }
@@ -2657,12 +3429,13 @@ export class AppRoot extends LitElement {
     const router = new Router(outlet);
 
     router.setRoutes([
-      { path: '/', redirect: '/login' },
-      { path: '/login', component: 'login-page' },
-      { path: '/register', component: 'register-page' },
-      { path: '/chat', component: 'chat-page' },
-      { path: '/avatar', component: 'avatar-page' },
-      { path: '/resetpass', component: 'reset-password-page'}
+      { path: '/',                redirect: '/login' },
+      { path: '/login',           component: 'login-page' },
+      { path: '/register',        component: 'register-page' },
+      { path: '/chat',            component: 'chat-page' },
+      { path: '/story/:storyId',  component: 'chat-page' },  // â† sidebar navigates here
+      { path: '/avatar',          component: 'avatar-page' },
+      { path: '/resetpass',       component: 'reset-password-page' },
     ]);
   }
 

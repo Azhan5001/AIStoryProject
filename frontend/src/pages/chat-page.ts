@@ -2,119 +2,143 @@ import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import '../components/chat-box';
-
+import '../components/story-sidebar';
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {
 
   private handleLogout() {
-    localStorage.removeItem('user_id'); // clear stored user
-    Router.go('/login'); // redirect to login page
+    localStorage.removeItem('user_id');
+    Router.go('/login');
   }
 
- static styles = css` 
-  :host {
-    display: flex;
-    justify-content: center;
-    align-items: center; 
-    inset: 0;
-    height: 100vh;
-    width: 100vw;
-    background: 
-    var(--bg);
-  }
-
-  .message {
+  static styles = css`
+    /* ── Full-screen layout: sidebar + main ── */
+    :host {
       display: flex;
-      margin: 6px;
-  }
-
-  .user {
-      justify-content: flex-end;
-      color: white;
-  }
-
-  .robot {
-      justify-content: flex-start;
-      color: black;
-  }
-
-  .bubble {
-      padding: 8px 12px;
-      border-radius: 12px;
-      max-width: 60%;
-  }
-
-  .user .bubble {
-      background: #4caf50;
-  }
-
-  .robot .bubble {
-      background: #eee;
-  }
-  .box {
-      width: 500px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      background: white;
-  }
-  .container {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-  }
-
-  input {
-      flex: 1;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-  }
-
-  button {
-      padding: 8px 12px;
-      background: #2196f3;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-  }
-
-  button:hover {
-      background: #1976d2;
-  }
-
-  .logout {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      padding: 10px 16px;
-      background: #2C2C2C;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-  }
-
-  .logout:hover {
-      background: #444;
-  }
-
-    private handleLogout() {
-      localStorage.removeItem('user_id'); // clear stored user
-      Router.go('/login'); // redirect to login page
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background: var(--bg, #FFFCF0);
+      font-family: 'Lora', Georgia, serif;
     }
-    `
+
+    /* ── Main area to the right of the sidebar ── */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg, #FFFCF0);
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: var(--bg, #FFFCF0);
+      border-bottom: 1px solid var(--sand, #d9cdb8);
+      flex-shrink: 0;
+    }
+
+    .tab-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface, #ffffff);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text, #2a2118);
+    }
+
+    .tab-pill .spark {
+      color: var(--gold, #b8953a);
+      font-size: 15px;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .profile-pic {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--gold, #b8953a);
+      background: linear-gradient(135deg, #7ab3d4 30%, #3a7bd5 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-radius: 10px;
+      padding: 7px 14px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 13px;
+      color: var(--ink-muted, #8a7a68);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .logout-btn:hover {
+      border-color: var(--sand, #d9cdb8);
+      background: var(--parchment, #ede6d6);
+      color: var(--text, #2a2118);
+    }
+
+    /* ── Content: the chat fills this ── */
+    .content {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 28px;
+      gap: 0;
+    }
+  `;
 
   render() {
     return html`
-      <button class="logout" @click=${this.handleLogout}>
-        Logout
-      </button>
+      <story-sidebar></story-sidebar>
 
-      <chat-box></chat-box>
+      <div class="main">
+
+        <!-- Top bar -->
+        <header class="topbar">
+          <div class="tab-pill">
+            <span class="spark">✦</span>
+            Story Chat
+          </div>
+          <div class="topbar-right">
+            <div class="profile-pic">✈️</div>
+            <button class="logout-btn" @click=${this.handleLogout}>
+              ↩ Logout
+            </button>
+          </div>
+        </header>
+
+        <!-- Chat fills the rest -->
+        <div class="content">
+          <chat-box></chat-box>
+        </div>
+
+      </div>
     `;
   }
 }

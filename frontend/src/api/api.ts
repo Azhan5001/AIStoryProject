@@ -78,14 +78,11 @@ export async function register(
 
 // GET STORIES
 export async function getUserStories(): Promise<Story[]> {
-  const user = JSON.parse(localStorage.getItem('user')!) as User;
+  const userId = localStorage.getItem('user_id');
+  if (!userId) throw new Error('Not logged in');
 
-  const res = await fetch(
-    `${BASE_URL}/story/?user_id=${user.user_id}`
-  );
-
+  const res = await fetch(`${BASE_URL}/story/?user_id=${userId}`);
   if (!res.ok) throw new Error('Failed to fetch stories');
-
   return res.json();
 }
 

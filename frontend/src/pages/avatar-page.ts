@@ -27,9 +27,8 @@ export class AvatarPage extends LitElement {
   --border-hi: #3d3730;
   --gold:      #c9a84c;
   --gold-dim:  #7a6230;
-  --text:      #e8e0d0;
   --muted:     #6b6358;
-  --shadow-glow: 0px 0px 5px 5px;
+  --shadow-glow: 0px 0px 5px 5px #e8e0d0;
   --radius:    10px;
   --font-head: 'Cinzel', 'Palatino Linotype', serif;
   --font-body: 'Cormorant Garamond', 'Georgia', serif;
@@ -124,16 +123,19 @@ export class AvatarPage extends LitElement {
 
     input[type="text"], select, textarea {
       background: var(--surface);
-      border: 1px solid var(--border);
+      border: none;
       border-radius: var(--radius);
       color: var(--text);
       font-family: var(--font-body);
       font-size: 1rem;
       padding: 12px 16px;
-      transition: border-color 0.2s, box-shadow 0.2s;
       outline: none;
       width: 100%;
       box-sizing: border-box;
+
+      /* ✅ match panel style */
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s;
     }
 
     input[type="text"]::placeholder { color: var(--muted); }
@@ -141,8 +143,10 @@ export class AvatarPage extends LitElement {
     input[type="text"]:focus,
     select:focus,
     textarea:focus {
-      border-color: var(--gold-dim);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
     }
 
     select {
@@ -159,8 +163,9 @@ export class AvatarPage extends LitElement {
     .dice-btn {
       flex: 0 0 auto;
       align-self: flex-end;
-      background: transparent;
-      border: 1px solid var(--border);
+      background: var(--bg);
+      box-shadow: var(--shadow-glow);
+      border: none;
       border-radius: var(--radius);
       color: var(--gold);
       font-size: 1.3rem;

@@ -17,12 +17,13 @@ export class AppRoot extends LitElement {
     const router = new Router(outlet);
 
     router.setRoutes([
-      { path: '/', redirect: '/login' },
-      { path: '/login', component: 'login-page' },
-      { path: '/register', component: 'register-page' },
-      { path: '/chat', component: 'chat-page' },
-      { path: '/avatar', component: 'avatar-page' },
-      { path: '/resetpass', component: 'reset-password-page'}
+      { path: '/',                redirect: '/login' },
+      { path: '/login',           component: 'login-page' },
+      { path: '/register',        component: 'register-page' },
+      { path: '/chat',            component: 'chat-page' },
+      { path: '/story/:storyId',  component: 'chat-page' },  // ← sidebar navigates here
+      { path: '/avatar',          component: 'avatar-page' },
+      { path: '/resetpass',       component: 'reset-password-page' },
     ]);
   }
 

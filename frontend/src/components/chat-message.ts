@@ -6,84 +6,93 @@ export class ChatMessage extends LitElement {
 
   @property({ type: String }) message = '';
   @property({ type: String }) sender: 'user' | 'robot' = 'robot';
+  @property({ type: Boolean }) shouldAnimate = false;
 
-  @state()
-  private displayedText = '';
+  @state() private displayedText = '';
 
-  private typingSpeed = 20; // smaller = faster
+  private typingSpeed = 20;
 
   static styles = css`
     .message {
       display: flex;
-      margin: 6px;
+      margin: 6px 0;
     }
 
-    .user {
-      justify-content: flex-end;
-      color: white;
-    }
-
-    .robot {
-      justify-content: flex-start;
-      color: black;
-    }
+    .user  { justify-content: flex-end; }
+    .robot { justify-content: flex-start; }
 
     .bubble {
-      padding: 10px 14px;
-      border-radius: 12px;
-      max-width: 65%;
-      line-height: 1.6;
-      font-size: 15px;
+      padding: 10px 16px;
+      border-radius: 14px;
+      max-width: 68%;
+      line-height: 1.65;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      word-break: break-word;
     }
 
+    /* ── User bubble: warm sand, no dark colors ── */
     .user .bubble {
-      background: #4caf50;
+      background: var(--parchment, #ede6d6);
+      color: var(--text, #2a2118);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: 14px 14px 4px 14px;
     }
 
-    /* ✨ Story / writing style */
+    /* ── Robot bubble: cream with a subtle gold left border, italic ── */
     .robot .bubble {
-      background: #fdf6e3;
-      font-family: 'Caveat', cursive;
-      font-size: 18px;
-      border: 1px solid #e6d8b5;
+      background: var(--surface, #ffffff);
+      color: var(--text, #2a2118);
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-left: 3px solid var(--gold, #b8953a);
+      border-radius: 14px 14px 14px 4px;
+      font-style: italic;
+      font-size: 15px;
+      line-height: 1.7;
     }
 
-    /* blinking pen cursor */
+    /* Gold ✦ spark prefix on AI messages (CSS only, no DOM change) */
+    .robot .bubble::before {
+      content: '✦ ';
+      color: var(--gold, #b8953a);
+      font-style: normal;
+      font-size: 11px;
+    }
+
+    /* Blinking pen cursor — gold to match theme */
     .cursor {
       display: inline-block;
       width: 2px;
-      height: 18px;
-      background: black;
-      margin-left: 2px;
+      height: 14px;
+      background: var(--gold, #b8953a);
+      margin-left: 3px;
+      vertical-align: middle;
       animation: blink 1s infinite;
     }
 
     @keyframes blink {
       0%, 50%, 100% { opacity: 1; }
-      25%, 75% { opacity: 0; }
+      25%, 75%      { opacity: 0; }
     }
   `;
 
   updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has('message')) {
-      this.startTyping();
+    if (changedProps.has('message') || changedProps.has('shouldAnimate')) {
+      if (this.sender === 'robot' && this.shouldAnimate) {
+        this.startTyping();
+      } else {
+        this.displayedText = this.message;
+      }
     }
   }
 
   private async startTyping() {
-    // user messages = no animation
-    if (this.sender === 'user') {
-      this.displayedText = this.message;
-      return;
-    }
-
-    // reset
     this.displayedText = '';
-
     for (let i = 0; i < this.message.length; i++) {
       this.displayedText += this.message[i];
       await this.sleep(this.typingSpeed);
     }
+    this.shouldAnimate = false; // stop cursor
   }
 
   private sleep(ms: number) {
@@ -91,13 +100,13 @@ export class ChatMessage extends LitElement {
   }
 
   render() {
+    const isTyping = this.sender === 'robot' && this.displayedText.length < this.message.length;
+
     return html`
       <div class="message ${this.sender}">
         <div class="bubble">
           ${this.displayedText}
-          ${this.sender === 'robot' && this.displayedText.length < this.message.length
-            ? html`<span class="cursor"></span>`
-            : ''}
+          ${isTyping ? html`<span class="cursor"></span>` : ''}
         </div>
       </div>
     `;

@@ -4,10 +4,17 @@ import './app-input';
 import './chat-messages';
 import { sendMessage, getMessages } from '../api/api';
 
+// 🧪 TEST BOT (remove later easily)
+import { getBotResponse } from './chatBot';
+
+// 🔑 SWITCH HERE
+const USE_FAKE_BOT = true;
+
 interface Message {
   message: string;
   sender: 'user' | 'robot';
   id: string;
+  shouldAnimate?: boolean;
 }
 
 @customElement('chat-box')
@@ -16,49 +23,178 @@ export class ChatBox extends LitElement {
   @property({ type: Number })
   storyId = 1;
 
-  @state()
-  private messages: Message[] = [];
+  @state() private messages: Message[] = [];
+  @state() private loading = false;
 
   static styles = css`
-    .box {
-      width: 500px;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-
-    }
-
-    /* 👇 INPUT + BUTTON STYLING HERE */
-    .input-area {
+    :host {
       display: flex;
-      gap: 8px;
-      margin-top: 10px;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
     }
+
+    /* ── Card ── */
+    .box {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      background: var(--surface, #ffffff);
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    /* ── Header strip ── */
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--surface, #ffffff);
+      border-bottom: 1px solid var(--sand, #d9cdb8);
+      flex-shrink: 0;
+    }
+
+    .chat-header-icon {
+      color: var(--gold, #b8953a);
+      font-size: 16px;
+    }
+
+    .chat-header-title {
+      font-family: 'Cinzel', serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text, #2a2118);
+      letter-spacing: 0.03em;
+    }
+
+    .chat-header-sub {
+      margin-left: auto;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 12px;
+      color: var(--ink-muted, #8a7a68);
+      font-style: italic;
+    }
+
+    /* Pulsing gold dot while loading */
+    .thinking-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold, #b8953a);
+      margin-left: auto;
+      flex-shrink: 0;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   transform: scale(1);    }
+      50%       { opacity: 0.4; transform: scale(0.72); }
+    }
+
+    /* ── Messages ── */
+    .messages-area {
+      flex: 1;
+      overflow: hidden;
+      background: var(--bg, #FFFCF0);
+    }
+
+    chat-messages {
+      display: block;
+      height: 100%;
+    }
+
+    /* ── Input bar ── */
+    .input-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 18px 12px;
+      background: var(--surface, #ffffff);
+      border-top: 1px solid var(--sand, #d9cdb8);
+      flex-shrink: 0;
+    }
+
+    .input-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text, #2a2118);
+    }
+
+    .input-label .spark { color: var(--gold, #b8953a); }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     app-input {
-      flex: 1; 
+      flex: 1;
       min-width: 0;
     }
 
-    app-input input {
-      width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    button {
-      padding: 10px 14px;
-      background: #2196f3;
-      color: white;
+    /* Send button — mirrors .generate-btn exactly from the HTML */
+    .send-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--ink, #2a2118);
+      color: #ffffff;
       border: none;
-      border-radius: 6px;
+      border-radius: 12px;
+      padding: 0 20px;
+      height: 42px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s, transform 0.1s;
     }
 
-    button:hover {
-      background: #1976d2;
+    /* Gold shimmer overlay, matches .generate-btn::before */
+    .send-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(184,149,58,0.25) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .send-btn:hover  { background: var(--ink-light, #5a4a38); }
+    .send-btn:active { transform: scale(0.97); }
+    .send-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .send-btn .spark { color: var(--gold-light, #d4a94a); font-size: 12px; }
+
+    /* Tip row */
+    .tip-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Lora', Georgia, serif;
+      font-size: 11px;
+      color: var(--ink-muted, #8a7a68);
+      font-style: italic;
+    }
+
+    .tip-row strong {
+      font-style: normal;
+      color: var(--gold-dark, #8a6e28);
     }
   `;
 
@@ -69,40 +205,52 @@ export class ChatBox extends LitElement {
 
   async loadMessages() {
     const apiMessages = await getMessages(this.storyId);
-
     this.messages = apiMessages.map((msg: any) => ({
       message: msg.content,
       sender: msg.role === 'user' ? 'user' : 'robot',
-      id: msg.message_id
+      id: msg.message_id,
+      shouldAnimate: false
     }));
   }
 
   private async handleMessage(text: string) {
-    // 1. Show instantly
+    if (!text.trim() || this.loading) return;
+
     this.messages = [
       ...this.messages,
-      { message: text, sender: 'user', id: crypto.randomUUID() }
+      { message: text, sender: 'user', id: crypto.randomUUID(), shouldAnimate: false }
     ];
+    this.loading = true;
 
-    // 2. Send to backend
-    await sendMessage(this.storyId, text);
+    if (USE_FAKE_BOT) {
+      // 🧪 TEST MODE
+      await new Promise(res => setTimeout(res, 500));
+      const reply = await getBotResponse(text);
+      this.messages = [
+        ...this.messages,
+        { message: reply, sender: 'robot', id: crypto.randomUUID(), shouldAnimate: true }
+      ];
+    } else {
+      // 🚀 REAL API MODE
+      await sendMessage(this.storyId, text);
+      await this.loadMessages();
+    }
 
-    // 3. Reload (includes AI response)
-    await this.loadMessages();
+    this.loading = false;
   }
 
-  // Triggered when ENTER is pressed
   private onInputSubmit(e: CustomEvent<{ value: string }>) {
-    this.handleMessage(e.detail.value);
+    const input = this.renderRoot.querySelector('app-input') as any;
+    const val = e.detail.value?.trim();
+    if (!val) return;
+    this.handleMessage(val);
+    input?.clear();
   }
 
-  // Triggered when BUTTON is clicked
-  private onButtonClick() {
+  private onSendClick() {
     const input = this.renderRoot.querySelector('app-input') as any;
-
-    const value = input?.getValue();
-    if (!value?.trim()) return;
-
+    const value = input?.getValue()?.trim();
+    if (!value) return;
     this.handleMessage(value);
     input.clear();
   }
@@ -110,12 +258,43 @@ export class ChatBox extends LitElement {
   render() {
     return html`
       <div class="box">
-        <chat-messages .messages=${this.messages}></chat-messages>
 
-        <div class="input-area">
-          <app-input @input-submit=${this.onInputSubmit}></app-input>
-          <button @click=${this.onButtonClick}>Send</button>
+        <div class="chat-header">
+          <span class="chat-header-icon">✦</span>
+          <span class="chat-header-title">Story Chat</span>
+          ${this.loading
+            ? html`<div class="thinking-dot"></div>`
+            : html`<span class="chat-header-sub">Scene ${this.storyId}</span>`}
         </div>
+
+        <div class="messages-area">
+          <chat-messages .messages=${this.messages}></chat-messages>
+        </div>
+
+        <div class="input-bar">
+          <div class="input-label">
+            <span class="spark">✦</span>
+            Continue the story
+          </div>
+          <div class="input-row">
+            <app-input
+              placeholder="What happens next..."
+              @input-submit=${this.onInputSubmit}
+            ></app-input>
+            <button
+              class="send-btn"
+              ?disabled=${this.loading}
+              @click=${this.onSendClick}
+            >
+              <span class="spark">✦</span>
+              ${this.loading ? 'Writing...' : 'Send'}
+            </button>
+          </div>
+          <div class="tip-row">
+            💡 <span><strong>Tip:</strong> Press Enter to send your message.</span>
+          </div>
+        </div>
+
       </div>
     `;
   }
