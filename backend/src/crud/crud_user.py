@@ -14,11 +14,10 @@ def get_user_by_username(db: Session, username: str) -> Optional[User]:
 	return db.exec(statement).first()
 
 def create_user(db: Session, user: User) -> User:
-	db_user = User.model_validate(user)
-	db.add(db_user)
-	db.commit()
-	db.refresh(db_user)
-	return db_user
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
 def update_user_by_id(db: Session, user_id: int, user: User) -> Optional[User]:
 	db_user = get_user_by_id(db, user_id)
