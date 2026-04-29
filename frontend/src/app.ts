@@ -7,6 +7,7 @@ import './pages/register-page';
 import './pages/login-page';
 import './pages/resetpass-page';
 import './pages/avatar-page';
+import './pages/onboarding-page';
 import './pages/world-setting-page';
 
 @customElement('app-root')
@@ -18,7 +19,7 @@ export class AppRoot extends LitElement {
     const router = new Router(outlet);
 
     router.setRoutes([
-      { path: '/',                redirect: '/login' },
+      { path: '/',                redirect: '/onboarding' },
       { path: '/login',           component: 'login-page' },
       { path: '/register',        component: 'register-page' },
       { path: '/chat',            component: 'chat-page' },
@@ -33,6 +34,7 @@ export class AppRoot extends LitElement {
       { path: '/avatar',          component: 'avatar-page' },
       { path: '/world-settings',  component: 'world-setting-page'},
       { path: '/resetpass',       component: 'reset-password-page' },
+      { path: '/onboarding',      component: 'onboarding-page'},
     ]);
   }
 

@@ -6,6 +6,7 @@
 
   --img-object: url('/images/Objects-1.png');
   --img-castle: url('/images/OBJECTS.png');
+  --onboarding-img: url('/onboarding-bg/light_bg.png');
 
   --primary: #2C2C2C;
   --accent: #d5ad0f;
@@ -17,8 +18,8 @@
   --link-hover: #555;
 
   --input-border: #ccc;
-
-
+  --onboarding-h1: #9b8661;
+  --subtittle: #444;
 }
 
 :root[data-theme="dark"] {
@@ -28,6 +29,7 @@
 
   --img-object: url('/images/Vector.png');
   --img-castle: url('/images/OBJECTS-2.png');
+  --onboarding-img: url('/onboarding-bg/dark_bg.png');
 
   --primary: #c9a84c;
   --accent: #d5ad0f;
@@ -37,4 +39,6 @@
 
   --link: #c9a84c;
   --link-hover: #e8e0d0;
+  --onboarding-h1: #fff;
+  --subtittle:#e8e0d0;
 }
