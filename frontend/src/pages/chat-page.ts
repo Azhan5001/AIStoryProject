@@ -21,7 +21,7 @@ export class ChatPage extends LitElement {
       width: 100vw;
       overflow: hidden;
       background: var(--bg, #FFFCF0);
-      font-family: 'Lora', Georgia, serif;
+      font-family: var(--regular-font);
     }
 
     /* ── Main area to the right of the sidebar ── */
@@ -38,7 +38,7 @@ export class ChatPage extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 28px;
+      padding: var(--space-4) var(--space-5);
       background: var(--bg, #FFFCF0);
       border-bottom: 1px solid var(--sand, #d9cdb8);
       flex-shrink: 0;
@@ -47,26 +47,26 @@ export class ChatPage extends LitElement {
     .tab-pill {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: var(--space-2);
       background: var(--surface, #ffffff);
       border: 1px solid var(--sand, #d9cdb8);
       border-radius: 20px;
-      padding: 8px 16px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14px;
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
       font-weight: 500;
       color: var(--text, #2a2118);
     }
 
     .tab-pill .spark {
       color: var(--gold, #b8953a);
-      font-size: 15px;
+      font-size: var(--text-sm);
     }
 
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-3);
     }
 
     .profile-pic {
@@ -78,20 +78,20 @@ export class ChatPage extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: var(--text-lg);
       flex-shrink: 0;
     }
 
     .logout-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: var(--space-2);
       background: none;
       border: 1.5px solid var(--sand, #d9cdb8);
       border-radius: 10px;
-      padding: 7px 14px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       color: var(--ink-muted, #8a7a68);
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s, background 0.15s;
@@ -109,7 +109,7 @@ export class ChatPage extends LitElement {
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 28px;
+      padding: var(--space-6);
       gap: 0;
     }
   `;

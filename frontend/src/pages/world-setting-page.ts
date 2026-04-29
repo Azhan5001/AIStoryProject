@@ -50,9 +50,9 @@ export class WorldSettingPage extends LitElement {
         url('/images/OBJECTS.png') center/cover no-repeat,
         var(--bg);
       background-size: 15% auto, cover;
-      padding: 20px;
+      padding: var(--space-5);
       box-sizing: border-box;
-      font-family: sans-serif;
+      font-family: var(--regular-font);
       color: #000;
     }
 
@@ -61,10 +61,10 @@ export class WorldSettingPage extends LitElement {
       border-radius: 20px;
       width: 50%;
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 16px;
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
       box-sizing: border-box;
-      padding: 40px 24px 60px;
+      padding: var(--space-6) var(--space-5) var(--space-7);
     }
 
     .container {
@@ -73,27 +73,27 @@ export class WorldSettingPage extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;   /* everything centered */
-      gap: 45px;
+      gap: var(--space-7);
     }
 
     /* ── Header — identical to avatar-page ── */
     .page-header {
       text-align: center;
-      padding-bottom: 8px;
+      padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--border);
       width: 80%;
     }
     .page-header h1 {
-      font-family: var(--font-head);
+      font-family: var(--title-font);
       font-size: clamp(1.6rem, 3.5vw, 2.6rem);
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--gold);
-      margin: 0 0 4px;
+      margin: 0 0 var(--space-1);
     }
     .page-header p {
-      font-size: 0.9rem;
+      font-size: var(--text-sm);
       color: var(--muted);
       letter-spacing: 0.06em;
       margin: 0;
@@ -113,12 +113,12 @@ export class WorldSettingPage extends LitElement {
       max-width: 500px;   /* matches panel exactly */
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: var(--space-2);
     }
 
     label {
-      font-family: var(--font-head);
-      font-size: 0.65rem;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--muted);
@@ -129,9 +129,9 @@ export class WorldSettingPage extends LitElement {
       border: none;
       border-radius: var(--radius);
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 1rem;
-      padding: 12px 16px;
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      padding: var(--space-3) var(--space-4);
       outline: none;
       width: 100%;
       box-sizing: border-box;
@@ -139,7 +139,7 @@ export class WorldSettingPage extends LitElement {
       transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
       min-height: 110px;
       resize: vertical;
-      line-height: 1.6;
+      line-height: var(--line-height-body);
     }
     textarea:focus {
       box-shadow:
@@ -155,8 +155,8 @@ export class WorldSettingPage extends LitElement {
     }
 
     .error {
-      font-family: var(--font-head);
-      font-size: 0.72rem;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.1em;
       color: var(--error);
       text-align: center;
@@ -173,11 +173,11 @@ export class WorldSettingPage extends LitElement {
       border: 1px solid var(--gold-dim);
       border-radius: var(--radius);
       color: var(--gold);
-      font-family: var(--font-head);
-      font-size: 0.8rem;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      padding: 16px 56px;
+      padding: var(--space-4) var(--space-7);
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     }

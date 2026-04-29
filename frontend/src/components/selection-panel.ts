@@ -25,20 +25,20 @@ export class SelectionPanel extends LitElement {
     .panel {
       width: 100%;
       border-radius: 14px;
-      padding: 24px;
+      padding: var(--space-5);
     }
 
     .title {
-      font-size: 0.7rem;
+      font-size: var(--text-xs);
       text-transform: uppercase;
       color: var(--muted);
-      margin-bottom: 16px;
+      margin-bottom: var(--space-4);
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 14px;
+      gap: var(--space-3);
     }
   `;
 

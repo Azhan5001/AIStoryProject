@@ -23,14 +23,14 @@ export class StoryOnboarding extends LitElement {
       width: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: 'Poppins', sans-serif;
+      font-family: var(--regular-font);
     }
 
     .container {
       width: 100%;
       max-width: 1200px;
       margin: auto;
-      padding: 60px 30px;
+      padding: var(--space-7) var(--space-6);
       text-align: center;
       min-height: 100vh;
       display: flex;
@@ -45,25 +45,25 @@ export class StoryOnboarding extends LitElement {
 
     h1 {
       color: var(--onboarding-h1);
-      font-size: 42px;
-      margin-bottom: 10px;
-      font-family: 'Times New Roman', Times, serif;
+      font-size: var(--text-5xl);
+      margin-bottom: var(--space-3);
+      font-family: var(--title-font);
     }
 
     .subtitle {
       color: var(--subtittle);
-      font-size: 18px;
-      margin-bottom: 50px;
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-7);
       max-width: 500px;
-      margin: 0 auto 24px;
+      margin: 0 auto var(--space-5);
     }
 
     .steps {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: var(--space-5);
       align-items: center;
-      margin-bottom: 30px;
+      margin-bottom: var(--space-6);
       width: 100%;
       
     }
@@ -74,10 +74,10 @@ export class StoryOnboarding extends LitElement {
 
     .dots{
       display:flex;
-      gap:10px;
+      gap: var(--space-3);
       justify-content:center;
       align-items:center;
-      margin: 18px 0 24px;
+      margin: var(--space-4) 0 var(--space-5);
     }
 
     .dot{
@@ -101,7 +101,7 @@ export class StoryOnboarding extends LitElement {
       border-radius: 50%;
       background: #f4efe4;
       border: none;
-      font-size: 24px;
+      font-size: var(--text-2xl);
       cursor: pointer;
       background: rgba(255,255,255,0.6);
       backdrop-filter: blur(6px);
@@ -113,12 +113,12 @@ export class StoryOnboarding extends LitElement {
 
     .tip {
       background: #f7f0df;
-      padding: 18px;
+      padding: var(--space-4);
       border-radius: 16px;
       width: 500px;
       margin: auto;
-      margin-bottom: 20px;
-      font-size: 16px;
+      margin-bottom: var(--space-5);
+      font-size: var(--text-md);
     }
 
     .tip-word{
@@ -130,11 +130,11 @@ export class StoryOnboarding extends LitElement {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 18px 90px;
+      padding: var(--space-4) var(--space-7);
       border-radius: 18px;
-      font-size: 20px;
+      font-size: var(--text-xl);
       cursor: pointer;
-      margin-bottom: 60px;
+      margin-bottom: var(--space-7);
     }
 
     .start-btn:hover {

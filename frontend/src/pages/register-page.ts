@@ -38,7 +38,7 @@ export class RegisterPage extends LitElement {
       flex: 1;
       display: flex;
       justify-content: flex-end;
-      padding-right: 140px;
+      padding-right: var(--space-7);
       align-items: center;
       z-index: 1;
     }

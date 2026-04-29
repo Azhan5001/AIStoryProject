@@ -15,19 +15,19 @@ export class ChatMessage extends LitElement {
   static styles = css`
     .message {
       display: flex;
-      margin: 6px 0;
+      margin: var(--space-2) 0;
     }
 
     .user  { justify-content: flex-end; }
     .robot { justify-content: flex-start; }
 
     .bubble {
-      padding: 10px 16px;
+      padding: var(--space-3) var(--space-4);
       border-radius: 14px;
       max-width: 68%;
-      line-height: 1.65;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14px;
+      line-height: var(--line-height-body);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
       word-break: break-word;
     }
 
@@ -47,8 +47,8 @@ export class ChatMessage extends LitElement {
       border-left: 3px solid var(--gold, #b8953a);
       border-radius: 14px 14px 14px 4px;
       font-style: italic;
-      font-size: 15px;
-      line-height: 1.7;
+      font-size: var(--text-sm);
+      line-height: var(--line-height-body);
     }
 
     /* Gold ✦ spark prefix on AI messages (CSS only, no DOM change) */
@@ -56,7 +56,7 @@ export class ChatMessage extends LitElement {
       content: '✦ ';
       color: var(--gold, #b8953a);
       font-style: normal;
-      font-size: 11px;
+      font-size: var(--text-xs);
     }
 
     /* Blinking pen cursor — gold to match theme */
@@ -65,7 +65,7 @@ export class ChatMessage extends LitElement {
       width: 2px;
       height: 14px;
       background: var(--gold, #b8953a);
-      margin-left: 3px;
+      margin-left: var(--space-1);
       vertical-align: middle;
       animation: blink 1s infinite;
     }

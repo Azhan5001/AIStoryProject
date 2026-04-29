@@ -61,9 +61,9 @@ export class AvatarPage extends LitElement {
     var(--bg);
 
   background-size: 15% auto, cover;
-  padding: 20px;
+  padding: var(--space-5);
   box-sizing: border-box;
-  font-family: sans-serif;
+  font-family: var(--regular-font);
   color: #000;
 }
     main{
@@ -73,10 +73,10 @@ export class AvatarPage extends LitElement {
       width: 50%;
       /* subtle noise grain */
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 16px;
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
       box-sizing: border-box;
-      padding: 40px 24px 60px;
+      padding: var(--space-6) var(--space-5) var(--space-7);
     }
 
     /* ── Layout ──────────────────────────────────────────── */
@@ -85,28 +85,28 @@ export class AvatarPage extends LitElement {
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 36px;
+      gap: var(--space-6);
     }
 
     /* ── Header ──────────────────────────────────────────── */
     .page-header {
       text-align: center;
-      padding-bottom: 8px;
+      padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--border);
     }
 
     .page-header h1 {
-      font-family: var(--font-head);
+      font-family: var(--title-font);
       font-size: clamp(1.6rem, 3.5vw, 2.6rem);
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--gold);
-      margin: 0 0 4px;
+      margin: 0 0 var(--space-1);
     }
 
     .page-header p {
-      font-size: 0.9rem;
+      font-size: var(--text-sm);
       color: var(--muted);
       letter-spacing: 0.06em;
       margin: 0;
@@ -115,22 +115,22 @@ export class AvatarPage extends LitElement {
     /* ── Identity Row ────────────────────────────────────── */
     .identity-row {
       display: flex;
-      gap: 12px;
+      gap: var(--space-3);
       align-items: stretch;
     }
 
     .field-wrap {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: var(--space-2);
       flex: 1;
     }
 
     .field-wrap.gender { flex: 0 0 160px; }
 
     label {
-      font-family: var(--font-head);
-      font-size: 0.65rem;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--muted);
@@ -141,9 +141,9 @@ export class AvatarPage extends LitElement {
       border: none;
       border-radius: var(--radius);
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 1rem;
-      padding: 12px 16px;
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      padding: var(--space-3) var(--space-4);
       outline: none;
       width: 100%;
       box-sizing: border-box;
@@ -170,7 +170,7 @@ export class AvatarPage extends LitElement {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%236b6358'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 14px center;
-      padding-right: 36px;
+      padding-right: var(--space-6);
     }
 
     select option { background: #1a1714; }
@@ -183,8 +183,8 @@ export class AvatarPage extends LitElement {
       border: none;
       border-radius: var(--radius);
       color: var(--gold);
-      font-size: 1.3rem;
-      padding: 11px 16px;
+      font-size: var(--text-xl);
+      padding: var(--space-3) var(--space-4);
       cursor: pointer;
       transition: border-color 0.2s, background 0.2s;
       line-height: 1;
@@ -199,7 +199,7 @@ export class AvatarPage extends LitElement {
     .panels {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: var(--space-5);
       
     }
     .panel-container {
@@ -221,9 +221,9 @@ export class AvatarPage extends LitElement {
     border: none;
     border-radius: var(--radius);
     color: var(--text);
-    font-family: var(--font-body);
-    font-size: 1rem;
-    padding: 12px 16px;
+    font-family: var(--regular-font);
+    font-size: var(--text-md);
+    padding: var(--space-3) var(--space-4);
     outline: none;
     width: 100%;
     box-sizing: border-box;
@@ -233,7 +233,7 @@ export class AvatarPage extends LitElement {
 
     min-height: 120px;   /* ✅ this is what makes it look like a description box */
     resize: vertical;
-    line-height: 1.6;
+    line-height: var(--line-height-body);
   }
 
   /* focus state */
@@ -245,8 +245,8 @@ export class AvatarPage extends LitElement {
   }
     /* ── Error ───────────────────────────────────────────── */
     .error {
-      font-family: var(--font-head);
-      font-size: 0.72rem;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.1em;
       color: var(--error);
       text-align: center;
@@ -263,11 +263,11 @@ export class AvatarPage extends LitElement {
       border: 1px solid var(--gold-dim);
       border-radius: var(--radius);
       color: var(--gold);
-      font-family: var(--font-head);
-      font-size: 0.8rem;
+      font-family: var(--title-font);
+      font-size: var(--text-sm);
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      padding: 16px 56px;
+      padding: var(--space-4) var(--space-7);
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
     }

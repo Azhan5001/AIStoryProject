@@ -20,7 +20,42 @@
   --input-border: #ccc;
   --onboarding-h1: #9b8661;
   --subtittle: #444;
+
+  /* Font families */
+  --title-font: Georgia, Verdana, serif;
+  --regular-font: Verdana, sans-serif;
+
+  /* Spacings */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem;  /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem;    /* 16px */
+  --space-5: 1.5rem;  /* 24px */
+  --space-6: 2rem;    /* 32px */
+  --space-7: 3rem;    /* 48px */
+
+  /* Font sizes */
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-md: 1rem;      /* 16px (base) */
+  --text-lg: 1.125rem;  /* 18px */
+  --text-xl: 1.25rem;   /* 20px */
+  --text-2xl: 1.5rem;   /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem;  /* 36px */
+  --text-5xl: 3rem;    /* 48px */
+
+  /* Line height */
+--line-height-body: 1.5;
+--line-height-title: 1.2;
+
+/* Border Radius */
+--radius-sm: 10px
+--radius-md: 15px
+--radius-lg: 20px
 }
+
+
 
 :root[data-theme="dark"] {
   --bg: #0d0c0a;

@@ -50,8 +50,8 @@ export class ChatBox extends LitElement {
     .chat-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 14px 20px;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
       background: var(--surface, #ffffff);
       border-bottom: 1px solid var(--sand, #d9cdb8);
       flex-shrink: 0;
@@ -59,12 +59,12 @@ export class ChatBox extends LitElement {
 
     .chat-header-icon {
       color: var(--gold, #b8953a);
-      font-size: 16px;
+      font-size: var(--text-md);
     }
 
     .chat-header-title {
-      font-family: 'Cinzel', serif;
-      font-size: 14px;
+      font-family: var(--title-font);
+      font-size: var(--text-sm);
       font-weight: 600;
       color: var(--text, #2a2118);
       letter-spacing: 0.03em;
@@ -72,8 +72,8 @@ export class ChatBox extends LitElement {
 
     .chat-header-sub {
       margin-left: auto;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 12px;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       color: var(--ink-muted, #8a7a68);
       font-style: italic;
     }
@@ -110,8 +110,8 @@ export class ChatBox extends LitElement {
     .input-bar {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      padding: 14px 18px 12px;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4) var(--space-3);
       background: var(--surface, #ffffff);
       border-top: 1px solid var(--sand, #d9cdb8);
       flex-shrink: 0;
@@ -120,9 +120,9 @@ export class ChatBox extends LitElement {
     .input-label {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-family: 'Cinzel', serif;
-      font-size: 13px;
+      gap: var(--space-2);
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       font-weight: 600;
       color: var(--text, #2a2118);
     }
@@ -132,7 +132,7 @@ export class ChatBox extends LitElement {
     .input-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-2);
     }
 
     app-input {
@@ -144,15 +144,15 @@ export class ChatBox extends LitElement {
     .send-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: var(--space-2);
       background: var(--ink, #2a2118);
       color: #ffffff;
       border: none;
       border-radius: 12px;
-      padding: 0 20px;
+      padding: 0 var(--space-5);
       height: 42px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14px;
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
       font-weight: 600;
       cursor: pointer;
       flex-shrink: 0;
@@ -185,9 +185,9 @@ export class ChatBox extends LitElement {
     .tip-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 11px;
+      gap: var(--space-2);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       color: var(--ink-muted, #8a7a68);
       font-style: italic;
     }

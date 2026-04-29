@@ -126,15 +126,15 @@ export class AppInput extends LitElement {
         input,
         textarea {
           width: 100%;
-          padding: 10px 14px;
+          padding: var(--space-3) var(--space-4);
           box-sizing: border-box;
           border-radius: 10px;
 
           background: var(--bg, #FFFCF0);
           border: 1.5px solid var(--sand, #d9cdb8);
 
-          font-family: 'Lora', Georgia, serif;
-          font-size: 14px;
+          font-family: var(--regular-font);
+          font-size: var(--text-sm);
           color: var(--text, #2a2118);
 
           outline: none;
@@ -147,9 +147,9 @@ export class AppInput extends LitElement {
           background: var(--surface);
           border: none;
           border-radius: var(--radius);
-          font-family: var(--font-body);
-          font-size: 1rem;
-          padding: 12px 16px;
+          font-family: var(--regular-font);
+          font-size: var(--text-md);
+          padding: var(--space-3) var(--space-4);
 
           box-shadow: var(--shadow-glow);
           transition: box-shadow 0.2s, transform 0.15s;
@@ -167,7 +167,7 @@ export class AppInput extends LitElement {
           resize: none;
           min-height: 42px;
           overflow-y: hidden;
-          line-height: 1.5;
+          line-height: var(--line-height-body);
         }
 
         input.error,
@@ -175,10 +175,10 @@ export class AppInput extends LitElement {
           border-color: var(--error, #c0392b);
         }
 
-        .error-text {
-          font-size: 12px;
+        app-input .error-text {
+          font-size: var(--text-xs);
           color: var(--error, #c0392b);
-          margin-top: 4px;
+          margin-top: var(--space-1);
         }
       </style>
 

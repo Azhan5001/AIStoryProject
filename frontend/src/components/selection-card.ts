@@ -14,7 +14,7 @@ static styles = css`
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
     cursor: pointer;
   }
   .card {
@@ -44,7 +44,7 @@ static styles = css`
     box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
   }
   .label {
-    font-size: 0.62rem;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     color: var(--muted);
     letter-spacing: 0.08em;

@@ -19,10 +19,11 @@ export class ResetPassword extends LitElement {
     }
 
     :host {
-      margin-right: 3rem;
+      margin-right: var(--space-7);
       color: var(--text);
       display: block;
       width: 100%;
+      font-family: var(--regular-font);
     }
 
     .container {
@@ -56,37 +57,37 @@ export class ResetPassword extends LitElement {
       border-radius: 12px;
       text-align: center;
       width: 300px;
-      padding: 24px;
+      padding: var(--space-5);
     }
 
     .message h3{
      color: #4b4848;
      font-weight: bold;
-     font-size: 30px;
-     font-family: 'Times New Roman', Times, serif;
-     margin-bottom: 18px;
+     font-size: var(--text-3xl);
+     font-family: var(--regular-font);
+     margin-bottom: var(--space-4);
     }
 
     p{
-      font-size: 16px;
+      font-size: var(--text-md);
       color: #8e7c53;
     }
 
     .reset-button {
       width: 100%;
-      padding: 16px 8px;
+      padding: var(--space-4) var(--space-2);
       background: var(--primary);
       color: white;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      margin-top: 16px;
-      font-size: 18px;
+      margin-top: var(--space-4);
+      font-size: var(--text-lg);
     }
 
     .backLogin {
-      margin-top: 12px;
-      font-size: 16px;
+      margin-top: var(--space-3);
+      font-size: var(--text-md);
       color: var(--accent);
       text-align: center;
     }
@@ -105,9 +106,9 @@ export class ResetPassword extends LitElement {
 
     .ok-button{
       width: 100%;
-      padding: 10px 4px;
-      font-size: 15px;
-      margin-top: 20px;
+      padding: var(--space-3) var(--space-1);
+      font-size: var(--text-sm);
+      margin-top: var(--space-4);
       background:var(--primary);
       color: white;
       border: none;
@@ -119,18 +120,18 @@ export class ResetPassword extends LitElement {
       box-sizing: border-box;
       height: 50px;
       border-radius: 10px;
-      font-size: 16px;
+      font-size: var(--text-md);
     }
 
     input{
       width: 100%;
       height: 50px;
-      padding: 0 16px;
+      padding: 0 var(--space-4);
       border: 1px solid var(--input-border);
       border-radius: 10px;
-      font-size: 16px;
-      margin-top: 10px;
-      margin-bottom: 5px;
+      font-size: var(--text-md);
+      margin-top: var(--space-3);
+      margin-bottom: var(--space-1);
       background: var(--surface);
       color: var(--text);
     }
@@ -144,20 +145,20 @@ export class ResetPassword extends LitElement {
 
     label{
       font-weight: bold;
-      font-size: 16px;
+      font-size: var(--text-md);
       display: block;
-      margin-top: 16px;
+      margin-top: var(--space-4);
     }
 
     .card h2 {
-      font-size: 26px;
-      font-family: 'Times New Roman', Times, serif;
+      font-size: var(--text-2xl);
+      font-family: var(--title-font);
       color: var(--text);
     }
 
     .card p {
       color: var(--accent);
-      margin-bottom: 24px;
+      margin-bottom: var(--space-5);
     }
     `
   ;
