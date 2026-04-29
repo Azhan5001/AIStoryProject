@@ -16,6 +16,8 @@ export class ThemeToggle extends LitElement {
       background: var(--primary);
       color: white;
       font-weight: bold;
+      position: fixed;
+      z-index: 999;
     }
   `;
 

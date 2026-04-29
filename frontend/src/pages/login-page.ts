@@ -13,36 +13,36 @@ export class LoginPage extends LitElement {
         margin: 0;
       }
 
-  :host {
-    display: block;
-    position: fixed;
-    inset: 0;
-    height: 100vh;
-  }
+    :host {
+      display: block;
+      position: fixed;
+      inset: 0;
+      height: 100vh;
+    }
 
-  .container{
+    .container{
       background-color: transparent;
       display: flex;
       width: 100%;
       height: 100%;
       margin:auto;
       overflow: hidden;
-  }
+    }
 
   @media (max-width: 768px){
       .container {
         justify-content: center;
       }
-      }
+    }
 
-  .login-page{
+    .login-page{
       flex:1;
       display: flex;
       justify-content: flex-end;
       padding-right: 140px;
       align-items: center;
       z-index: 1;
-  }
+    }
 
   .login-background {
     position: absolute;

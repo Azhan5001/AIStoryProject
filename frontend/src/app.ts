@@ -7,6 +7,7 @@ import './pages/register-page';
 import './pages/login-page';
 import './pages/resetpass-page';
 import './pages/avatar-page';
+import './pages/onboarding-page';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -17,13 +18,14 @@ export class AppRoot extends LitElement {
     const router = new Router(outlet);
 
     router.setRoutes([
-      { path: '/',                redirect: '/login' },
+      { path: '/',                redirect: '/onboarding' },
       { path: '/login',           component: 'login-page' },
       { path: '/register',        component: 'register-page' },
       { path: '/chat',            component: 'chat-page' },
       { path: '/story/:storyId',  component: 'chat-page' },  // ← sidebar navigates here
       { path: '/avatar',          component: 'avatar-page' },
       { path: '/resetpass',       component: 'reset-password-page' },
+      { path: '/onboarding',      component: 'onboarding-page'},
     ]);
   }
 
