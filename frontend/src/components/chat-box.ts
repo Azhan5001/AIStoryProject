@@ -21,7 +21,7 @@ interface Message {
 export class ChatBox extends LitElement {
 
   @property({ type: Number })
-  storyId = 1;
+  storyId = 0;
 
   @state() private messages: Message[] = [];
   @state() private loading = false;
@@ -203,14 +203,26 @@ export class ChatBox extends LitElement {
     await this.loadMessages();
   }
 
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has('storyId')) {
+      this.loadMessages();
+    }
+  }
+
+
   async loadMessages() {
-    const apiMessages = await getMessages(this.storyId);
-    this.messages = apiMessages.map((msg: any) => ({
-      message: msg.content,
-      sender: msg.role === 'user' ? 'user' : 'robot',
-      id: msg.message_id,
-      shouldAnimate: false
-    }));
+    try {
+      const apiMessages = await getMessages(this.storyId);
+
+      this.messages = apiMessages.map((msg: any) => ({
+        message: msg.content,
+        sender: msg.role === 'user' ? 'user' : 'robot',
+        id: msg.message_id,
+        shouldAnimate: false
+      }));
+    } catch (e) {
+      console.error('Failed to load messages', e);
+    }
   }
 
   private async handleMessage(text: string) {
@@ -278,6 +290,8 @@ export class ChatBox extends LitElement {
           </div>
           <div class="input-row">
             <app-input
+              mode="textarea"
+              autoGrow
               placeholder="What happens next..."
               @input-submit=${this.onInputSubmit}
             ></app-input>

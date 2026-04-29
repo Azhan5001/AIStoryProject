@@ -1,11 +1,12 @@
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import '../components/chat-box';
 import '../components/story-sidebar';
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {
+
 
   private handleLogout() {
     localStorage.removeItem('user_id');
@@ -112,6 +113,8 @@ export class ChatPage extends LitElement {
       gap: 0;
     }
   `;
+  @property({ type: Number })
+  @state() private storyId: number = 1;
 
   render() {
     return html`
@@ -135,7 +138,7 @@ export class ChatPage extends LitElement {
 
         <!-- Chat fills the rest -->
         <div class="content">
-          <chat-box></chat-box>
+          <chat-box .storyId=${this.storyId}></chat-box>
         </div>
 
       </div>

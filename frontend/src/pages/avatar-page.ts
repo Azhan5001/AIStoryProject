@@ -1,20 +1,35 @@
 import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
 import '../components/theme-toggle';
+import '../components/selection-panel';
 
-const images = import.meta.glob('../assets/*.jpg', {
+
+const images = import.meta.glob('../assets/**/*.jpg', {
   eager: true,
   import: 'default'
 }) as Record<string, string>;
 
-function getImage(name: string): string {
-  return images[`../assets/${name.toLowerCase()}.jpg`] || '';
-}
 
 const races: string[] = ['Human', 'Elf', 'Dwarf', 'Orc', 'Halfling', 'Dragonborn'];
 const classes: string[] = ['Warrior', 'Mage', 'Rogue', 'Archer', 'Paladin', 'Necromancer', 'Monk'];
 const randomNames: string[] = ['Arin', 'Lyra', 'Thorin', 'Kael', 'Zara', 'Eldon', 'Mira', 'Riven'];
+// 🔥 Helper to map names → images
+function createItems(folder: string, list: string[]) {
+  return list.map(name => {
+    const path = `../assets/${folder}/${name.toLowerCase()}.jpg`;
+
+    return {
+      label: name,
+      image: images[path] || '' // fallback if missing
+    };
+  });
+}
+
+// 🔥 Create structured items
+const raceItems = createItems('races', races);
+const classItems = createItems('classes', classes);
 
 @customElement('avatar-page')
 export class AvatarPage extends LitElement {
@@ -187,117 +202,47 @@ export class AvatarPage extends LitElement {
       gap: 20px;
       
     }
-
-    .panel {
+    .panel-container {
       background: var(--bg);
       border-radius: 14px;
-      padding: 24px;
       box-shadow: var(--shadow-glow);
-    }
+      }
+  /* ── Description ─────────────────────────────────────── */
 
-    .panel-title {
-      font-family: var(--font-head);
-      font-size: 0.7rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 0 0 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+  /* container only */
+  app-input {
+    display: block;
+    width: 100%;
+  }
 
-    .panel-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
+  /* 🔥 ONLY style the FORM variant textarea */
+  app-input[variant="form"] textarea {
+    background: var(--surface);
+    border: none;
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    padding: 12px 16px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 14px;
-    }
+    box-shadow: var(--shadow-glow);
+    transition: box-shadow 0.2s, transform 0.15s;
 
-    /* ── Cards ───────────────────────────────────────────── */
-    .card-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
+    min-height: 120px;   /* ✅ this is what makes it look like a description box */
+    resize: vertical;
+    line-height: 1.6;
+  }
 
-    .card {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      overflow: hidden;
-      background: #1c1814;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-
-    .card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: brightness(0.85) saturate(0.7);
-      transition: filter 0.2s;
-    }
-
-    .card-wrapper:hover .card {
-      transform: translateY(-2px);
-      border-color: var(--border-hi);
-    }
-
-    .card-wrapper:hover .card img {
-      filter: brightness(1) saturate(1);
-    }
-
-    .card.selected {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18), 0 0 18px rgba(201, 168, 76, 0.12);
-    }
-
-    .card.selected img {
-      filter: brightness(1.05) saturate(1.1);
-    }
-
-    .card-label {
-      font-family: var(--font-head);
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      transition: color 0.2s;
-    }
-
-    .card-wrapper:hover .card-label,
-    .card-wrapper:has(.selected) .card-label {
-      color: var(--text);
-    }
-
-    /* ── Description ─────────────────────────────────────── */
-    .desc-section {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-      line-height: 1.6;
-    }
-
-    textarea::placeholder { color: var(--muted); }
-
+  /* focus state */
+  app-input[variant="form"] textarea:focus {
+    box-shadow:
+      0 0 0 2px rgba(201, 168, 76, 0.15),
+      0 0 12px rgba(201, 168, 76, 0.25);
+    transform: translateY(-1px);
+  }
     /* ── Error ───────────────────────────────────────────── */
     .error {
       font-family: var(--font-head);
@@ -357,24 +302,14 @@ export class AvatarPage extends LitElement {
       this.error = 'All fields are required to forge your character.';
       return;
     }
-
+    
     const finalDescription =
       this.description ||
       `A ${this.gender} ${this.race} ${this.charClass} ready for adventure.`;
 
     console.log({ name: this.name, gender: this.gender, race: this.race, class: this.charClass, description: finalDescription });
+    Router.go('/world-settings');
     this.error = '';
-  }
-
-  private renderCard(label: string, selected: boolean, onClick: () => void): TemplateResult {
-    return html`
-      <div class="card-wrapper" @click=${onClick}>
-        <div class="card ${selected ? 'selected' : ''}">
-          <img src="${getImage(label)}" alt="${label}" />
-        </div>
-        <div class="card-label">${label}</div>
-      </div>
-    `;
   }
 
   render(): TemplateResult {
@@ -391,12 +326,12 @@ export class AvatarPage extends LitElement {
         <div class="identity-row">
           <div class="field-wrap">
             <label>Name</label>
-            <input
-              type="text"
+            <app-input
+              variant="form"
               placeholder="Enter character name…"
               .value=${this.name}
-              @input=${(e: Event) => { this.name = (e.target as HTMLInputElement).value; }}
-            />
+              @value-change=${(e: CustomEvent) => this.name = e.detail}
+            ></app-input>
           </div>
 
           <div class="field-wrap gender">
@@ -414,28 +349,36 @@ export class AvatarPage extends LitElement {
         </div>
 
         <div class="panels">
-          <div class="panel">
-            <p class="panel-title">Race</p>
-            <div class="grid">
-              ${races.map(r => this.renderCard(r, this.race === r, () => (this.race = r)))}
-            </div>
+          <div class=panel-container>
+            <selection-panel
+              title="Race"
+              .items=${raceItems}
+              .selected=${this.race}
+              @change=${(e: CustomEvent) => this.race = e.detail}
+            ></selection-panel>
           </div>
-
-          <div class="panel">
-            <p class="panel-title">Class</p>
-            <div class="grid">
-              ${classes.map(c => this.renderCard(c, this.charClass === c, () => (this.charClass = c)))}
-            </div>
+          <div class=panel-container>
+            <selection-panel
+              title="Class"
+              .items=${classItems}
+              .selected=${this.charClass}
+              @change=${(e: CustomEvent) => this.charClass = e.detail}
+            ></selection-panel>
           </div>
         </div>
 
+
         <div class="desc-section">
           <label>Character Description <span style="color:var(--muted)">(optional)</span></label>
-          <textarea
-            placeholder="Personality, backstory, abilities…"
-            .value=${this.description}
-            @input=${(e: Event) => { this.description = (e.target as HTMLTextAreaElement).value; }}
-          ></textarea>
+        <app-input
+          variant="form"
+          mode="textarea"
+          placeholder="Personality, backstory, abilities…"
+          .value=${this.description}
+          @value-change=${(e: CustomEvent) => {
+            this.description = e.detail;
+          }}
+        ></app-input>
         </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
