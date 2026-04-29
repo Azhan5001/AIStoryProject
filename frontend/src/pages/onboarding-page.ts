@@ -10,15 +10,15 @@ export class Onboarding extends LitElement {
 
  static styles = css`
     html, body {
-        height: 100%;
-        margin: 0;
+      height: 100%;
+      margin: 0;
     }
 
     :host {
-        display: block;
-        position: fixed;
-        inset: 0;
-        height: 100vh;
+      display: block;
+      position: fixed;
+      inset: 0;
+      height: 100vh;
     }
 
   .container{
@@ -36,13 +36,14 @@ export class Onboarding extends LitElement {
     }
 
   .login-background {
-    position: fixed;
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    background: var(--onboarding-img) center/cover no-repeat, 
-                var(--bg);
-    background-size: cover;
+    background: var(--onboarding-img) center/cover no-repeat,
+              var(--bg);
+
+    background-size: cover, cover;
     z-index: 0;
   }
 
