@@ -30,7 +30,7 @@ export class StoryOnboarding extends LitElement {
       width: 100%;
       max-width: 1200px;
       margin: auto;
-      padding: 40px 20px;
+      padding: 60px 30px;
       text-align: center;
       min-height: 100vh;
       display: flex;
