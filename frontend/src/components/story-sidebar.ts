@@ -29,7 +29,7 @@ export class StorySidebar extends LitElement {
       color: var(--text, #2a2118);
       overflow: hidden;
       transition: width 0.25s ease;
-      font-family: 'Lora', Georgia, serif;
+      font-family: var(--regular-font);
       box-sizing: border-box;
     }
 
@@ -41,8 +41,8 @@ export class StorySidebar extends LitElement {
     .logo {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 14px 10px;
+      gap: var(--space-2);
+      padding: var(--space-4) var(--space-3);
       border-bottom: 1px solid var(--parchment, #ede6d6);
       flex-shrink: 0;
       height: 56px;
@@ -50,14 +50,14 @@ export class StorySidebar extends LitElement {
     }
 
     .logo-icon {
-      font-size: 20px;
+      font-size: var(--text-xl);
       line-height: 1;
       flex-shrink: 0;
     }
 
     .logo-text {
-      font-family: 'Cinzel', serif;
-      font-size: 15px;
+      font-family: var(--title-font);
+      font-size: var(--text-sm);
       font-weight: 700;
       color: var(--text, #2a2118);
       letter-spacing: 0.02em;
@@ -87,7 +87,7 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: var(--text-sm);
       color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
       transition: background 0.15s, color 0.15s;
@@ -113,7 +113,7 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: var(--text-sm);
       color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
       transition: background 0.15s, color 0.15s;
@@ -127,7 +127,7 @@ export class StorySidebar extends LitElement {
     /* ─── Collapsed: big + button to create story ─── */
     .collapsed-new-btn {
       display: none;
-      margin: 10px auto 0;
+      margin: var(--space-2) auto 0;
       width: 36px;
       height: 36px;
       border-radius: 10px;
@@ -136,7 +136,7 @@ export class StorySidebar extends LitElement {
       cursor: pointer;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: var(--text-xl);
       color: var(--accent, #d5ad0f);
       transition: background 0.15s, border-color 0.15s;
       flex-shrink: 0;
@@ -153,7 +153,7 @@ export class StorySidebar extends LitElement {
 
     /* ─── Search ─── */
     .search-wrap {
-      padding: 10px 10px 4px;
+      padding: var(--space-3) var(--space-3) var(--space-1);
       flex-shrink: 0;
       overflow: hidden;
       transition: opacity 0.15s, height 0.2s, padding 0.2s;
@@ -169,15 +169,15 @@ export class StorySidebar extends LitElement {
     .search-box {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-2);
       background: var(--bg, #FFFCF0);
       border: 1px solid var(--sand, #d9cdb8);
       border-radius: 10px;
-      padding: 7px 12px;
+      padding: var(--space-2) var(--space-3);
     }
 
     .search-icon {
-      font-size: 12px;
+      font-size: var(--text-xs);
       color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
     }
@@ -186,8 +186,8 @@ export class StorySidebar extends LitElement {
       border: none;
       background: none;
       outline: none;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       color: var(--text, #2a2118);
       width: 100%;
     }
@@ -199,7 +199,7 @@ export class StorySidebar extends LitElement {
 
     /* ─── Nav ─── */
     .nav-section {
-      padding: 4px 0 2px;
+      padding: var(--space-1) 0 var(--space-1);
       flex-shrink: 0;
       overflow: hidden;
       transition: opacity 0.15s;
@@ -215,15 +215,15 @@ export class StorySidebar extends LitElement {
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 16px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       font-weight: 500;
       color: var(--ink-light, #5a4a38);
       cursor: pointer;
       border-radius: 8px;
-      margin: 1px 6px;
+      margin: var(--space-1) var(--space-2);
       transition: background 0.15s;
     }
 
@@ -232,13 +232,13 @@ export class StorySidebar extends LitElement {
 
     /* ─── Section label ─── */
     .section-label {
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       font-weight: 600;
       color: var(--ink-muted, #8a7a68);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      padding: 8px 16px 4px;
+      padding: var(--space-2) var(--space-4) var(--space-1);
       flex-shrink: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -255,7 +255,7 @@ export class StorySidebar extends LitElement {
     .stories-list {
       flex: 1;
       overflow-y: auto;
-      padding: 2px 0;
+      padding: var(--space-1) 0;
     }
 
     .stories-list::-webkit-scrollbar { width: 4px; }
@@ -268,9 +268,9 @@ export class StorySidebar extends LitElement {
     .story-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px 16px;
-      margin: 2px 6px;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      margin: var(--space-1) var(--space-2);
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.15s;
@@ -284,13 +284,13 @@ export class StorySidebar extends LitElement {
     }
 
     .story-item-icon {
-      font-size: 14px;
+      font-size: var(--text-sm);
       flex-shrink: 0;
     }
 
     .story-item-label {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       font-weight: 500;
       color: var(--ink-light, #5a4a38);
       white-space: nowrap;
@@ -307,7 +307,7 @@ export class StorySidebar extends LitElement {
 
     :host(.collapsed) .story-item {
       justify-content: center;
-      padding: 8px 0;
+      padding: var(--space-2) 0;
     }
 
     :host(.collapsed) .story-item-label {
@@ -315,29 +315,29 @@ export class StorySidebar extends LitElement {
     }
 
     .empty-list {
-      padding: 20px 16px;
-      font-size: 13px;
+      padding: var(--space-5) var(--space-4);
+      font-size: var(--text-xs);
       color: var(--ink-muted, #8a7a68);
       font-style: italic;
       text-align: center;
-      line-height: 1.6;
+      line-height: var(--line-height-body);
     }
 
     :host(.collapsed) .empty-list { display: none; }
 
     /* ─── Footer ─── */
     .sidebar-footer {
-      padding: 12px 14px;
+      padding: var(--space-3) var(--space-4);
       border-top: 1px solid var(--parchment, #ede6d6);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-3);
       flex-shrink: 0;
     }
 
     :host(.collapsed) .sidebar-footer {
       justify-content: center;
-      padding: 12px 0;
+      padding: var(--space-3) 0;
     }
 
     .avatar {
@@ -349,7 +349,7 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: var(--text-sm);
       flex-shrink: 0;
     }
 
@@ -362,7 +362,7 @@ export class StorySidebar extends LitElement {
     :host(.collapsed) .user-info { display: none; }
 
     .user-name {
-      font-size: 13px;
+      font-size: var(--text-xs);
       font-weight: 600;
       color: var(--text, #2a2118);
       white-space: nowrap;
@@ -370,9 +370,9 @@ export class StorySidebar extends LitElement {
       text-overflow: ellipsis;
     }
 
-    .user-role { font-size: 11px; color: var(--ink-muted, #8a7a68); }
+    .user-role { font-size: var(--text-xs); color: var(--ink-muted, #8a7a68); }
 
-    .crown { font-size: 15px; flex-shrink: 0; }
+    .crown { font-size: var(--text-sm); flex-shrink: 0; }
     :host(.collapsed) .crown { display: none; }
   `;
 

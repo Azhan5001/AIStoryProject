@@ -28,7 +28,7 @@ export class ChatMessages extends LitElement {
       flex: 1;
       height: 100%;
       overflow-y: auto;
-      padding: 20px 28px;
+      padding: var(--space-5) var(--space-6);
       display: flex;
       flex-direction: column;
     }
@@ -48,9 +48,9 @@ export class ChatMessages extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
+      gap: var(--space-3);
       text-align: center;
-      padding: 40px 20px;
+      padding: var(--space-6) var(--space-5);
       color: var(--ink-muted, #8a7a68);
     }
 
@@ -64,23 +64,23 @@ export class ChatMessages extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
-      margin-bottom: 6px;
+      font-size: var(--text-3xl);
+      margin-bottom: var(--space-2);
     }
 
     .empty-title {
-      font-family: 'Cinzel', serif;
-      font-size: 18px;
+      font-family: var(--regular-font);
+      font-size: var(--text-lg);
       font-weight: 600;
       color: var(--text, #2a2118);
     }
 
     .empty-desc {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
       font-style: italic;
       color: var(--ink-muted, #8a7a68);
-      line-height: 1.6;
+      line-height: var(--line-height-body);
       max-width: 260px;
     }
   `;

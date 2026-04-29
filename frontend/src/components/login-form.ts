@@ -30,8 +30,9 @@ static styles = css`
 
   :host {
     width: 30rem;
-    margin-right: 3rem;
+    margin-right: var(--space-7);
     color: var(--text);
+    font-family: var(--regular-font);
   }
 
   .form {
@@ -48,12 +49,12 @@ static styles = css`
   app-input input {
     width: 100%;
     height: 50px;
-    padding: 0 16px;
+    padding: 0 var(--space-4);
     border: 1px solid var(--input-border);
     border-radius: 10px;
-    font-size: 16px;
-    margin-top: 10px;
-    margin-bottom: 5px;
+    font-size: var(--text-md);
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-1);
     background: var(--surface);
     color: var(--text);
   }
@@ -64,29 +65,29 @@ static styles = css`
 
   app-input .error-text {
     color: var(--error);
-    font-size: 13px;
+    font-size: var(--text-sm);
     min-height: 16px;
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: var(--space-1);
   }
 
   h2 {
-    margin-bottom: 24px;
-    font-size: 26px;
-    font-family: 'Times New Roman', Times, serif;
+    margin-bottom: var(--space-5);
+    font-size: var(--text-2xl);
+    font-family: var(--title-font);
     color: var(--text);
   }
 
   button {
     width: 100%;
-    padding: 16px 8px;
+    padding: var(--space-4) var(--space-2);
     background: var(--primary);
     color: white;
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    margin-top: 12px;
-    font-size: 18px;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
   }
 
   button:disabled {
@@ -98,18 +99,18 @@ static styles = css`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: var(--space-2);
   }
 
   .login-error {
     color: var(--error);
-    font-size: 14px;
+    font-size: var(--text-sm);
     flex: 1;
   }
 
   .signup {
-    margin-top: 12px;
-    font-size: 16px;
+    margin-top: var(--space-3);
+    font-size: var(--text-md);
     color: var(--accent);
     text-align: center;
   }
@@ -127,7 +128,7 @@ static styles = css`
 
   .skip {
     text-align: right;
-    font-size: 20px;
+    font-size: var(--text-xl);
     position: absolute;
     bottom: 40px;
     right: 40px;
@@ -146,14 +147,14 @@ static styles = css`
 
   label {
     font-weight: bold;
-    font-size: 16px;
+    font-size: var(--text-md);
     display: block;
-    margin-top: 16px;
+    margin-top: var(--space-4);
   }
 
   .forgot {
-    margin-bottom: 8px;
-    font-size: 16px;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-md);
     font-weight: bold;
     color: var(--link);
     cursor: pointer;

@@ -9,7 +9,7 @@ export class ThemeToggle extends LitElement {
 
   static styles = css`
     button {
-      padding: 8px 14px;
+      padding: var(--space-2) var(--space-4);
       border-radius: 8px;
       border: none;
       cursor: pointer;

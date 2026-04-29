@@ -12,7 +12,7 @@ export class StepCard extends LitElement {
   static styles = css`
     .card {
       background: #FFFCF0;
-      padding: 25px 20px;
+      padding: var(--space-5) var(--space-4);
       width: 300px;
       height: 280px;
       border-radius: 16px;
@@ -32,7 +32,7 @@ export class StepCard extends LitElement {
       border-radius: 50%;
       background: #a9c995;
       color: white;
-      font-size: 20px;
+      font-size: var(--text-xl);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -46,13 +46,13 @@ export class StepCard extends LitElement {
 
     h2{
       color: #605126;
-      font-size: 22px;
+      font-size: var(--text-xl);
       text-align: center;
     }
 
     p{
       margin: 0;
-      font-size: 16px;
+      font-size: var(--text-md);
     }
   `;
 
