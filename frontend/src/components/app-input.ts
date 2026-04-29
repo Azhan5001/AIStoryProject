@@ -4,14 +4,11 @@ import { customElement, property } from 'lit/decorators.js';
 @customElement('app-input')
 export class AppInput extends LitElement {
 
-  // ── Mode ─────────────────────────────
   @property() mode: 'input' | 'textarea' = 'input';
   @property({ type: Boolean }) autoGrow = false;
 
-  // 🎯 NEW: variant system
   @property() variant: 'default' | 'form' | 'chat' = 'default';
 
-  // ── Value / config ───────────────────
   @property() value: string = '';
   @property() placeholder: string = '';
   @property() type: string = 'text';
@@ -21,7 +18,6 @@ export class AppInput extends LitElement {
 
   @property() error: string = '';
 
-  // ── Input handlers ───────────────────
   private handleInput(e: Event) {
     const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     this.value = target.value || '';
@@ -61,7 +57,6 @@ export class AppInput extends LitElement {
     }));
   }
 
-  // ── Keyboard handling ─────────────────
   private handleKey(e: KeyboardEvent) {
     if (this.mode === 'textarea' && this.autoGrow) {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -83,7 +78,32 @@ export class AppInput extends LitElement {
     }));
   }
 
-  // ── Public helpers ───────────────────
+  // ✅ ✅ ✅ FIX 1: VALIDATION METHOD ADDED BACK
+  public validate(): boolean {
+    if (this.required && !this.value.trim()) {
+      this.error = 'This field is required';
+      return false;
+    }
+
+    if (this.validateType === 'email') {
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+      if (!valid) {
+        this.error = 'Invalid email format';
+        return false;
+      }
+    }
+
+    if (this.validateType === 'password') {
+      if (this.value.length < 6) {
+        this.error = 'Password must be at least 6 characters';
+        return false;
+      }
+    }
+
+    this.error = '';
+    return true;
+  }
+
   public getValue() {
     const el = this.querySelector('input, textarea') as HTMLInputElement | HTMLTextAreaElement;
     return el?.value ?? '';
@@ -98,17 +118,13 @@ export class AppInput extends LitElement {
     return this; // keep light DOM
   }
 
-  // ── Render ───────────────────────────
   render() {
     return html`
       <style>
-        app-input {
-          display: block;
-        }
 
-        /* 🔹 BASE STYLE (default = chat style) */
-        app-input input,
-        app-input textarea {
+        /* ✅ FIX 2: REMOVE app-input prefix */
+        input,
+        textarea {
           width: 100%;
           padding: 10px 14px;
           box-sizing: border-box;
@@ -125,9 +141,9 @@ export class AppInput extends LitElement {
           transition: border-color 0.2s;
         }
 
-        /* 🔥 FORM VARIANT (avatar page style) */
-        app-input[variant="form"] input,
-        app-input[variant="form"] textarea {
+        /* ✅ FIX 3: correct variant selector */
+        :host([variant="form"]) input,
+        :host([variant="form"]) textarea {
           background: var(--surface);
           border: none;
           border-radius: var(--radius);
@@ -139,28 +155,27 @@ export class AppInput extends LitElement {
           transition: box-shadow 0.2s, transform 0.15s;
         }
 
-        app-input[variant="form"] input:focus,
-        app-input[variant="form"] textarea:focus {
+        :host([variant="form"]) input:focus,
+        :host([variant="form"]) textarea:focus {
           box-shadow:
             0 0 0 2px rgba(201,168,76,0.15),
             0 0 12px rgba(201,168,76,0.25);
           transform: translateY(-1px);
         }
 
-        /* textarea behavior */
-        app-input textarea {
+        textarea {
           resize: none;
           min-height: 42px;
           overflow-y: hidden;
           line-height: 1.5;
         }
 
-        app-input input.error,
-        app-input textarea.error {
+        input.error,
+        textarea.error {
           border-color: var(--error, #c0392b);
         }
 
-        app-input .error-text {
+        .error-text {
           font-size: 12px;
           color: var(--error, #c0392b);
           margin-top: 4px;

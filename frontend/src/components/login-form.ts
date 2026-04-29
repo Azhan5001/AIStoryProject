@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import './app-input';
 
-import { login } from '../api/api';
+import { login, getUserStories } from '../api/api'; // 🔥 CHANGE (added getUserStories)
 import '../styles/theme.css';
 
 @customElement('login-input')
@@ -14,12 +14,23 @@ export class LoginForm extends LitElement {
   @state() errorMessage = '';
   @state() loading = false;
 
-  connectedCallback() {
+  // 🔥 CHANGE (made async + added story check)
+  async connectedCallback() {
     super.connectedCallback();
 
     const userId = localStorage.getItem('user_id');
-    if (userId) {
-      Router.go('/chat');
+    if (!userId) return;
+
+    try {
+      const stories = await getUserStories();
+
+      if (stories.length === 0) {
+        Router.go('/avatar');
+      } else {
+        Router.go('/chat');
+      }
+    } catch {
+      // stay on login if error
     }
   }
 
@@ -185,9 +196,16 @@ static styles = css`
     try {
       this.loading = true;
 
-      await login(this.username, this.password);
+      // 🔥 CHANGE (store userId + check stories)
+      const userId = await login(this.username, this.password);
 
-      Router.go('/chat');
+      const stories = await getUserStories();
+
+      if (stories.length === 0) {
+        Router.go('/avatar');
+      } else {
+        Router.go('/chat');
+      }
 
     } catch (err) {
       this.errorMessage = 'Invalid username or password';
