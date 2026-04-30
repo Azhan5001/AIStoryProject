@@ -9,6 +9,7 @@ import './pages/resetpass-page';
 import './pages/avatar-page';
 import './pages/onboarding-page';
 import './pages/world-setting-page';
+import './pages/admin-page';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -23,6 +24,7 @@ export class AppRoot extends LitElement {
       { path: '/login',           component: 'login-page' },
       { path: '/register',        component: 'register-page' },
       { path: '/chat',            component: 'chat-page' },
+      { path: '/admin',           component: 'admin-page' },
       {
         path: '/story/:storyId',
         action: (context) => {
