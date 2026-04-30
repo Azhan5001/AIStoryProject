@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import '../components/chat-box';
-import '../components/story-sidebar';
+import '../components/chat/chat-box';
+import '../components/chat/chat-sidebar';
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {

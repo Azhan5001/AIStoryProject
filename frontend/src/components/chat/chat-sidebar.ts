@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getUserStories } from '../api/api';
+import { getUserStories } from '../../api/api';
 import { Router } from '@vaadin/router';
 
 interface Story {

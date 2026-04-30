@@ -1,9 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import './app-input';
+import '../ui/app-input';
 
-import { register } from '../api/api'; // ✅ FIXED
+import { register } from '../../api/api'; // ✅ FIXED
 import '../styles/theme.css';
 
 @customElement('register-form')

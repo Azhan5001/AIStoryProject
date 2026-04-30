@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import './app-input';
+import './ui/app-input';
 
 import { login } from '../api/api';
 import '../styles/theme.css';

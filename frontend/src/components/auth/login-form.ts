@@ -1,9 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import './app-input';
+import '../ui/app-input';
 
-import { login, getUserStories } from '../api/api'; // 🔥 CHANGE (added getUserStories)
+import { login, getUserStories } from '../../api/api'; // 🔥 CHANGE (added getUserStories)
 import '../styles/theme.css';
 
 @customElement('login-input')

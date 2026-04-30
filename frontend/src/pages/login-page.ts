@@ -1,7 +1,7 @@
 import { LitElement, html} from 'lit';
 import { customElement } from 'lit/decorators.js';
-import '../components/login-form';
-import '../components/theme-toggle';
+import '../components/auth/login-form';
+import '../components/ui/theme-toggle';
 import { css } from 'lit';
 
 @customElement('login-page')

@@ -3,7 +3,7 @@ import { customElement ,state} from 'lit/decorators.js';
 import '../styles/theme.css';
 import { Router } from '@vaadin/router';
 
-import './step-card';
+import '../ui/step-card';
 
 @customElement('story-onboarding')
 export class StoryOnboarding extends LitElement {

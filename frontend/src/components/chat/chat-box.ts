@@ -1,11 +1,11 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
-import './app-input';
+import '../ui/app-input';
 import './chat-messages';
-import { sendMessage, getMessages } from '../api/api';
+import { sendMessage, getMessages } from '../../api/api';
 
 // 🧪 TEST BOT (remove later easily)
-import { getBotResponse } from './chatBot';
+import { getBotResponse } from './chat-Bot';
 
 // 🔑 SWITCH HERE
 const USE_FAKE_BOT = true;

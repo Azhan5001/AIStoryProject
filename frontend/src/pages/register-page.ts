@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import '../components/register-form';
-import '../components/theme-toggle';
+import '../components/auth/register-form';
+import '../components/ui/theme-toggle';
 
 @customElement('register-page')
 export class RegisterPage extends LitElement {

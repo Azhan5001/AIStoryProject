@@ -2,8 +2,8 @@ import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import '../components/theme-toggle';
-import '../components/selection-panel';
+import '../components/ui/theme-toggle';
+import '../components/ui/selection-panel';
 import '../styles/theme.css';
 
 const images = import.meta.glob('../assets/**/*.jpg', {

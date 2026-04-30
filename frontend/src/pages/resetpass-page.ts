@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, } from 'lit/decorators.js';
-import '../components/reset-password';
-import '../components/theme-toggle';
+import '../components/auth/reset-password';
+import '../components/ui/theme-toggle';
 
 @customElement('reset-password-page')
 export class ResetPasswordPage extends LitElement {
