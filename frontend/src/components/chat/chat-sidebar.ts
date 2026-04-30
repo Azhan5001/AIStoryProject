@@ -1,10 +1,11 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getUserStories } from '../../api/api';
+import { getUserStories, getAvatar, getUsername } from '../../api/api';
 import { Router } from '@vaadin/router';
 
 interface Story {
   story_id: number;
+  avatar_id: number;
   title?: string;
 }
 
@@ -15,6 +16,7 @@ export class StorySidebar extends LitElement {
   @state() private selectedId: number | null = null;
   @state() private collapsed = false;
   @state() private searchQuery = '';
+  @state() private username = 'My Account';
 
   static styles = css`
     :host {
@@ -379,6 +381,8 @@ export class StorySidebar extends LitElement {
 connectedCallback() {
   super.connectedCallback();
 
+  this.username = getUsername();
+
   const path = window.location.pathname;
   const match = path.match(/\/story\/(\d+)/);
 
@@ -389,19 +393,41 @@ connectedCallback() {
   this.loadStories();
 }
 
-private async loadStories() {
-  try {
-    this.stories = await getUserStories();
+  private async loadStories() {
+    try {
+      const stories = await getUserStories();
 
-    if (this.stories.length > 0 && this.selectedId === null) {
-      const latest = this.stories[this.stories.length - 1];
-      this.selectedId = latest.story_id;
-      Router.go(`/story/${latest.story_id}`);
+      // Fetch avatar names for each story
+      const storiesWithTitles = await Promise.all(
+        stories.map(async (s: any) => {
+          try {
+            const avatar = await getAvatar(s.avatar_id);
+
+            return {
+              ...s,
+              title: avatar.avatar_name // 👈 use avatar name as title
+            };
+          } catch {
+            return {
+              ...s,
+              title: `Story ${s.story_id}` // fallback
+            };
+          }
+        })
+      );
+
+      this.stories = storiesWithTitles;
+
+      if (this.stories.length > 0 && this.selectedId === null) {
+        const latest = this.stories[this.stories.length - 1];
+        this.selectedId = latest.story_id;
+        Router.go(`/story/${latest.story_id}`);
+      }
+
+    } catch (e) {
+      console.error('Failed to load stories', e);
     }
-  } catch (e) {
-    console.error('Failed to load stories', e);
   }
-}
 
   private selectStory(id: number) {
     // Only navigate if selecting a different story
@@ -498,7 +524,7 @@ private async loadStories() {
       <div class="sidebar-footer">
         <div class="avatar">👤</div>
         <div class="user-info">
-          <div class="user-name">My Account</div>
+          <div class="user-name">${this.username}</div>
           <div class="user-role">Explorer</div>
         </div>
         <span class="crown">👑</span>

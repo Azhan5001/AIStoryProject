@@ -2,6 +2,9 @@ import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
+
+import { createStorySetting, createStory } from '../api/api';
+
 import '../components/ui/theme-toggle';
 import '../components/ui/selection-panel';
 import '../styles/theme.css';
@@ -199,17 +202,40 @@ export class WorldSettingPage extends LitElement {
 
   private get isCustom() { return this.world === 'Custom'; }
 
-  private handleConfirm(): void {
+  private async handleConfirm(): Promise<void> {
     if (!this.world) {
       this.error = 'Choose a world before your story can begin.';
       return;
     }
-    Router.go('/chat');
-    const finalDescription = (this.isCustom && this.description)
-      ? this.description
-      : `A story set in a ${this.world} world.`;
-    console.log({ world: this.world, description: finalDescription });
-    this.error = '';
+
+    const finalDescription =
+      (this.isCustom && this.description)
+        ? this.description
+        : `A story set in a ${this.world} world.`;
+
+    try {
+      // 1️⃣ create setting
+      const setting = await createStorySetting(finalDescription);
+
+      const avatarId = Number(localStorage.getItem('avatar_id'));
+      const userId = Number(localStorage.getItem('user_id'));
+
+      if (!avatarId || !userId) throw new Error('Missing data');
+
+      // 2️⃣ create story
+      const story = await createStory(
+        userId,
+        avatarId,
+        setting.story_setting_id
+      );
+
+      // ✅ store story_id for chat
+      localStorage.setItem('story_id', String(story.story_id));
+
+      Router.go('/chat');
+    } catch (err) {
+      this.error = 'Failed to start story.';
+    }
   }
 
   render(): TemplateResult {

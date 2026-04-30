@@ -114,7 +114,26 @@ export class ChatPage extends LitElement {
     }
   `;
   @property({ type: Number })
-  @state() private storyId: number = 1;
+  @state() private storyId: number = 0;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.updateStoryFromUrl();
+    window.addEventListener('popstate', this.updateStoryFromUrl);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('popstate', this.updateStoryFromUrl);
+    super.disconnectedCallback();
+  }
+
+  private updateStoryFromUrl = () => {
+    const match = window.location.pathname.match(/\/story\/(\d+)/);
+
+    if (match) {
+      this.storyId = Number(match[1]);
+    }
+  };
 
   render() {
     return html`
