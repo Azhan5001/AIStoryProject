@@ -4,7 +4,7 @@ import { Router } from '@vaadin/router';
 import '../ui/app-input';
 
 import { register } from '../../api/api'; // ✅ FIXED
-import '../styles/theme.css';
+
 
 @customElement('register-form')
 export class RegisterForm extends LitElement {

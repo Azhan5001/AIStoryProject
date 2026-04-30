@@ -1,6 +1,5 @@
 import { LitElement, html , css} from 'lit';
 import { customElement ,state} from 'lit/decorators.js';
-import '../styles/theme.css';
 import { Router } from '@vaadin/router';
 
 import '../ui/step-card';
@@ -142,8 +141,8 @@ export class StoryOnboarding extends LitElement {
     }
   `;
 
-  goToChat(){
-    Router.go('/chat');
+  goToLogin(){
+    Router.go('/login');
   }
 
   next(){
@@ -194,7 +193,7 @@ export class StoryOnboarding extends LitElement {
         ⭐ <span class="tip-word">Tip</span>: There are no wrong ideas! Every story starts with imagination.
         </div>
 
-        <button class="start-btn" @click=${this.goToChat}>Start</button>
+        <button class="start-btn" @click=${this.goToLogin}>Start</button>
 
       </div>
     `;

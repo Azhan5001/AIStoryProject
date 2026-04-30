@@ -1,7 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { state, customElement} from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import '../styles/theme.css';
 
 
 @customElement('reset-password')
