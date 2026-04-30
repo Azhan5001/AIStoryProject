@@ -95,6 +95,9 @@ export class ChatBox extends LitElement {
       --input-radius: 0;
       --input-padding: 0;
     }
+    app-input input{
+      --input-border: none;
+    }
 
     /* Loading indicator inside the row */
     .thinking-dot {
@@ -112,7 +115,9 @@ export class ChatBox extends LitElement {
     }
 
     /* Arrow send button — sits inside the pill */
+
     .send-btn {
+      margin: auto 0 0.3rem 0px;
       display: flex;
       align-items: center;
       justify-content: center;

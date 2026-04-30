@@ -55,6 +55,12 @@ export class StorySidebar extends LitElement {
       font-size: var(--text-xl);
       line-height: 1;
       flex-shrink: 0;
+      /* hidden when collapsed */
+      transition: opacity 0.15s ease;
+    }
+
+    :host(.collapsed) .logo-icon {
+      display: none;
     }
 
     .logo-text {
@@ -104,7 +110,7 @@ export class StorySidebar extends LitElement {
       display: none;
     }
 
-    /* Toggle btn — ALWAYS visible */
+    /* Toggle btn — ALWAYS visible, uses sidebar SVG icon */
     .toggle-btn {
       background: none;
       border: none;
@@ -115,15 +121,32 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-sm);
       color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
       transition: background 0.15s, color 0.15s;
+      padding: 0;
     }
 
     .toggle-btn:hover {
       background: var(--parchment, #ede6d6);
       color: var(--text, #2a2118);
+    }
+
+    .toggle-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    /* When collapsed: toggle btn is the only thing in the logo row, center it */
+    :host(.collapsed) .logo {
+      justify-content: center;
+      padding: var(--space-4) 0;
+    }
+
+    :host(.collapsed) .toggle-btn {
+      width: 36px;
+      height: 36px;
     }
 
     /* ─── Collapsed: big + button to create story ─── */
@@ -453,6 +476,16 @@ connectedCallback() {
     );
   }
 
+  /* Sidebar panel icon — two vertical rectangles (panel layout) */
+  private get sidebarIcon() {
+    return html`
+      <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1.5" y="1.5" width="5" height="15" rx="1.5" fill="currentColor" opacity="0.5"/>
+        <rect x="8.5" y="1.5" width="8" height="15" rx="1.5" fill="currentColor"/>
+      </svg>
+    `;
+  }
+
   render() {
     const stories = this.filteredStories;
 
@@ -466,7 +499,7 @@ connectedCallback() {
         <button class="toggle-btn"
           title=${this.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           @click=${this.toggleCollapse}>
-          ${this.collapsed ? '→' : '←'}
+          ${this.sidebarIcon}
         </button>
       </div>
 
