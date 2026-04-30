@@ -31,60 +31,77 @@ export class ChatBox extends LitElement {
       display: flex;
       flex-direction: column;
       width: 100%;
+      max-width: 50rem;
       height: 100%;
+      margin: 0 auto;
     }
 
-    /* ── Card ── */
+    /* ── Outer wrapper: messages + input, no card chrome ── */
     .box {
       display: flex;
       flex-direction: column;
       width: 100%;
       height: 100%;
-      background: var(--surface, #ffffff);
-      border: 1.5px solid var(--sand, #d9cdb8);
-      border-radius: 16px;
       overflow: hidden;
     }
 
-    /* ── Header strip ── */
-    .chat-header {
+    /* ── Messages fill space ── */
+    .messages-area {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    chat-messages {
+      display: block;
+      height: 100%;
+    }
+
+    /* ── Input bar: centered, floating feel ── */
+    .input-bar {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4);
-      background: var(--surface, #ffffff);
-      border-bottom: 1px solid var(--sand, #d9cdb8);
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-6) var(--space-4);
+      background: var(--bg);
       flex-shrink: 0;
     }
 
-    .chat-header-icon {
-      color: var(--gold, #b8953a);
-      font-size: var(--text-md);
+    /* The input row is a pill that contains both the textarea and the send button */
+    .input-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      max-width: 42rem;
+      background: var(--bg);
+      border-radius: 24px;
+      padding: var(--space-1) var(--space-3) var(--space-1) var(--space-4);
+      gap: var(--space-2);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-glow);
     }
 
-    .chat-header-title {
-      font-family: var(--title-font);
-      font-size: var(--text-sm);
-      font-weight: 600;
-      color: var(--text, #2a2118);
-      letter-spacing: 0.03em;
+    .input-row:focus-within {
+      border: 1.5px solid var(--accent);
+      box-shadow: 0 2px 16px color-mix(in srgb, var(--accent) 20%, transparent);
     }
 
-    .chat-header-sub {
-      margin-left: auto;
-      font-family: var(--regular-font);
-      font-size: var(--text-xs);
-      color: var(--ink-muted, #8a7a68);
-      font-style: italic;
+    app-input {
+      flex: 1;
+      min-width: 0;
+      --input-border: none;
+      --input-bg: transparent;
+      --input-shadow: none;
+      --input-radius: 0;
+      --input-padding: 0;
     }
 
-    /* Pulsing gold dot while loading */
+    /* Loading indicator inside the row */
     .thinking-dot {
-      width: 8px;
-      height: 8px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--gold, #b8953a);
-      margin-left: auto;
+      background: var(--accent);
       flex-shrink: 0;
       animation: pulse 1.2s ease-in-out infinite;
     }
@@ -94,92 +111,47 @@ export class ChatBox extends LitElement {
       50%       { opacity: 0.4; transform: scale(0.72); }
     }
 
-    /* ── Messages ── */
-    .messages-area {
-      flex: 1;
-      overflow: hidden;
-      background: var(--bg, #FFFCF0);
-    }
-
-    chat-messages {
-      display: block;
-      height: 100%;
-    }
-
-    /* ── Input bar ── */
-    .input-bar {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-      padding: var(--space-3) var(--space-4) var(--space-3);
-      background: var(--surface, #ffffff);
-      border-top: 1px solid var(--sand, #d9cdb8);
-      flex-shrink: 0;
-    }
-
-    .input-label {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      font-family: var(--title-font);
-      font-size: var(--text-xs);
-      font-weight: 600;
-      color: var(--text, #2a2118);
-    }
-
-    .input-label .spark { color: var(--gold, #b8953a); }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    app-input {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* Send button — mirrors .generate-btn exactly from the HTML */
+    /* Arrow send button — sits inside the pill */
     .send-btn {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
-      background: var(--ink, #2a2118);
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      padding: 0 var(--space-5);
-      height: 42px;
-      font-family: var(--regular-font);
-      font-size: var(--text-sm);
-      font-weight: 600;
-      cursor: pointer;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
       flex-shrink: 0;
-      white-space: nowrap;
+      background: var(--primary);
+      color: var(--bg);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: background 0.2s, transform 0.1s;
+      transition: opacity 0.2s, transform 0.1s;
     }
 
-    /* Gold shimmer overlay, matches .generate-btn::before */
     .send-btn::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(135deg, rgba(184,149,58,0.25) 0%, transparent 60%);
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 60%);
       pointer-events: none;
+      border-radius: 50%;
     }
 
-    .send-btn:hover  { background: var(--ink-light, #5a4a38); }
-    .send-btn:active { transform: scale(0.97); }
+    .send-btn svg {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .send-btn:hover  { opacity: 0.82; transform: scale(1.05); }
+    .send-btn:active { transform: scale(0.95); }
     .send-btn:disabled {
-      opacity: 0.55;
+      opacity: 0.45;
       cursor: not-allowed;
       pointer-events: none;
     }
-
-    .send-btn .spark { color: var(--gold-light, #d4a94a); font-size: 12px; }
 
     /* Tip row */
     .tip-row {
@@ -188,13 +160,13 @@ export class ChatBox extends LitElement {
       gap: var(--space-2);
       font-family: var(--regular-font);
       font-size: var(--text-xs);
-      color: var(--ink-muted, #8a7a68);
+      color: var(--subtittle);
       font-style: italic;
     }
 
     .tip-row strong {
       font-style: normal;
-      color: var(--gold-dark, #8a6e28);
+      color: var(--link);
     }
   `;
 
@@ -208,7 +180,6 @@ export class ChatBox extends LitElement {
       this.loadMessages();
     }
   }
-
 
   async loadMessages() {
     try {
@@ -271,24 +242,13 @@ export class ChatBox extends LitElement {
     return html`
       <div class="box">
 
-        <div class="chat-header">
-          <span class="chat-header-icon">✦</span>
-          <span class="chat-header-title">Story Chat</span>
-          ${this.loading
-            ? html`<div class="thinking-dot"></div>`
-            : html`<span class="chat-header-sub">Scene ${this.storyId}</span>`}
-        </div>
-
         <div class="messages-area">
           <chat-messages .messages=${this.messages}></chat-messages>
         </div>
 
         <div class="input-bar">
-          <div class="input-label">
-            <span class="spark">✦</span>
-            Continue the story
-          </div>
           <div class="input-row">
+            ${this.loading ? html`<div class="thinking-dot"></div>` : ''}
             <app-input
               mode="textarea"
               autoGrow
@@ -299,9 +259,12 @@ export class ChatBox extends LitElement {
               class="send-btn"
               ?disabled=${this.loading}
               @click=${this.onSendClick}
+              aria-label="Send"
             >
-              <span class="spark">✦</span>
-              ${this.loading ? 'Writing...' : 'Send'}
+              <!-- Up-arrow icon -->
+              <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 13V3M8 3L3.5 7.5M8 3L12.5 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </button>
           </div>
           <div class="tip-row">

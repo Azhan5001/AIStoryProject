@@ -41,7 +41,6 @@ export class AvatarPage extends LitElement {
       --gold:      #c9a84c;
       --gold-dim:  #7a6230;
       --muted:     #6b6358;
-      --shadow-glow: 0px 0px 5px 5px #e8e0d0;
       --radius:    10px;
       --font-head: 'Cinzel', 'Palatino Linotype', serif;
       --font-body: 'Cormorant Garamond', 'Georgia', serif;
@@ -297,7 +296,7 @@ export class AvatarPage extends LitElement {
       box-shadow: var(--shadow-glow);
       transition: box-shadow 0.2s, transform 0.15s;
       min-height: 120px;
-      resize: vertical;
+      resize: none;
       line-height: var(--line-height-body);
     }
 

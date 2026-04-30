@@ -21,6 +21,8 @@
   --onboarding-h1: #9b8661;
   --subtittle: #444;
 
+  --shadow-glow: 0px 0px 5px 5px #e8e0d0;
+
   /* Font families */
   --title-font: Georgia, Verdana, serif;
   --regular-font: Verdana, sans-serif;

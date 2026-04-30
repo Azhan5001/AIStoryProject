@@ -121,7 +121,9 @@ export class AppInput extends LitElement {
   render() {
     return html`
       <style>
-
+        :host {
+          --input-border: 1.5px solid var(--sand, #d9cdb8);
+        }
         /* ✅ FIX 2: REMOVE app-input prefix */
         input,
         textarea {
@@ -131,7 +133,7 @@ export class AppInput extends LitElement {
           border-radius: 10px;
 
           background: var(--bg, #FFFCF0);
-          border: 1.5px solid var(--sand, #d9cdb8);
+          border: var(--input-border);
 
           font-family: var(--regular-font);
           font-size: var(--text-sm);
