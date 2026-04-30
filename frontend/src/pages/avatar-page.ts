@@ -15,19 +15,17 @@ const images = import.meta.glob('../assets/**/*.jpg', {
 const races: string[] = ['Human', 'Elf', 'Dwarf', 'Orc', 'Halfling', 'Dragonborn'];
 const classes: string[] = ['Warrior', 'Mage', 'Rogue', 'Archer', 'Paladin', 'Necromancer', 'Monk'];
 const randomNames: string[] = ['Arin', 'Lyra', 'Thorin', 'Kael', 'Zara', 'Eldon', 'Mira', 'Riven'];
-// 🔥 Helper to map names → images
+
 function createItems(folder: string, list: string[]) {
   return list.map(name => {
     const path = `../assets/${folder}/${name.toLowerCase()}.jpg`;
-
     return {
       label: name,
-      image: images[path] || '' // fallback if missing
+      image: images[path] || ''
     };
   });
 }
 
-// 🔥 Create structured items
 const raceItems = createItems('races', races);
 const classItems = createItems('classes', classes);
 
@@ -36,42 +34,42 @@ export class AvatarPage extends LitElement {
 
   static styles = css`
     /* ── Tokens ─────────────────────────────────────────── */
-:host {
-  --surface: #FFFCF0;
-  --border:    #2a2520;
-  --border-hi: #3d3730;
-  --gold:      #c9a84c;
-  --gold-dim:  #7a6230;
-  --muted:     #6b6358;
-  --shadow-glow: 0px 0px 5px 5px #e8e0d0;
-  --radius:    10px;
-  --font-head: 'Cinzel', 'Palatino Linotype', serif;
-  --font-body: 'Cormorant Garamond', 'Georgia', serif;
+    :host {
+      --surface: #FFFCF0;
+      --border:    #2a2520;
+      --border-hi: #3d3730;
+      --gold:      #c9a84c;
+      --gold-dim:  #7a6230;
+      --muted:     #6b6358;
+      --shadow-glow: 0px 0px 5px 5px #e8e0d0;
+      --radius:    10px;
+      --font-head: 'Cinzel', 'Palatino Linotype', serif;
+      --font-body: 'Cormorant Garamond', 'Georgia', serif;
 
-  display: flex;                /* ✅ REQUIRED */
-  justify-content: center;      /* horizontal center */
-  align-items: center;          /* vertical center */
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-  min-height: 100vh;            /* better than height */
-  width: 100vw;
+      min-height: 100vh;
+      width: 100vw;
 
-  background: 
-    url('/images/Objects-1.png') right top no-repeat,
-    url('/images/OBJECTS.png') center/cover no-repeat, 
-    var(--bg);
+      background: 
+        url('/images/Objects-1.png') right top no-repeat,
+        url('/images/OBJECTS.png') center/cover no-repeat, 
+        var(--bg);
 
-  background-size: 15% auto, cover;
-  padding: var(--space-5);
-  box-sizing: border-box;
-  font-family: var(--regular-font);
-  color: #000;
-}
-    main{
+      background-size: 15% auto, cover;
+      padding: var(--space-5);
+      box-sizing: border-box;
+      font-family: var(--regular-font);
+      color: #000;
+    }
+
+    main {
       display: block;
       min-height: 20%;
-      border-radius:20px;
+      border-radius: 20px;
       width: 50%;
-      /* subtle noise grain */
       color: var(--text);
       font-family: var(--regular-font);
       font-size: var(--text-md);
@@ -116,7 +114,7 @@ export class AvatarPage extends LitElement {
     .identity-row {
       display: flex;
       gap: var(--space-3);
-      align-items: stretch;
+      align-items: flex-end;
     }
 
     .field-wrap {
@@ -136,6 +134,58 @@ export class AvatarPage extends LitElement {
       color: var(--muted);
     }
 
+    /* ── Name input wrapper — dice lives inside ── */
+    .name-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s;
+      overflow: hidden;
+    }
+
+    .name-input-wrap:focus-within {
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .name-input-wrap app-input {
+      flex: 1;
+      /* strip the shadow/border from the inner app-input so the wrapper owns it */
+    }
+
+    /* Override app-input's own shadow when nested in wrapper */
+    .name-input-wrap app-input input,
+    .name-input-wrap app-input ::part(input) {
+      box-shadow: none !important;
+      border-radius: 0;
+    }
+
+    .dice-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-left: 1px solid var(--sand, #d9cdb8);
+      color: var(--gold);
+      font-size: var(--text-lg, 1.2rem);
+      padding: 0 var(--space-3);
+      height: 100%;
+      cursor: pointer;
+      transition: background 0.2s;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+    }
+
+    .dice-btn:hover {
+      background: rgba(201, 168, 76, 0.09);
+    }
+
     input[type="text"], select, textarea {
       background: var(--surface);
       border: none;
@@ -147,8 +197,6 @@ export class AvatarPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-
-      /* ✅ match panel style */
       box-shadow: var(--shadow-glow);
       transition: box-shadow 0.2s, transform 0.15s;
     }
@@ -175,74 +223,91 @@ export class AvatarPage extends LitElement {
 
     select option { background: #1a1714; }
 
-    .dice-btn {
-      flex: 0 0 auto;
-      align-self: flex-end;
-      background: var(--bg);
-      box-shadow: var(--shadow-glow);
-      border: none;
-      border-radius: var(--radius);
-      color: var(--gold);
-      font-size: var(--text-xl);
-      padding: var(--space-3) var(--space-4);
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      line-height: 1;
-    }
-
-    .dice-btn:hover {
-      border-color: var(--gold-dim);
-      background: rgba(201, 168, 76, 0.07);
-    }
-
     /* ── Selection Panels ────────────────────────────────── */
     .panels {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      /* default: stacked (column) — goes row at wide screens */
+      grid-template-columns: 1fr;
       gap: var(--space-5);
-      
     }
+
+    /* Wide desktop: side-by-side */
+    @media (min-width: 1492px) {
+      .panels {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Tablet */
+    @media (max-width: 768px) {
+      main {
+        width: 80%;
+      }
+    }
+
+    /* ── ≤657px: gender drops below name, both full-width ── */
+    @media (max-width: 657px) {
+      .identity-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .field-wrap.gender {
+        flex: 1 1 auto;
+        width: 100%;
+      }
+    }
+
+    /* Mobile */
+    @media (max-width: 480px) {
+      main {
+        width: 95%;
+        padding: var(--space-4) var(--space-3) var(--space-6);
+      }
+
+      :host {
+        padding: var(--space-3);
+        align-items: flex-start;
+      }
+    }
+
     .panel-container {
       background: var(--bg);
       border-radius: 14px;
       box-shadow: var(--shadow-glow);
-      }
-  /* ── Description ─────────────────────────────────────── */
+    }
 
-  /* container only */
-  app-input {
-    display: block;
-    width: 100%;
-  }
+    /* ── Description ─────────────────────────────────────── */
+    app-input {
+      display: block;
+      width: 100%;
+    }
 
-  /* 🔥 ONLY style the FORM variant textarea */
-  app-input[variant="form"] textarea {
-    background: var(--surface);
-    border: none;
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: var(--regular-font);
-    font-size: var(--text-md);
-    padding: var(--space-3) var(--space-4);
-    outline: none;
-    width: 100%;
-    box-sizing: border-box;
+    app-input[variant="form"] textarea {
+      background: var(--surface);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      padding: var(--space-3) var(--space-4);
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s;
+      min-height: 120px;
+      resize: vertical;
+      line-height: var(--line-height-body);
+    }
 
-    box-shadow: var(--shadow-glow);
-    transition: box-shadow 0.2s, transform 0.15s;
+    app-input[variant="form"] textarea:focus {
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
+    }
 
-    min-height: 120px;   /* ✅ this is what makes it look like a description box */
-    resize: vertical;
-    line-height: var(--line-height-body);
-  }
-
-  /* focus state */
-  app-input[variant="form"] textarea:focus {
-    box-shadow:
-      0 0 0 2px rgba(201, 168, 76, 0.15),
-      0 0 12px rgba(201, 168, 76, 0.25);
-    transform: translateY(-1px);
-  }
     /* ── Error ───────────────────────────────────────────── */
     .error {
       font-family: var(--title-font);
@@ -277,13 +342,6 @@ export class AvatarPage extends LitElement {
       border-color: var(--gold);
       box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
     }
-
-    /* ── Responsive ──────────────────────────────────────── */
-    @media (max-width: 680px) {
-      .panels { grid-template-columns: 1fr; }
-      .identity-row { flex-wrap: wrap; }
-      .field-wrap.gender { flex: 1 1 120px; }
-    }
   `;
 
   @state() private name: string = '';
@@ -307,7 +365,6 @@ export class AvatarPage extends LitElement {
       this.description ||
       `A ${this.gender} ${this.race} ${this.charClass} ready for adventure.`;
 
-    // ✅ store draft avatar instead of creating it
     const avatarDraft = {
       name: this.name,
       gender: this.gender,
@@ -317,7 +374,6 @@ export class AvatarPage extends LitElement {
     };
 
     localStorage.setItem('avatar_draft', JSON.stringify(avatarDraft));
-
     Router.go('/world-settings');
   }
 
@@ -335,12 +391,15 @@ export class AvatarPage extends LitElement {
         <div class="identity-row">
           <div class="field-wrap">
             <label>Name</label>
-            <app-input
-              variant="form"
-              placeholder="Enter character name…"
-              .value=${this.name}
-              @value-change=${(e: CustomEvent) => this.name = e.detail}
-            ></app-input>
+            <div class="name-input-wrap">
+              <app-input
+                variant="form"
+                placeholder="Enter character name…"
+                .value=${this.name}
+                @value-change=${(e: CustomEvent) => this.name = e.detail}
+              ></app-input>
+              <button class="dice-btn" @click=${this.generateName} title="Random name">🎲</button>
+            </div>
           </div>
 
           <div class="field-wrap gender">
@@ -353,12 +412,10 @@ export class AvatarPage extends LitElement {
               <option value="Female">Female</option>
             </select>
           </div>
-
-          <button class="dice-btn" @click=${this.generateName} title="Random name">🎲</button>
         </div>
 
         <div class="panels">
-          <div class=panel-container>
+          <div class="panel-container">
             <selection-panel
               title="Race"
               .items=${raceItems}
@@ -366,7 +423,7 @@ export class AvatarPage extends LitElement {
               @change=${(e: CustomEvent) => this.race = e.detail}
             ></selection-panel>
           </div>
-          <div class=panel-container>
+          <div class="panel-container">
             <selection-panel
               title="Class"
               .items=${classItems}
@@ -376,18 +433,17 @@ export class AvatarPage extends LitElement {
           </div>
         </div>
 
-
         <div class="desc-section">
           <label>Character Description <span style="color:var(--muted)">(optional)</span></label>
-        <app-input
-          variant="form"
-          mode="textarea"
-          placeholder="Personality, backstory, abilities…"
-          .value=${this.description}
-          @value-change=${(e: CustomEvent) => {
-            this.description = e.detail;
-          }}
-        ></app-input>
+          <app-input
+            variant="form"
+            mode="textarea"
+            placeholder="Personality, backstory, abilities…"
+            .value=${this.description}
+            @value-change=${(e: CustomEvent) => {
+              this.description = e.detail;
+            }}
+          ></app-input>
         </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
