@@ -3,7 +3,7 @@ import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 
-import { createStorySetting, createStory } from '../api/api';
+import { createAvatar, createStorySetting, createStory } from '../api/api';
 
 import '../components/ui/theme-toggle';
 import '../components/ui/selection-panel';
@@ -214,25 +214,32 @@ export class WorldSettingPage extends LitElement {
         : `A story set in a ${this.world} world.`;
 
     try {
-      // 1️⃣ create setting
-      const setting = await createStorySetting(finalDescription);
-
-      const avatarId = Number(localStorage.getItem('avatar_id'));
+      const avatarDraftRaw = localStorage.getItem('avatar_draft');
       const userId = Number(localStorage.getItem('user_id'));
 
-      if (!avatarId || !userId) throw new Error('Missing data');
+      if (!avatarDraftRaw || !userId) throw new Error('Missing data');
 
-      // 2️⃣ create story
+      const avatarDraft = JSON.parse(avatarDraftRaw);
+
+      const avatar = await createAvatar(
+        avatarDraft.name,
+        avatarDraft.description
+      );
+
+      const setting = await createStorySetting(finalDescription);
+
       const story = await createStory(
         userId,
-        avatarId,
+        avatar.avatar_id,
         setting.story_setting_id
       );
 
-      // ✅ store story_id for chat
+      localStorage.removeItem('avatar_draft');
+
       localStorage.setItem('story_id', String(story.story_id));
 
       Router.go('/chat');
+
     } catch (err) {
       this.error = 'Failed to start story.';
     }

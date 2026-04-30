@@ -4,7 +4,6 @@ import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import '../components/ui/theme-toggle';
 import '../components/ui/selection-panel';
-import { createAvatar } from '../api/api';
 
 
 const images = import.meta.glob('../assets/**/*.jpg', {
@@ -298,7 +297,7 @@ export class AvatarPage extends LitElement {
     this.name = randomNames[Math.floor(Math.random() * randomNames.length)];
   }
 
-  private async handleCreate(): Promise<void> {
+  private handleCreate(): void {
     if (!this.name || !this.gender || !this.race || !this.charClass) {
       this.error = 'All fields are required to forge your character.';
       return;
@@ -308,16 +307,18 @@ export class AvatarPage extends LitElement {
       this.description ||
       `A ${this.gender} ${this.race} ${this.charClass} ready for adventure.`;
 
-    try {
-      const avatar = await createAvatar(this.name, finalDescription);
+    // ✅ store draft avatar instead of creating it
+    const avatarDraft = {
+      name: this.name,
+      gender: this.gender,
+      race: this.race,
+      class: this.charClass,
+      description: finalDescription
+    };
 
-      // ✅ store avatar_id for next page
-      localStorage.setItem('avatar_id', String(avatar.avatar_id));
+    localStorage.setItem('avatar_draft', JSON.stringify(avatarDraft));
 
-      Router.go('/world-settings');
-    } catch (err) {
-      this.error = 'Failed to create avatar.';
-    }
+    Router.go('/world-settings');
   }
 
   render(): TemplateResult {
