@@ -1,7 +1,9 @@
 import { LitElement, html} from 'lit';
 import { customElement } from 'lit/decorators.js';
+
 import '../components/auth/login-form';
 import '../components/ui/theme-toggle';
+import '../components/ui/auth-layout';
 import { css } from 'lit';
 
 @customElement('login-page')
@@ -18,56 +20,23 @@ export class LoginPage extends LitElement {
       position: fixed;
       inset: 0;
       height: 100vh;
-    }
-
-    .container{
-      background-color: transparent;
-      display: flex;
       width: 100%;
-      height: 100%;
-      margin:auto;
-      overflow: hidden;
     }
 
   @media (max-width: 768px){
       .container {
-        justify-content: center;
+        justify-content: flex-end;
       }
     }
-
-    .login-page{
-      flex:1;
-      display: flex;
-      justify-content: flex-end;
-      padding-right: var(--space-7);
-      align-items: center;
-      z-index: 1;
-    }
-
-  .login-background {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--img-object) right top no-repeat,
-                var(--img-castle) center/cover no-repeat, 
-                var(--bg);
-    background-size: 15% auto, cover;
-    z-index: 0;
-  }
 
  `;
 
   render() {
     return html`
-      <div class="login-background">
-        <div class="container">
-        <theme-toggle></theme-toggle>
-          <div class="login-page">
-            <login-input></login-input>
-          </div>
-        </div>
-      </div>
+       <auth-layout>
+        <theme-toggle slot="top"></theme-toggle>
+        <login-input></login-input>
+      </auth-layout>
     `;
   }
 }

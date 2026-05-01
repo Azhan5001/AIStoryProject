@@ -52,9 +52,9 @@
 --line-height-title: 1.2;
 
 /* Border Radius */
---radius-sm: 10px
---radius-md: 15px
---radius-lg: 20px
+--radius-sm: 10px;
+--radius-md: 15px;
+--radius-lg: 20px;
 }
 
 
