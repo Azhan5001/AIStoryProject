@@ -16,8 +16,6 @@ export class RegisterPage extends LitElement {
 
     :host {
       display: block;
-      position: fixed;
-      inset: 0;
       height: 100vh;
     }
 
@@ -25,27 +23,6 @@ export class RegisterPage extends LitElement {
       .container {
         justify-content: center;
       }
-    }
-
-    .login-page {
-      flex: 1;
-      display: flex;
-      justify-content: flex-end;
-      padding-right: var(--space-7);
-      align-items: center;
-      z-index: 1;
-    }
-
-    .login-background {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--img-object) right top no-repeat,
-                  var(--img-castle) center/cover no-repeat,
-                  var(--bg);
-      background-size: 15% auto, cover;
-      z-index: 0;
     }
   `;
 

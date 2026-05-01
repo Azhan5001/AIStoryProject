@@ -4,6 +4,7 @@ import { customElement } from 'lit/decorators.js';
 import '../components/auth/login-form';
 import '../components/ui/theme-toggle';
 import '../components/ui/auth-layout';
+
 import { css } from 'lit';
 
 @customElement('login-page')
@@ -17,15 +18,12 @@ export class LoginPage extends LitElement {
 
     :host {
       display: block;
-      position: fixed;
-      inset: 0;
       height: 100vh;
-      width: 100%;
     }
 
   @media (max-width: 768px){
       .container {
-        justify-content: flex-end;
+        justify-content: center;
       }
     }
 
@@ -33,7 +31,7 @@ export class LoginPage extends LitElement {
 
   render() {
     return html`
-       <auth-layout>
+      <auth-layout>
         <theme-toggle slot="top"></theme-toggle>
         <login-input></login-input>
       </auth-layout>

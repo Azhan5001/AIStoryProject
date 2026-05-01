@@ -28,11 +28,12 @@ export class AuthLayout extends LitElement {
 
     .container {
       position: relative;
+      z-index: 1;
       display: flex;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
     }
 
     .top-slot {
@@ -47,14 +48,16 @@ export class AuthLayout extends LitElement {
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      padding: var(--space-5);
       width: 100%;
       box-sizing: border-box;
+      padding: var(--space-5);
+      padding-right: var(--space-7);
     }
 
     ::slotted(*) {
       width: 100%;
       max-width: 420px;
+      margin: 0;
     }
 
     /* Tablet + Mobile */
@@ -66,8 +69,7 @@ export class AuthLayout extends LitElement {
 
       .content {
         justify-content: center;
-        padding-left: var(--space-4);
-        padding-right: var(--space-4);
+        padding: var(--space-4);
       }
 
       .top-slot {
@@ -77,12 +79,10 @@ export class AuthLayout extends LitElement {
 
       ::slotted(*) {
         max-width: 100%;
-        width: 100%;
-        margin: 0 auto;
       }
     }
 
-    /* Mobile */
+    /* Small phones */
     @media (max-width: 480px) {
       .background {
         background-size: 35% auto, cover;
