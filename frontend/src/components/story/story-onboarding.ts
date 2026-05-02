@@ -114,10 +114,14 @@ export class StoryOnboarding extends LitElement {
       background: #f7f0df;
       padding: var(--space-4);
       border-radius: 16px;
-      width: 500px;
       margin: auto;
       margin-bottom: var(--space-5);
       font-size: var(--text-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      color: black;
     }
 
     .tip-word{

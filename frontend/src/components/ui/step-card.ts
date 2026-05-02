@@ -13,12 +13,16 @@ export class StepCard extends LitElement {
     .card {
       background: #FFFCF0;
       padding: var(--space-5) var(--space-4);
-      width: 300px;
-      height: 280px;
+      width: 18.75rem;
+      min-height: 17.5rem;
       border-radius: 16px;
       border: 1px solid rgba(0,0,0,0.05);
       box-shadow: 0 6px 15px rgba(0,0,0,0.08);
       transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
     .card:hover {
@@ -36,6 +40,7 @@ export class StepCard extends LitElement {
       display: flex;
       justify-content: center;
       align-items: center;
+      align-self: flex-start;
     }
 
     img{
@@ -53,6 +58,7 @@ export class StepCard extends LitElement {
     p{
       margin: 0;
       font-size: var(--text-md);
+      color: black;
     }
   `;
 
