@@ -7,11 +7,11 @@ import '../components/chat/chat-sidebar';
 @customElement('chat-page')
 export class ChatPage extends LitElement {
 
-
-  private handleLogout() {
-    localStorage.removeItem('user_id');
-    Router.go('/login');
-  }
+  // Used in another page so keeping for now
+  // private handleLogout() {
+  //   localStorage.removeItem('user_id');
+  //   Router.go('/login');
+  // }
 
   static styles = css`
     /* ── Full-screen layout: sidebar + main ── */
