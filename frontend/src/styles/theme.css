@@ -9,7 +9,8 @@
   --onboarding-img: url('/onboarding-bg/light_bg.png');
 
   --primary: #2C2C2C;
-  --accent: #d5ad0f;
+  --secondary: #f4f4f4;
+  --accent: #9b8661;
 
   --border: #ccc; /*Dont need this*/
   --error: #c0392b;

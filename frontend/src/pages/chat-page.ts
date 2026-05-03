@@ -40,7 +40,7 @@ export class ChatPage extends LitElement {
       justify-content: space-between;
       padding: var(--space-4) var(--space-5);
       background: var(--bg, #FFFCF0);
-      border-bottom: 1px solid var(--sand, #d9cdb8);
+      // border-bottom: 1px solid var(--sand, #d9cdb8);
       flex-shrink: 0;
     }
 
@@ -48,13 +48,13 @@ export class ChatPage extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      background: var(--surface, #ffffff);
+      background: var(--bg);
       border: 1px solid var(--sand, #d9cdb8);
       border-radius: 20px;
       padding: var(--space-2) var(--space-4);
       font-family: var(--regular-font);
       font-size: var(--text-sm);
-      font-weight: 500;
+      font-weight: bold;
       color: var(--text, #2a2118);
     }
 
@@ -69,35 +69,22 @@ export class ChatPage extends LitElement {
       gap: var(--space-3);
     }
 
-    .profile-pic {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 2px solid var(--gold, #b8953a);
-      background: linear-gradient(135deg, #7ab3d4 30%, #3a7bd5 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: var(--text-lg);
-      flex-shrink: 0;
-    }
-
-    .logout-btn {
+    .export-btn {
       display: flex;
       align-items: center;
       gap: var(--space-2);
       background: none;
       border: 1.5px solid var(--sand, #d9cdb8);
-      border-radius: 10px;
+      border-radius: var(--radius-lg);
       padding: var(--space-2) var(--space-4);
       font-family: var(--regular-font);
       font-size: var(--text-xs);
-      color: var(--ink-muted, #8a7a68);
+      color: var(--primary);
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
 
-    .logout-btn:hover {
+    .export-btn:hover {
       border-color: var(--sand, #d9cdb8);
       background: var(--parchment, #ede6d6);
       color: var(--text, #2a2118);
@@ -140,26 +127,24 @@ export class ChatPage extends LitElement {
       <story-sidebar></story-sidebar>
 
       <div class="main">
-
         <!-- Top bar -->
         <header class="topbar">
           <div class="tab-pill">
-            <span class="spark">✦</span>
-            Story Chat
+            Avatar Name
           </div>
           <div class="topbar-right">
-            <div class="profile-pic">✈️</div>
-            <button class="logout-btn" @click=${this.handleLogout}>
-              ↩ Logout
+            <button class="export-btn">
+              Download Story 
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="20" width="20" fill="var(--ink-muted, #8a7a68)">
+                <path d="m648-140 112-112v92h40v-160H640v40h92L620-168l28 28Zm-448 20q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v268q-19-9-39-15.5t-41-9.5v-243H200v560h242q3 22 9.5 42t15.5 38H200Zm0-120v40-560 243-3 280Zm80-40h163q3-21 9.5-41t14.5-39H280v80Zm0-160h244q32-30 71.5-50t84.5-27v-3H280v80Zm0-160h400v-80H280v80ZM720-40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Z"/>
+              </svg>
             </button>
           </div>
         </header>
-
         <!-- Chat fills the rest -->
         <div class="content">
           <chat-box .storyId=${this.storyId}></chat-box>
         </div>
-
       </div>
     `;
   }

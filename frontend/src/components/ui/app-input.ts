@@ -126,7 +126,7 @@ export class AppInput extends LitElement {
         input,
         textarea {
           width: 100%;
-          padding: var(--space-3) var(--space-4);
+          // padding: var(--space-3) var(--space-4);
           box-sizing: border-box;
           border-radius: 10px;
 
