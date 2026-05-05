@@ -26,11 +26,11 @@ export class StoryOnboarding extends LitElement {
     }
 
     .container {
-      max-width: 1200px;
       margin: auto;
-      padding: var(--space-6) var(--space-4);
+      padding: var(--space-7) var(--space-6);
       text-align: center;
       min-height: 100vh;
+      max-width: 1200px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -63,7 +63,7 @@ export class StoryOnboarding extends LitElement {
       align-items: center;
       margin-bottom: var(--space-6);
       width: 100%;
-      
+      gap: 2rem;
     }
 
     step-card {

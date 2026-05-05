@@ -12,7 +12,7 @@ export class StepCard extends LitElement {
   static styles = css`
     .card {
       background: #FFFCF0;
-      padding: var(--space-5) var(--space-4);
+      padding: var(--space-6) var(--space-4);
       width: 18.75rem;
       min-height: 17.5rem;
       border-radius: 16px;

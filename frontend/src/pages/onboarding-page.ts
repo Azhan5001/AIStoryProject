@@ -26,7 +26,7 @@ export class Onboarding extends LitElement {
       display: flex;
       width: 100%;
       height: 100%;
-      margin:auto;
+      margin: auto;
     }
 
   @media (max-width: 768px){
