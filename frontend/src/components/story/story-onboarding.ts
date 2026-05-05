@@ -27,7 +27,6 @@ export class StoryOnboarding extends LitElement {
 
     .container {
       width: 100%;
-      max-width: 1200px;
       margin: auto;
       padding: var(--space-7) var(--space-6);
       text-align: center;
