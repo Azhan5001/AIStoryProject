@@ -39,14 +39,12 @@ export class ChatMessage extends LitElement {
       border-radius: 14px 14px 4px 14px;
     }
 
-    /* ── Robot bubble: cream with a subtle gold left border, italic ── */
     .robot .bubble {
       background: var(--surface, #ffffff);
       color: var(--text, #2a2118);
       border: 1.5px solid var(--sand, #d9cdb8);
       border-left: 3px solid var(--gold, #b8953a);
       border-radius: 14px 14px 14px 4px;
-      font-style: italic;
       font-size: var(--text-sm);
       line-height: var(--line-height-body);
     }

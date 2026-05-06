@@ -84,27 +84,8 @@ export class StorySidebar extends LitElement {
       flex: 0;
     }
 
-    /* New story btn — hidden when collapsed */
-    .new-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: var(--text-sm);
-      color: var(--ink-muted, #8a7a68);
-      flex-shrink: 0;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .new-btn:hover {
-      background: var(--parchment, #ede6d6);
-      color: var(--text, #2a2118);
-    }
+ 
+   
 
     :host(.collapsed) .new-btn {
       display: none;
@@ -128,7 +109,7 @@ export class StorySidebar extends LitElement {
     }
 
     .toggle-btn:hover {
-      background: var(--parchment, #ede6d6);
+      // background: var(--parchment, #ede6d6);
       color: var(--text, #2a2118);
     }
 
@@ -142,11 +123,13 @@ export class StorySidebar extends LitElement {
     :host(.collapsed) .logo {
       justify-content: center;
       padding: var(--space-4) 0;
+      width: 100%;
     }
 
     :host(.collapsed) .toggle-btn {
       width: 36px;
       height: 36px;
+      margin: 0 auto;
     }
 
     /* ─── Collapsed: big + button to create story ─── */
@@ -176,6 +159,36 @@ export class StorySidebar extends LitElement {
       display: flex;
     }
 
+    /* ─── Create Story CTA (expanded only) ─── */
+    .create-story-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin: var(--space-2) var(--space-3) var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg);
+      color: var(--primary);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-lg);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .create-story-btn:hover {
+      background: #c49e0a;
+      box-shadow: 0 4px 10px rgba(213,173,15,0.4);
+      transform: translateY(-1px);
+    }
+
+    :host(.collapsed) .create-story-btn {
+      display: none;
+    }
+
     /* ─── Search ─── */
     .search-wrap {
       padding: var(--space-3) var(--space-3) var(--space-1);
@@ -197,7 +210,7 @@ export class StorySidebar extends LitElement {
       gap: var(--space-2);
       background: var(--bg, #FFFCF0);
       border: 1px solid var(--sand, #d9cdb8);
-      border-radius: 10px;
+      border-radius: var(--radius-lg);
       padding: var(--space-2) var(--space-3);
     }
 
@@ -218,8 +231,7 @@ export class StorySidebar extends LitElement {
     }
 
     .search-input::placeholder {
-      color: var(--ink-muted, #8a7a68);
-      font-style: italic;
+      color: var(--accent);
     }
 
     /* ─── Nav ─── */
@@ -343,7 +355,6 @@ export class StorySidebar extends LitElement {
       padding: var(--space-5) var(--space-4);
       font-size: var(--text-xs);
       color: var(--ink-muted, #8a7a68);
-      font-style: italic;
       text-align: center;
       line-height: var(--line-height-body);
     }
@@ -492,10 +503,8 @@ connectedCallback() {
     return html`
       <!-- Logo row — toggle always last, never hidden -->
       <div class="logo">
-        <span class="logo-icon">🏰</span>
+        <span class="logo-icon"></span>
         <span class="logo-text">StoryRealm</span>
-        <button class="new-btn" title="New story"
-          @click=${() => Router.go('/avatar')}>✏️</button>
         <button class="toggle-btn"
           title=${this.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           @click=${this.toggleCollapse}>
@@ -506,35 +515,30 @@ connectedCallback() {
       <!-- + button only visible when collapsed -->
       <button class="collapsed-new-btn" title="New story"
         @click=${() => Router.go('/avatar')}>+</button>
+      
+      
+
+      <button class="create-story-btn" @click=${() => Router.go('/avatar')}>
+        Create a New Story!
+      </button>
+
+      <!-- Stories (hidden when collapsed) -->
+      <div class="section-label">Stories</div>
 
       <!-- Search (hidden when collapsed) -->
       <div class="search-wrap">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--accent)"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
           <input
             class="search-input"
             type="text"
-            placeholder="Search stories..."
+            placeholder="Search"
             .value=${this.searchQuery}
             @input=${this.handleSearch}
           />
         </div>
       </div>
 
-      <!-- Nav (hidden when collapsed) -->
-      <nav class="nav-section">
-        <div class="nav-item">
-          <span class="nav-icon">📚</span>
-          My Stories
-        </div>
-        <div class="nav-item">
-          <span class="nav-icon">✦</span>
-          Explore
-        </div>
-      </nav>
-
-      <!-- Stories (hidden when collapsed) -->
-      <div class="section-label">Recent</div>
       <div class="stories-list">
         ${stories.length === 0
           ? html`<div class="empty-list">No stories yet.<br>Start writing!</div>`

@@ -167,6 +167,7 @@ export class AppInput extends LitElement {
           resize: none;
           min-height: 42px;
           overflow-y: hidden;
+          overflow-x: hidden;
           line-height: var(--line-height-body);
         }
 

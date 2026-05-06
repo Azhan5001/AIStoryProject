@@ -76,7 +76,6 @@ export class ChatMessages extends LitElement {
     .empty-desc {
       font-family: var(--regular-font);
       font-size: var(--text-sm);
-      font-style: italic;
       color: var(--accent);
       line-height: var(--line-height-body);
       max-width: 260px;

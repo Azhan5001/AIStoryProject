@@ -38,7 +38,7 @@ export class ChatPage extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--space-4) var(--space-5);
+      padding: var(--space-2) var(--space-5);
       background: var(--bg, #FFFCF0);
       // border-bottom: 1px solid var(--sand, #d9cdb8);
       flex-shrink: 0;
