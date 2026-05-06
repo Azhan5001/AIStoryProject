@@ -13,8 +13,8 @@ export class StepCard extends LitElement {
     .card {
       background: #FFFCF0;
       padding: var(--space-5) var(--space-4);
-      width: 18.75rem;
-      min-height: 17.5rem;
+      max-width: 260px;
+      min-height: 220px;
       border-radius: 16px;
       border: 1px solid rgba(0,0,0,0.05);
       box-shadow: 0 6px 15px rgba(0,0,0,0.08);
@@ -22,7 +22,7 @@ export class StepCard extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      height: 100%;
     }
 
     .card:hover {
@@ -43,10 +43,30 @@ export class StepCard extends LitElement {
       align-self: flex-start;
     }
 
-    img{
+    .img-box{
       width: 120px;
       height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .img-box img{
+      max-width: 100%;
+      max-height: 100%;
       object-fit: contain;
+    }
+
+    @media(max-width: 480px){
+    .card{
+      max-width: 200px;
+      padding: var(--space-4);
+      }
+
+    .img-box{
+      width: 60px;
+      height: 60px;
+    }
     }
 
     h2{
@@ -59,6 +79,7 @@ export class StepCard extends LitElement {
       margin: 0;
       font-size: var(--text-md);
       color: black;
+      text-align: center;
     }
   `;
 
@@ -66,7 +87,9 @@ export class StepCard extends LitElement {
     return html`
       <div class="card">
         <div class="number">${this.number}</div>
-        <img src="${this.image}"/>
+        <div class="img-box">
+          <img src="${this.image}"/>
+        </div>
         <h2>${this.title}</h2>
         <p>${this.desc}</p>
       </div>
