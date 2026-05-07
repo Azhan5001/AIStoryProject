@@ -12,8 +12,8 @@ const images = import.meta.glob('../assets/**/*.jpg', {
 }) as Record<string, string>;
 
 
-const races: string[] = ['Human', 'Elf', 'Dwarf', 'Orc', 'Halfling', 'Dragonborn'];
-const classes: string[] = ['Warrior', 'Mage', 'Rogue', 'Archer', 'Paladin', 'Necromancer', 'Monk'];
+const characters: string[] = ['Robot', 'Dragon', 'Unicorn', 'Pirate', 'Ninja', 'Alien', 'Dinosaur', 'Wizard'];
+const personalityTypes: string[] = [ 'Brave','Funny', 'Curious', 'Kind', 'Energetic', 'Creative', 'wise', 'Adventurous'];
 const randomNames: string[] = ['Arin', 'Lyra', 'Thorin', 'Kael', 'Zara', 'Eldon', 'Mira', 'Riven'];
 
 function createItems(folder: string, list: string[]) {
@@ -26,8 +26,8 @@ function createItems(folder: string, list: string[]) {
   });
 }
 
-const raceItems = createItems('races', races);
-const classItems = createItems('classes', classes);
+const charactersItems = createItems('characters', characters);
+const personalityTypesItems = createItems('personalityTypes', personalityTypes);
 
 @customElement('avatar-page')
 export class AvatarPage extends LitElement {
@@ -153,10 +153,8 @@ export class AvatarPage extends LitElement {
 
     .name-input-wrap app-input {
       flex: 1;
-      /* strip the shadow/border from the inner app-input so the wrapper owns it */
     }
 
-    /* Override app-input's own shadow when nested in wrapper */
     .name-input-wrap app-input input,
     .name-input-wrap app-input ::part(input) {
       box-shadow: none !important;
@@ -222,29 +220,32 @@ export class AvatarPage extends LitElement {
 
     select option { background: #1a1714; }
 
+    /* ── Panel field-wraps ───────────────────────────────── */
+    .field-wrap.panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
     /* ── Selection Panels ────────────────────────────────── */
     .panels {
       display: grid;
-      /* default: stacked (column) — goes row at wide screens */
       grid-template-columns: 1fr;
       gap: var(--space-5);
     }
 
-    /* Wide desktop: side-by-side */
     @media (min-width: 1492px) {
       .panels {
         grid-template-columns: 1fr 1fr;
       }
     }
 
-    /* Tablet */
     @media (max-width: 768px) {
       main {
         width: 80%;
       }
     }
 
-    /* ── ≤657px: gender drops below name, both full-width ── */
     @media (max-width: 657px) {
       .identity-row {
         flex-direction: column;
@@ -257,7 +258,6 @@ export class AvatarPage extends LitElement {
       }
     }
 
-    /* Mobile */
     @media (max-width: 480px) {
       main {
         width: 95%;
@@ -277,6 +277,17 @@ export class AvatarPage extends LitElement {
     }
 
     /* ── Description ─────────────────────────────────────── */
+    .desc-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Pull the label down toward the box without pushing the box */
+    .desc-section label {
+      margin-bottom: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
     app-input {
       display: block;
       width: 100%;
@@ -345,8 +356,8 @@ export class AvatarPage extends LitElement {
 
   @state() private name: string = '';
   @state() private gender: string = '';
-  @state() private race: string | null = null;
-  @state() private charClass: string | null = null;
+  @state() private character: string | null = null;
+  @state() private charPersonality: string | null = null;
   @state() private description: string = '';
   @state() private error: string = '';
 
@@ -355,20 +366,20 @@ export class AvatarPage extends LitElement {
   }
 
   private handleCreate(): void {
-    if (!this.name || !this.gender || !this.race || !this.charClass) {
+    if (!this.name || !this.gender || !this.character || !this.charPersonality) {
       this.error = 'All fields are required to forge your character.';
       return;
     }
 
     const finalDescription =
       this.description ||
-      `A ${this.gender} ${this.race} ${this.charClass} ready for adventure.`;
+      `A ${this.gender} ${this.character} ${this.charPersonality} ready for adventure.`;
 
     const avatarDraft = {
       name: this.name,
       gender: this.gender,
-      race: this.race,
-      class: this.charClass,
+      character: this.character,
+      personality: this.charPersonality,
       description: finalDescription
     };
 
@@ -414,21 +425,25 @@ export class AvatarPage extends LitElement {
         </div>
 
         <div class="panels">
-          <div class="panel-container">
-            <selection-panel
-              title="Race"
-              .items=${raceItems}
-              .selected=${this.race}
-              @change=${(e: CustomEvent) => this.race = e.detail}
-            ></selection-panel>
+          <div class="field-wrap panel">
+            <label>Character</label>
+            <div class="panel-container">
+              <selection-panel
+                .items=${charactersItems}
+                .selected=${this.character}
+                @change=${(e: CustomEvent) => this.character = e.detail}
+              ></selection-panel>
+            </div>
           </div>
-          <div class="panel-container">
-            <selection-panel
-              title="Class"
-              .items=${classItems}
-              .selected=${this.charClass}
-              @change=${(e: CustomEvent) => this.charClass = e.detail}
-            ></selection-panel>
+          <div class="field-wrap panel">
+            <label>Personality</label>
+            <div class="panel-container">
+              <selection-panel
+                .items=${personalityTypesItems}
+                .selected=${this.charPersonality}
+                @change=${(e: CustomEvent) => this.charPersonality = e.detail}
+              ></selection-panel>
+            </div>
           </div>
         </div>
 
@@ -456,3 +471,4 @@ export class AvatarPage extends LitElement {
     `;
   }
 }
+

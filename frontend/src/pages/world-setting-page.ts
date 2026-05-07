@@ -14,7 +14,17 @@ const images = import.meta.glob('../assets/**/*.jpg', {
   import: 'default'
 }) as Record<string, string>;
 
-const worldPresets = ['High Fantasy', 'Dark Ages', 'Steampunk', 'Cosmic Horror', 'Post-Apocalyptic', 'Custom'];
+const worldPresets = [
+  'Candy Kingdom',
+  'Magical Forest',
+  'Space Adventure',
+  'Underwater World',
+  'Animal Kingdom',
+  'Dinosaur Island',
+  'Pirate Seas',
+  'Superhero Academy',
+  'Custom'
+];
 
 function createWorldItems(list: string[]) {
   return list.map(name => {
