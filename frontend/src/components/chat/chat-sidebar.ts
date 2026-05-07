@@ -25,7 +25,6 @@ export class StorySidebar extends LitElement {
       height: 100vh;
       width: 272px;
       flex-shrink: 0;
-      /* ── Theme vars ── */
       background: var(--surface, #ffffff);
       border-right: 1px solid var(--sand, #d9cdb8);
       color: var(--text, #2a2118);
@@ -55,7 +54,6 @@ export class StorySidebar extends LitElement {
       font-size: var(--text-xl);
       line-height: 1;
       flex-shrink: 0;
-      /* hidden when collapsed */
       transition: opacity 0.15s ease;
     }
 
@@ -84,14 +82,10 @@ export class StorySidebar extends LitElement {
       flex: 0;
     }
 
- 
-   
-
     :host(.collapsed) .new-btn {
       display: none;
     }
 
-    /* Toggle btn — ALWAYS visible, uses sidebar SVG icon */
     .toggle-btn {
       background: none;
       border: none;
@@ -109,7 +103,6 @@ export class StorySidebar extends LitElement {
     }
 
     .toggle-btn:hover {
-      // background: var(--parchment, #ede6d6);
       color: var(--text, #2a2118);
     }
 
@@ -119,7 +112,6 @@ export class StorySidebar extends LitElement {
       display: block;
     }
 
-    /* When collapsed: toggle btn is the only thing in the logo row, center it */
     :host(.collapsed) .logo {
       justify-content: center;
       padding: var(--space-4) 0;
@@ -132,7 +124,6 @@ export class StorySidebar extends LitElement {
       margin: 0 auto;
     }
 
-    /* ─── Collapsed: big + button to create story ─── */
     .collapsed-new-btn {
       display: none;
       margin: var(--space-2) auto 0;
@@ -159,7 +150,6 @@ export class StorySidebar extends LitElement {
       display: flex;
     }
 
-    /* ─── Create Story CTA (expanded only) ─── */
     .create-story-btn {
       display: flex;
       align-items: center;
@@ -189,7 +179,6 @@ export class StorySidebar extends LitElement {
       display: none;
     }
 
-    /* ─── Search ─── */
     .search-wrap {
       padding: var(--space-3) var(--space-3) var(--space-1);
       flex-shrink: 0;
@@ -234,7 +223,6 @@ export class StorySidebar extends LitElement {
       color: var(--accent);
     }
 
-    /* ─── Nav ─── */
     .nav-section {
       padding: var(--space-1) 0 var(--space-1);
       flex-shrink: 0;
@@ -267,7 +255,6 @@ export class StorySidebar extends LitElement {
     .nav-item:hover { background: var(--bg, #FFFCF0); }
     .nav-icon { font-size: 13px; flex-shrink: 0; }
 
-    /* ─── Section label ─── */
     .section-label {
       font-family: var(--title-font);
       font-size: var(--text-xs);
@@ -288,7 +275,6 @@ export class StorySidebar extends LitElement {
       padding: 0;
     }
 
-    /* ─── Story list ─── */
     .stories-list {
       flex: 1;
       overflow-y: auto;
@@ -369,6 +355,20 @@ export class StorySidebar extends LitElement {
       align-items: center;
       gap: var(--space-3);
       flex-shrink: 0;
+      /* Make the whole footer a hover target */
+      border-radius: 0 0 0 0;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+
+    .sidebar-footer:hover {
+      background: var(--bg, #FFFCF0);
+    }
+
+    /* Subtle "open settings" hint that appears on hover */
+    .sidebar-footer:hover .settings-hint {
+      opacity: 1;
     }
 
     :host(.collapsed) .sidebar-footer {
@@ -387,6 +387,11 @@ export class StorySidebar extends LitElement {
       justify-content: center;
       font-size: var(--text-sm);
       flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+
+    .sidebar-footer:hover .avatar {
+      border-color: var(--gold, #b8953a);
     }
 
     .user-info {
@@ -408,44 +413,61 @@ export class StorySidebar extends LitElement {
 
     .user-role { font-size: var(--text-xs); color: var(--ink-muted, #8a7a68); }
 
-    .crown { font-size: var(--text-sm); flex-shrink: 0; }
-    :host(.collapsed) .crown { display: none; }
+    /* Settings gear icon — replaces crown on hover in expanded mode */
+    .footer-right {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      color: var(--ink-muted, #8a7a68);
+      transition: color 0.15s;
+    }
+
+    :host(.collapsed) .footer-right { display: none; }
+
+    .sidebar-footer:hover .footer-right {
+      color: var(--text, #2a2118);
+    }
+
+    .icon-crown,
+    .icon-gear {
+      position: absolute;
+      transition: opacity 0.15s;
+    }
+
+    .icon-crown { opacity: 1; }
+    .icon-gear  { opacity: 0; }
+
+    .sidebar-footer:hover .icon-crown { opacity: 0; }
+    .sidebar-footer:hover .icon-gear  { opacity: 1; }
   `;
 
-connectedCallback() {
-  super.connectedCallback();
+  connectedCallback() {
+    super.connectedCallback();
+    this.username = getUsername();
 
-  this.username = getUsername();
+    const path = window.location.pathname;
+    const match = path.match(/\/story\/(\d+)/);
+    if (match) {
+      this.selectedId = Number(match[1]);
+    }
 
-  const path = window.location.pathname;
-  const match = path.match(/\/story\/(\d+)/);
-
-  if (match) {
-    this.selectedId = Number(match[1]);
+    this.loadStories();
   }
-
-  this.loadStories();
-}
 
   private async loadStories() {
     try {
       const stories = await getUserStories();
 
-      // Fetch avatar names for each story
       const storiesWithTitles = await Promise.all(
         stories.map(async (s: any) => {
           try {
             const avatar = await getAvatar(s.avatar_id);
-
-            return {
-              ...s,
-              title: avatar.avatar_name // 👈 use avatar name as title
-            };
+            return { ...s, title: avatar.avatar_name };
           } catch {
-            return {
-              ...s,
-              title: `Story ${s.story_id}` // fallback
-            };
+            return { ...s, title: `Story ${s.story_id}` };
           }
         })
       );
@@ -457,14 +479,12 @@ connectedCallback() {
         this.selectedId = latest.story_id;
         Router.go(`/story/${latest.story_id}`);
       }
-
     } catch (e) {
       console.error('Failed to load stories', e);
     }
   }
 
   private selectStory(id: number) {
-    // Only navigate if selecting a different story
     if (this.selectedId === id) return;
     this.selectedId = id;
     Router.go(`/story/${id}`);
@@ -487,7 +507,14 @@ connectedCallback() {
     );
   }
 
-  /* Sidebar panel icon — two vertical rectangles (panel layout) */
+  /** Fire an event the chat-page listens to — opens the settings overlay */
+  private openSettings() {
+    this.dispatchEvent(new CustomEvent('open-settings', {
+      bubbles: true,   // bubbles up through the DOM
+      composed: true,  // crosses shadow DOM boundaries
+    }));
+  }
+
   private get sidebarIcon() {
     return html`
       <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -501,7 +528,7 @@ connectedCallback() {
     const stories = this.filteredStories;
 
     return html`
-      <!-- Logo row — toggle always last, never hidden -->
+      <!-- Logo row -->
       <div class="logo">
         <span class="logo-icon"></span>
         <span class="logo-text">StoryRealm</span>
@@ -512,23 +539,20 @@ connectedCallback() {
         </button>
       </div>
 
-      <!-- + button only visible when collapsed -->
       <button class="collapsed-new-btn" title="New story"
         @click=${() => Router.go('/avatar')}>+</button>
-      
-      
 
       <button class="create-story-btn" @click=${() => Router.go('/avatar')}>
         Create a New Story!
       </button>
 
-      <!-- Stories (hidden when collapsed) -->
       <div class="section-label">Stories</div>
 
-      <!-- Search (hidden when collapsed) -->
       <div class="search-wrap">
         <div class="search-box">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--accent)"><path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--accent)">
+            <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
+          </svg>
           <input
             class="search-input"
             type="text"
@@ -557,14 +581,29 @@ connectedCallback() {
         }
       </div>
 
-      <!-- Footer -->
-      <div class="sidebar-footer">
+      <!-- Footer — click anywhere to open settings -->
+      <div class="sidebar-footer" @click=${this.openSettings} title="Open settings">
         <div class="avatar">👤</div>
+
         <div class="user-info">
           <div class="user-name">${this.username}</div>
           <div class="user-role">Explorer</div>
         </div>
-        <span class="crown">👑</span>
+
+        <!-- Crown fades to gear on hover -->
+        <div class="footer-right">
+          <!-- Crown (default) -->
+          <svg class="icon-crown" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+               viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
+          </svg>
+          <!-- Gear (hover) -->
+          <svg class="icon-gear" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+          </svg>
+        </div>
       </div>
     `;
   }
