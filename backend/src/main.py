@@ -1,6 +1,7 @@
 # Load Environment Variables (Note: Leave at the top as imports may use environment variables)
 from dotenv import load_dotenv
 from pathlib import Path
+from fastapi.middleware.cors import CORSMiddleware
 
 # Load .env from src/ directory (primary configuration)
 src_env_path = Path(__file__).parent / '.env'
@@ -38,7 +39,7 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176", "http://localhost:5177", "http://localhost:5178"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176", "http://localhost:5177", "http://localhost:5178", "https://wondrous-gnome-360b33.netlify.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
