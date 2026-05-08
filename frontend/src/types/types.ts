@@ -13,7 +13,7 @@ export interface Story {
   created_at?: string; // optional depending on backend
 }
 
-export type MessageRole = 'user' | 'assistant';
+export type MessageRole = 'user' | 'assistant' | 'bot';
 
 export interface Message {
   message_id: number;

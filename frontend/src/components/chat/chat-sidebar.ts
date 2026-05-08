@@ -76,6 +76,7 @@ export class StorySidebar extends LitElement {
     }
 
     :host(.collapsed) .logo-text {
+      display: none;
       opacity: 0;
       pointer-events: none;
       width: 0;
@@ -486,7 +487,20 @@ export class StorySidebar extends LitElement {
 
   private selectStory(id: number) {
     if (this.selectedId === id) return;
+
     this.selectedId = id;
+
+    const story = this.stories.find(s => s.story_id === id);
+
+    this.dispatchEvent(new CustomEvent('story-selected', {
+      detail: {
+        storyId: id,
+        storyTitle: story?.title ?? `Story ${id}`
+      },
+      bubbles: true,
+      composed: true
+    }));
+
     Router.go(`/story/${id}`);
   }
 

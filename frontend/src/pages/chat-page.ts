@@ -1,9 +1,9 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { Router } from '@vaadin/router';
 import '../components/chat/chat-box';
 import '../components/chat/chat-sidebar';
 import '../components/settings/settings-overlay';
+import '../components/chat/story-export-btn';
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {
@@ -12,7 +12,7 @@ export class ChatPage extends LitElement {
     :host {
       display: flex;
       height: 100vh;
-      width: 100vw;
+      width: 100vw;jk
       overflow: hidden;
       background: var(--bg, #FFFCF0);
       font-family: var(--regular-font);
@@ -88,6 +88,7 @@ export class ChatPage extends LitElement {
 
   @property({ type: Number })
   @state() private storyId: number = 0;
+  @state() private storyTitle = '';
   @state() private settingsOpen = false;
 
   connectedCallback() {
@@ -107,6 +108,10 @@ export class ChatPage extends LitElement {
       this.storyId = Number(match[1]);
     }
   };
+  private handleStorySelected = (e: CustomEvent) => {
+    this.storyId = e.detail.storyId;
+    this.storyTitle = e.detail.storyTitle;
+  };
 
   render() {
     return html`
@@ -114,7 +119,10 @@ export class ChatPage extends LitElement {
         'open-settings' bubbles up (composed:true) from story-sidebar's shadow DOM.
         We catch it here and flip settingsOpen, which the overlay reacts to.
       -->
-      <story-sidebar @open-settings=${() => this.settingsOpen = true}></story-sidebar>
+      <story-sidebar
+        @open-settings=${() => this.settingsOpen = true}
+        @story-selected=${this.handleStorySelected}>
+      </story-sidebar>
 
       <div class="main">
         <header class="topbar">
@@ -122,12 +130,11 @@ export class ChatPage extends LitElement {
             Avatar Name
           </div>
           <div class="topbar-right">
-            <button class="export-btn">
-              Download Story
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="20" width="20" fill="var(--ink-muted, #8a7a68)">
-                <path d="m648-140 112-112v92h40v-160H640v40h92L620-168l28 28Zm-448 20q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v268q-19-9-39-15.5t-41-9.5v-243H200v560h242q3 22 9.5 42t15.5 38H200Zm0-120v40-560 243-3 280Zm80-40h163q3-21 9.5-41t14.5-39H280v80Zm0-160h244q32-30 71.5-50t84.5-27v-3H280v80Zm0-160h400v-80H280v80ZM720-40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Z"/>
-              </svg>
-            </button>
+            <story-export-btn
+              .storyId=${this.storyId}
+              .storyTitle=${this.storyTitle}>
+            </story-export-btn>
+
           </div>
         </header>
 

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@vaadin/router": "^2.0.1",
+    "html2pdf.js": "^0.14.0",
+    "jspdf": "^4.2.1",
     "lit": "^3.3.2"
   },
   "devDependencies": {

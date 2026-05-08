@@ -28,11 +28,15 @@ export class ChatBox extends LitElement {
   @state() private inputValue: string = '';
 
   static styles = css`
+  
+
     :host {
+     --chatBox-width: 45rem;
+
       display: flex;
       flex-direction: column;
       width: 100%;
-      max-width: 50rem;
+      max-width: var(--chatBox-width);
       height: 100%;
       margin: 0 auto;
     }
@@ -73,7 +77,7 @@ export class ChatBox extends LitElement {
       display: flex;
       flex-direction: column;
       width: 100%;
-      max-width: 42rem;
+      max-width: var(--chatBox-width);
       background: var(--bg);
       border-radius: var(--radius-lg);
       padding: var(--space-3);
@@ -86,6 +90,13 @@ export class ChatBox extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-2);
+    }
+
+    .loading-area {
+      height: 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
     }
 
     .button-row {
@@ -314,7 +325,9 @@ export class ChatBox extends LitElement {
         <div class="input-bar">
           <div class="input-row">
             <div class="input-field">
-              ${this.loading ? html`<div class="thinking-dot"></div>` : ''}
+              <div class="loading-area">
+               ${this.loading ? html`<div class="thinking-dot"></div>` : ''}
+              </div>
               <app-input
                 mode="textarea"
                 autoGrow
