@@ -58,22 +58,24 @@ from utils import (
 )
 
 # Import agents
-from agent.agents import (
-	user_intent_analysis_agent,
-	story_generation_agent,
-	story_recalibration_analysis_agent,
-	story_recalibration_selection_agent,
-	story_elements_evaluation_agent,
-	story_self_evaluation_agent,
-	narrative_direction_agent,
-	scene_prop_selection_agent,
-	location_selection_agent,
-	npc_creation_agent,
-)
-
 MAX_REGENERATION_ATTEMPTS = int(os.getenv('MAX_REGENERATION_ATTEMPTS', '2'))
 MOCK_MODE = os.getenv('MOCK_MODE', 'false').lower() == 'true'
 
+# Only import agents if NOT in mock mode
+if not MOCK_MODE:
+	from agent.agents import (
+		user_intent_analysis_agent,
+		story_generation_agent,
+		story_recalibration_analysis_agent,
+		story_recalibration_selection_agent,
+		story_elements_evaluation_agent,
+		story_self_evaluation_agent,
+		narrative_direction_agent,
+		scene_prop_selection_agent,
+		location_selection_agent,
+		npc_creation_agent,
+	)
+	
 _mock_model = None
 
 def _get_mock_model():

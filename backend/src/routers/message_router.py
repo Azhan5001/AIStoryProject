@@ -54,6 +54,8 @@ def create_message(
     message.story_id = story_id
     created_message = crud_message.create_message(db, message)
     print(f"[DEBUG] Created message ID: {created_message.message_id}")
+    print(f"[DEBUG] ROLE VALUE = {message_data.role}")
+    print(f"[DEBUG] STORY_GENERATION_AVAILABLE = {STORY_GENERATION_AVAILABLE}")
     
     # If this is a user message, generate AI response
     if message_data.role == Role.user_messages and STORY_GENERATION_AVAILABLE:

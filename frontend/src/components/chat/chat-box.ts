@@ -8,7 +8,7 @@ import { sendMessage, getMessages } from '../../api/api';
 import { getBotResponse } from './chat-Bot';
 
 // 🔑 SWITCH HERE
-const USE_FAKE_BOT = true;
+const USE_FAKE_BOT = false;
 
 interface Message {
   message: string;
@@ -237,25 +237,40 @@ export class ChatBox extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-    await this.loadMessages();
+    await this.loadMessages(false);
   }
 
   updated(changedProps: Map<string, unknown>) {
     if (changedProps.has('storyId')) {
-      this.loadMessages();
+      this.loadMessages(false);
     }
   }
 
-  async loadMessages() {
+  async loadMessages(animateNew = false) {
     try {
       const apiMessages = await getMessages(this.storyId);
 
-      this.messages = apiMessages.map((msg: any) => ({
-        message: msg.content,
-        sender: msg.role === 'user' ? 'user' : 'robot',
-        id: msg.message_id,
-        shouldAnimate: false
-      }));
+      const previousIds = new Set(this.messages.map(m => m.id));
+
+      this.messages = apiMessages.map((msg: any) => {
+        const isNew = !previousIds.has(String(msg.message_id));
+
+        const isUser =
+          msg.role === 'user' ||
+          msg.role === 'user_messages';
+
+        return {
+          message: msg.content,
+          sender: isUser ? 'user' : 'robot',
+          id: String(msg.message_id),
+
+          shouldAnimate:
+            animateNew &&
+            isNew &&
+            !isUser
+        };
+      });
+
     } catch (e) {
       console.error('Failed to load messages', e);
     }
@@ -281,7 +296,7 @@ export class ChatBox extends LitElement {
     } else {
       // 🚀 REAL API MODE
       await sendMessage(this.storyId, text);
-      await this.loadMessages();
+      await this.loadMessages(true);
     }
 
     this.loading = false;
