@@ -38,6 +38,7 @@ export async function login(username: string, password: string): Promise<number>
 
   // âœ… store only user_id
   localStorage.setItem('user_id', String(user.user_id));
+  localStorage.setItem('username', user.username);
 
   return user.user_id;
 }
@@ -99,734 +100,79 @@ export async function getStoryMessages(storyId: number): Promise<Message[]> {
   return res.json();
 }
 
---- FILE: \components\app-input.ts ---
+// CREATE AVATAR
+export async function createAvatar(name: string, description: string) {
+  const res = await fetch(`${BASE_URL}/avatar/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      avatar_name: name,
+      description
+    })
+  });
 
-import { LitElement, html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+  if (res.status !== 201) throw new Error('Avatar creation failed');
 
-@customElement('app-input')
-export class AppInput extends LitElement {
-
-  @property() value: string = '';
-  @property() placeholder: string = '';
-  @property() type: string = 'text';
-
-  @property({ type: Boolean }) required = false;
-  @property() validateType: 'none' | 'email' | 'password' = 'none';
-
-  @property() error: string = '';
-
-  private handleInput(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.value = target.value || '';
-
-    if (this.error) this.error = '';
-
-    this.dispatchEvent(new CustomEvent('value-change', {
-      detail: this.value,
-      bubbles: true,
-      composed: true
-    }));
-  }
-
-  private handleKey(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
-      this.dispatchEvent(new CustomEvent('input-submit', {
-        detail: { value: this.value },
-        bubbles: true,
-        composed: true
-      }));
-    }
-  }
-
-  public validate(): boolean {
-    const val = this.value.trim();
-
-    if (this.required && !val) {
-      this.error = 'This field is required';
-      return false;
-    }
-
-    if (!val) return true;
-
-    if (this.validateType === 'email') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(val)) {
-        this.error = 'Invalid email format';
-        return false;
-      }
-    }
-
-    if (this.validateType === 'password') {
-      if (val.length < 6) {
-        this.error = 'Password must be at least 6 characters';
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  public getValue() {
-    const input = this.querySelector('input') as HTMLInputElement;
-    return input?.value ?? '';
-  }
-
-  public clear() {
-    this.value = '';
-    this.error = '';
-  }
-
-  createRenderRoot() {
-    return this;
-  }
-
-  render() {
-    return html`
-      <style>
-        app-input {
-          display: block;
-        }
-
-        app-input input {
-          width: 100%;
-          padding: 10px 14px;
-          box-sizing: border-box;
-          border-radius: 10px;
-
-          /* light beige background from the HTML reference (.story-textarea bg) */
-          background: var(--bg, #FFFCF0);
-          border: 1.5px solid var(--sand, #d9cdb8);
-
-          font-family: 'Lora', Georgia, serif;
-          font-size: 14px;
-          color: var(--text, #2a2118);
-
-          outline: none;
-          transition: border-color 0.2s;
-        }
-
-        app-input input::placeholder {
-          color: var(--ink-muted, #8a7a68);
-          font-style: italic;
-        }
-
-        /* Gold border on focus â€” matches .story-textarea:focus */
-        app-input input:focus {
-          border-color: var(--gold, #b8953a);
-        }
-
-        app-input input.error {
-          border-color: var(--error, #c0392b);
-        }
-
-        app-input .error-text {
-          font-family: 'Lora', Georgia, serif;
-          font-size: 12px;
-          color: var(--error, #c0392b);
-          margin-top: 4px;
-          padding-left: 2px;
-        }
-      </style>
-
-      <input
-        class=${this.error ? 'error' : ''}
-        .value=${this.value}
-        type=${this.type}
-        placeholder=${this.placeholder}
-        @input=${this.handleInput}
-        @keydown=${this.handleKey}
-      />
-      ${this.error
-        ? html`<div class="error-text">${this.error}</div>`
-        : ''}
-    `;
-  }
+  return res.json(); // contains avatar_id
 }
 
---- FILE: \components\chat-box.ts ---
 
-import { LitElement, html, css } from 'lit';
-import { customElement, state, property } from 'lit/decorators.js';
-import './app-input';
-import './chat-messages';
-import { sendMessage, getMessages } from '../api/api';
+// CREATE STORY SETTING
+export async function createStorySetting(setting: string) {
+  const res = await fetch(`${BASE_URL}/story-setting/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      setting_prompt: setting
+    })
+  });
 
-// ðŸ§ª TEST BOT (remove later easily)
-import { getBotResponse } from './chatBot';
+  if (res.status !== 201) throw new Error('Setting creation failed');
 
-// ðŸ”‘ SWITCH HERE
-const USE_FAKE_BOT = true;
-
-interface Message {
-  message: string;
-  sender: 'user' | 'robot';
-  id: string;
-  shouldAnimate?: boolean;
+  return res.json(); // contains story_setting_id
 }
 
-@customElement('chat-box')
-export class ChatBox extends LitElement {
 
-  @property({ type: Number })
-  storyId = 1;
+// CREATE STORY
+export async function createStory(
+  userId: number,
+  avatarId: number,
+  settingId: number
+) {
+  const res = await fetch(`${BASE_URL}/story/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_id: userId,
+      avatar_id: avatarId,
+      story_setting_id: settingId
+    })
+  });
 
-  @state() private messages: Message[] = [];
-  @state() private loading = false;
+  if (res.status !== 201) throw new Error('Story creation failed');
 
-  static styles = css`
-    :host {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-    }
-
-    /* â”€â”€ Card â”€â”€ */
-    .box {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      height: 100%;
-      background: var(--surface, #ffffff);
-      border: 1.5px solid var(--sand, #d9cdb8);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    /* â”€â”€ Header strip â”€â”€ */
-    .chat-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 20px;
-      background: var(--surface, #ffffff);
-      border-bottom: 1px solid var(--sand, #d9cdb8);
-      flex-shrink: 0;
-    }
-
-    .chat-header-icon {
-      color: var(--gold, #b8953a);
-      font-size: 16px;
-    }
-
-    .chat-header-title {
-      font-family: 'Cinzel', serif;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text, #2a2118);
-      letter-spacing: 0.03em;
-    }
-
-    .chat-header-sub {
-      margin-left: auto;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 12px;
-      color: var(--ink-muted, #8a7a68);
-      font-style: italic;
-    }
-
-    /* Pulsing gold dot while loading */
-    .thinking-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--gold, #b8953a);
-      margin-left: auto;
-      flex-shrink: 0;
-      animation: pulse 1.2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1;   transform: scale(1);    }
-      50%       { opacity: 0.4; transform: scale(0.72); }
-    }
-
-    /* â”€â”€ Messages â”€â”€ */
-    .messages-area {
-      flex: 1;
-      overflow: hidden;
-      background: var(--bg, #FFFCF0);
-    }
-
-    chat-messages {
-      display: block;
-      height: 100%;
-    }
-
-    /* â”€â”€ Input bar â”€â”€ */
-    .input-bar {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 14px 18px 12px;
-      background: var(--surface, #ffffff);
-      border-top: 1px solid var(--sand, #d9cdb8);
-      flex-shrink: 0;
-    }
-
-    .input-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'Cinzel', serif;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text, #2a2118);
-    }
-
-    .input-label .spark { color: var(--gold, #b8953a); }
-
-    .input-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    app-input {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* Send button â€” mirrors .generate-btn exactly from the HTML */
-    .send-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--ink, #2a2118);
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      padding: 0 20px;
-      height: 42px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      flex-shrink: 0;
-      white-space: nowrap;
-      position: relative;
-      overflow: hidden;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    /* Gold shimmer overlay, matches .generate-btn::before */
-    .send-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(184,149,58,0.25) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
-    .send-btn:hover  { background: var(--ink-light, #5a4a38); }
-    .send-btn:active { transform: scale(0.97); }
-    .send-btn:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .send-btn .spark { color: var(--gold-light, #d4a94a); font-size: 12px; }
-
-    /* Tip row */
-    .tip-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 11px;
-      color: var(--ink-muted, #8a7a68);
-      font-style: italic;
-    }
-
-    .tip-row strong {
-      font-style: normal;
-      color: var(--gold-dark, #8a6e28);
-    }
-  `;
-
-  async connectedCallback() {
-    super.connectedCallback();
-    await this.loadMessages();
-  }
-
-  async loadMessages() {
-    const apiMessages = await getMessages(this.storyId);
-    this.messages = apiMessages.map((msg: any) => ({
-      message: msg.content,
-      sender: msg.role === 'user' ? 'user' : 'robot',
-      id: msg.message_id,
-      shouldAnimate: false
-    }));
-  }
-
-  private async handleMessage(text: string) {
-    if (!text.trim() || this.loading) return;
-
-    this.messages = [
-      ...this.messages,
-      { message: text, sender: 'user', id: crypto.randomUUID(), shouldAnimate: false }
-    ];
-    this.loading = true;
-
-    if (USE_FAKE_BOT) {
-      // ðŸ§ª TEST MODE
-      await new Promise(res => setTimeout(res, 500));
-      const reply = await getBotResponse(text);
-      this.messages = [
-        ...this.messages,
-        { message: reply, sender: 'robot', id: crypto.randomUUID(), shouldAnimate: true }
-      ];
-    } else {
-      // ðŸš€ REAL API MODE
-      await sendMessage(this.storyId, text);
-      await this.loadMessages();
-    }
-
-    this.loading = false;
-  }
-
-  private onInputSubmit(e: CustomEvent<{ value: string }>) {
-    const input = this.renderRoot.querySelector('app-input') as any;
-    const val = e.detail.value?.trim();
-    if (!val) return;
-    this.handleMessage(val);
-    input?.clear();
-  }
-
-  private onSendClick() {
-    const input = this.renderRoot.querySelector('app-input') as any;
-    const value = input?.getValue()?.trim();
-    if (!value) return;
-    this.handleMessage(value);
-    input.clear();
-  }
-
-  render() {
-    return html`
-      <div class="box">
-
-        <div class="chat-header">
-          <span class="chat-header-icon">âœ¦</span>
-          <span class="chat-header-title">Story Chat</span>
-          ${this.loading
-            ? html`<div class="thinking-dot"></div>`
-            : html`<span class="chat-header-sub">Scene ${this.storyId}</span>`}
-        </div>
-
-        <div class="messages-area">
-          <chat-messages .messages=${this.messages}></chat-messages>
-        </div>
-
-        <div class="input-bar">
-          <div class="input-label">
-            <span class="spark">âœ¦</span>
-            Continue the story
-          </div>
-          <div class="input-row">
-            <app-input
-              placeholder="What happens next..."
-              @input-submit=${this.onInputSubmit}
-            ></app-input>
-            <button
-              class="send-btn"
-              ?disabled=${this.loading}
-              @click=${this.onSendClick}
-            >
-              <span class="spark">âœ¦</span>
-              ${this.loading ? 'Writing...' : 'Send'}
-            </button>
-          </div>
-          <div class="tip-row">
-            ðŸ’¡ <span><strong>Tip:</strong> Press Enter to send your message.</span>
-          </div>
-        </div>
-
-      </div>
-    `;
-  }
+  return res.json(); // contains story_id
 }
 
---- FILE: \components\chat-message.ts ---
-
-import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-
-@customElement('chat-message')
-export class ChatMessage extends LitElement {
-
-  @property({ type: String }) message = '';
-  @property({ type: String }) sender: 'user' | 'robot' = 'robot';
-  @property({ type: Boolean }) shouldAnimate = false;
-
-  @state() private displayedText = '';
-
-  private typingSpeed = 20;
-
-  static styles = css`
-    .message {
-      display: flex;
-      margin: 6px 0;
-    }
-
-    .user  { justify-content: flex-end; }
-    .robot { justify-content: flex-start; }
-
-    .bubble {
-      padding: 10px 16px;
-      border-radius: 14px;
-      max-width: 68%;
-      line-height: 1.65;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14px;
-      word-break: break-word;
-    }
-
-    /* â”€â”€ User bubble: warm sand, no dark colors â”€â”€ */
-    .user .bubble {
-      background: var(--parchment, #ede6d6);
-      color: var(--text, #2a2118);
-      border: 1px solid var(--sand, #d9cdb8);
-      border-radius: 14px 14px 4px 14px;
-    }
-
-    /* â”€â”€ Robot bubble: cream with a subtle gold left border, italic â”€â”€ */
-    .robot .bubble {
-      background: var(--surface, #ffffff);
-      color: var(--text, #2a2118);
-      border: 1.5px solid var(--sand, #d9cdb8);
-      border-left: 3px solid var(--gold, #b8953a);
-      border-radius: 14px 14px 14px 4px;
-      font-style: italic;
-      font-size: 15px;
-      line-height: 1.7;
-    }
-
-    /* Gold âœ¦ spark prefix on AI messages (CSS only, no DOM change) */
-    .robot .bubble::before {
-      content: 'âœ¦ ';
-      color: var(--gold, #b8953a);
-      font-style: normal;
-      font-size: 11px;
-    }
-
-    /* Blinking pen cursor â€” gold to match theme */
-    .cursor {
-      display: inline-block;
-      width: 2px;
-      height: 14px;
-      background: var(--gold, #b8953a);
-      margin-left: 3px;
-      vertical-align: middle;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0%, 50%, 100% { opacity: 1; }
-      25%, 75%      { opacity: 0; }
-    }
-  `;
-
-  updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has('message') || changedProps.has('shouldAnimate')) {
-      if (this.sender === 'robot' && this.shouldAnimate) {
-        this.startTyping();
-      } else {
-        this.displayedText = this.message;
-      }
-    }
-  }
-
-  private async startTyping() {
-    this.displayedText = '';
-    for (let i = 0; i < this.message.length; i++) {
-      this.displayedText += this.message[i];
-      await this.sleep(this.typingSpeed);
-    }
-    this.shouldAnimate = false; // stop cursor
-  }
-
-  private sleep(ms: number) {
-    return new Promise(res => setTimeout(res, ms));
-  }
-
-  render() {
-    const isTyping = this.sender === 'robot' && this.displayedText.length < this.message.length;
-
-    return html`
-      <div class="message ${this.sender}">
-        <div class="bubble">
-          ${this.displayedText}
-          ${isTyping ? html`<span class="cursor"></span>` : ''}
-        </div>
-      </div>
-    `;
-  }
+export async function getAvatar(avatarId: number) {
+  const res = await fetch(`${BASE_URL}/avatar/${avatarId}`);
+  if (!res.ok) throw new Error('Failed to fetch avatar');
+  return res.json();
 }
 
---- FILE: \components\chat-messages.ts ---
-
-import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import './chat-message';
-
-interface Message {
-  message: string;
-  sender: 'user' | 'robot';
-  id: string;
-  shouldAnimate?: boolean;
+export function getUsername(): string {
+  return localStorage.getItem('username') || 'My Account';
 }
 
-@customElement('chat-messages')
-export class ChatMessages extends LitElement {
-
-  @property({ type: Array })
-  messages: Message[] = [];
-
-  static styles = css`
-    :host {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-    }
-
-    /* Scrollable messages column */
-    .container {
-      flex: 1;
-      height: 100%;
-      overflow-y: auto;
-      padding: 20px 28px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Scrollbar matches the HTML reference */
-    .container::-webkit-scrollbar        { width: 5px; }
-    .container::-webkit-scrollbar-track  { background: transparent; }
-    .container::-webkit-scrollbar-thumb  {
-      background: var(--sand, #d9cdb8);
-      border-radius: 3px;
-    }
-
-    /* â”€â”€ Empty state â”€â”€ */
-    .empty-state {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--ink-muted, #8a7a68);
-    }
-
-    /* Mirrors .scene-icon-wrap from the HTML */
-    .empty-icon-wrap {
-      width: 72px;
-      height: 72px;
-      background: var(--surface, #ffffff);
-      border-radius: 18px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      margin-bottom: 6px;
-    }
-
-    .empty-title {
-      font-family: 'Cinzel', serif;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text, #2a2118);
-    }
-
-    .empty-desc {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
-      font-style: italic;
-      color: var(--ink-muted, #8a7a68);
-      line-height: 1.6;
-      max-width: 260px;
-    }
-  `;
-
-  updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has('messages')) {
-      const div = this.renderRoot.querySelector('.container') as HTMLDivElement;
-      if (div) {
-        requestAnimationFrame(() => { div.scrollTop = div.scrollHeight; });
-      }
-    }
-  }
-
-  render() {
-    if (!this.messages.length) {
-      return html`
-        <div class="container">
-          <div class="empty-state">
-            <div class="empty-icon-wrap">ðŸ°</div>
-            <div class="empty-title">Your story begins here</div>
-            <p class="empty-desc">Describe a scene, ask for the next chapter,<br>or simply say hello to begin.</p>
-          </div>
-        </div>
-      `;
-    }
-
-    return html`
-      <div class="container">
-        ${this.messages.map(msg => html`
-          <chat-message
-            .message=${msg.message}
-            .sender=${msg.sender}
-            .shouldAnimate=${msg.shouldAnimate ?? false}
-          ></chat-message>
-        `)}
-      </div>
-    `;
-  }
-}
-
---- FILE: \components\chatBot.ts ---
-
-export function getBotResponse(input:any) {
-  const text = input.toLowerCase();
-
-  if (text.includes('hello') || text.includes('hi')) {
-    return 'Hello! How can I help you?';
-  }
-
-  if (text.includes('date')) {
-    return `Today is ${new Date().toDateString()}`;
-  }
-
-  if (text.includes('time')) {
-    return `Current time is ${new Date().toLocaleTimeString()}`;
-  }
-
-  if (text.includes('name')) {
-    return 'I am your Lit chatbot ðŸ¤–';
-  }
-
-  if (text.includes('bye')) {
-    return 'Goodbye! ðŸ‘‹';
-  }
-
-  return "I don't understand that yet ðŸ˜…";
-}
-
---- FILE: \components\login-form.ts ---
+--- FILE: \components\auth\login-form.ts ---
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import './app-input';
+import '../ui/app-input';
 
-import { login } from '../api/api';
-import '../styles/theme.css';
+import { login, getUserStories } from '../../api/api'; // ðŸ”¥ CHANGE (added getUserStories)
+
 
 @customElement('login-input')
 export class LoginForm extends LitElement {
@@ -836,12 +182,23 @@ export class LoginForm extends LitElement {
   @state() errorMessage = '';
   @state() loading = false;
 
-  connectedCallback() {
+  // ðŸ”¥ CHANGE (made async + added story check)
+  async connectedCallback() {
     super.connectedCallback();
 
     const userId = localStorage.getItem('user_id');
-    if (userId) {
-      Router.go('/chat');
+    if (!userId) return;
+
+    try {
+      const stories = await getUserStories();
+
+      if (stories.length === 0) {
+        Router.go('/avatar');
+      } else {
+        Router.go('/chat');
+      }
+    } catch {
+      // stay on login if error
     }
   }
 
@@ -852,8 +209,9 @@ static styles = css`
 
   :host {
     width: 30rem;
-    margin-right: 3rem;
+    margin-right: var(--space-7);
     color: var(--text);
+    font-family: var(--regular-font);
   }
 
   .form {
@@ -870,12 +228,12 @@ static styles = css`
   app-input input {
     width: 100%;
     height: 50px;
-    padding: 0 16px;
+    padding: 0 var(--space-4);
     border: 1px solid var(--input-border);
     border-radius: 10px;
-    font-size: 16px;
-    margin-top: 10px;
-    margin-bottom: 5px;
+    font-size: var(--text-md);
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-1);
     background: var(--surface);
     color: var(--text);
   }
@@ -886,29 +244,29 @@ static styles = css`
 
   app-input .error-text {
     color: var(--error);
-    font-size: 13px;
+    font-size: var(--text-sm);
     min-height: 16px;
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: var(--space-1);
   }
 
   h2 {
-    margin-bottom: 24px;
-    font-size: 26px;
-    font-family: 'Times New Roman', Times, serif;
+    margin-bottom: var(--space-5);
+    font-size: var(--text-2xl);
+    font-family: var(--title-font);
     color: var(--text);
   }
 
   button {
     width: 100%;
-    padding: 16px 8px;
+    padding: var(--space-4) var(--space-2);
     background: var(--primary);
     color: white;
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    margin-top: 12px;
-    font-size: 18px;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
   }
 
   button:disabled {
@@ -920,18 +278,18 @@ static styles = css`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: var(--space-2);
   }
 
   .login-error {
     color: var(--error);
-    font-size: 14px;
+    font-size: var(--text-sm);
     flex: 1;
   }
 
   .signup {
-    margin-top: 12px;
-    font-size: 16px;
+    margin-top: var(--space-3);
+    font-size: var(--text-md);
     color: var(--accent);
     text-align: center;
   }
@@ -949,7 +307,7 @@ static styles = css`
 
   .skip {
     text-align: right;
-    font-size: 20px;
+    font-size: var(--text-xl);
     position: absolute;
     bottom: 40px;
     right: 40px;
@@ -968,12 +326,14 @@ static styles = css`
 
   label {
     font-weight: bold;
-    font-size: 16px;
+    font-size: var(--text-md);
+    display: block;
+    margin-top: var(--space-4);
   }
 
   .forgot {
-    margin-bottom: 8px;
-    font-size: 16px;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-md);
     font-weight: bold;
     color: var(--link);
     cursor: pointer;
@@ -1005,9 +365,16 @@ static styles = css`
     try {
       this.loading = true;
 
-      await login(this.username, this.password);
+      // ðŸ”¥ CHANGE (store userId + check stories)
+      const userId = await login(this.username, this.password);
 
-      Router.go('/chat');
+      const stories = await getUserStories();
+
+      if (stories.length === 0) {
+        Router.go('/avatar');
+      } else {
+        Router.go('/chat');
+      }
 
     } catch (err) {
       this.errorMessage = 'Invalid username or password';
@@ -1068,15 +435,15 @@ static styles = css`
   }
 }
 
---- FILE: \components\register-form.ts ---
+--- FILE: \components\auth\register-form.ts ---
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import './app-input';
+import '../ui/app-input';
 
-import { register } from '../api/api'; // âœ… FIXED
-import '../styles/theme.css';
+import { register } from '../../api/api'; // âœ… FIXED
+
 
 @customElement('register-form')
 export class RegisterForm extends LitElement {
@@ -1104,8 +471,9 @@ export class RegisterForm extends LitElement {
 
     :host {
       width: 30rem;
-      margin-right: 3rem;
+      margin-right: var(--space-7);
       color: var(--text);
+      font-family: var(--regular-font);
     }
 
     .form {
@@ -1122,12 +490,12 @@ export class RegisterForm extends LitElement {
     app-input input {
       width: 100%;
       height: 50px;
-      padding: 0 16px;
+      padding: 0 var(--space-4);
       border: 1px solid var(--input-border);
       border-radius: 10px;
-      font-size: 16px;
-      margin-top: 10px;
-      margin-bottom: 5px;
+      font-size: var(--text-md);
+      margin-top: var(--space-2);
+      margin-bottom: var(--space-1);
       background: var(--surface);
       color: var(--text);
     }
@@ -1138,29 +506,29 @@ export class RegisterForm extends LitElement {
 
     app-input .error-text {
       color: var(--error);
-      font-size: 13px;
+      font-size: var(--text-xs);
       min-height: 16px;
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: var(--space-1);
     }
 
     h2 {
-      margin-bottom: 24px;
-      font-size: 26px;
-      font-family: 'Times New Roman', Times, serif;
+      margin-bottom: var(--space-5);
+      font-size: var(--text-2xl);
+      font-family: var(--title-font);
       color: var(--text);
     }
 
     button {
       width: 100%;
-      padding: 16px 8px;
+      padding: var(--space-4) var(--space-2);
       background: var(--primary);
       color: white;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      margin-top: 12px;
-      font-size: 18px;
+      margin-top: var(--space-3);
+      font-size: var(--text-lg);
     }
 
     button:disabled {
@@ -1170,17 +538,17 @@ export class RegisterForm extends LitElement {
 
     .row {
       display: flex;
-      margin-top: 10px;
+      margin-top: var(--space-3);
     }
 
     .register-error {
       color: var(--error);
-      font-size: 14px;
+      font-size: var(--text-sm);
     }
 
     .signup {
-      margin-top: 12px;
-      font-size: 16px;
+      margin-top: var(--space-3);
+      font-size: var(--text-md);
       color: var(--accent);
       text-align: center;
     }
@@ -1198,7 +566,7 @@ export class RegisterForm extends LitElement {
 
     .skip {
       text-align: right;
-      font-size: 20px;
+      font-size: var(--text-xl);
       position: absolute;
       bottom: 40px;
       right: 40px;
@@ -1217,7 +585,9 @@ export class RegisterForm extends LitElement {
 
     label {
       font-weight: bold;
-      font-size: 16px;
+      font-size: var(--text-md);
+      display: block;
+      margin-top: var(--space-4);
     }
   `;
 
@@ -1322,96 +692,12 @@ export class RegisterForm extends LitElement {
   }
 }
 
-
-
-// import { LitElement, html, css } from 'lit';
-// import { customElement, property } from 'lit/decorators.js';
-
-// @customElement('register-input')
-// export class RegisterInput extends LitElement {
-
-//   @property() label = '';
-//   @property() type = 'text';
-//   @property() placeholder = '';
-
-//   static styles = css`
-//   :host {
-//     --label-color: #333;
-//     }
-  
-//   :host(.dark-mode) {
-//     --label-color: #eee;
-//   }
-
-//     * {
-//       box-sizing: border-box;
-//     }
-
-//     .wrapper {
-//       display: flex;
-//       flex-direction: column;
-//       margin-bottom: 20px;
-//       gap: 6px;
-//       width: 100%;
-//     }
-
-//     label {
-//       font-weight: bold;
-//       font-size: 16px;
-//       color: var(--label-color);
-//     }
-
-//     input {
-//       width: 100%;
-//       padding: 16px;
-//       border-radius: 12px;
-//       border: 1px solid #ccc;
-//       background-color: #ffffff;
-//       outline: none;
-//       font-size: 16px;
-//       color: #333;
-//       transition: border 0.2s;
-//     }
-
-//     input:focus {
-//       border-color: #2C2C2C;
-//     }
-
-//     input::placeholder {
-//       color: #999;
-//       font-weight: 300;
-//     }
-//   `;
-
-//   private handleInput(e: Event) {
-//     const target = e.target as HTMLInputElement;
-//     this.dispatchEvent(new CustomEvent('input-changed', {
-//       detail: target.value
-//     }));
-//   }
-
-//   render() {
-//     return html`
-//       <div class="wrapper">
-//         <label>${this.label}</label>
-//         <input 
-//           type="${this.type}" 
-//           placeholder="${this.placeholder}" 
-//           @input=${this.handleInput}
-//         />
-//       </div>
-//     `;
-//   }
-// }
-
---- FILE: \components\reset-password.ts ---
+--- FILE: \components\auth\reset-password.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { state, customElement , property} from 'lit/decorators.js';
+import { state, customElement} from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import styles from '../styles/resetpass-page.css?inline';
 
-import { unsafeCSS } from 'lit';
 
 @customElement('reset-password')
 export class ResetPassword extends LitElement {
@@ -1420,99 +706,19 @@ export class ResetPassword extends LitElement {
   @state() confirmPassword = '';
   @state() message = '';
   @state() showSuccess = false;
-  @property({ type: Boolean }) darkMode = false;
+  
 
-  static styles =[
-    css`${unsafeCSS(styles)}`,
-    css`
-    :host {
-      display: block;
-      width:100%;
-    }
-
-    .message{
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: rgba(0,0,0,0.4);
-      z-index: 1000;
-    }
-    
-    .message-content{
-      background: white;
-      border-radius: 12px;
-      text-align: center;
-      width: 300px;
-      min-height: 100px;
-      padding: 24px;
-      animation: fadeIn 0.25s ease;
-    }
-
-    .message h3{
-     color: #4b4848;
-     font-weight: bold;
-     font-size: 30px;
-     font-family: 'Times New Roman', Times, serif;
-     margin-bottom: 18px;
-    }
-
-    p{
-      font-size: 16px;
-      color: #8e7c53;
-    }
-
-    .reset-button {
-      background: #2C2C2C;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      width: 100%;
-      padding: 10px 5px;
-      margin-top: 18px;
-    }
-
-    .backLogin {
-      margin-top: 12px;
-      font-size: 16px;
-      text-align: center;
-    }
-
-    .backLogin a {
-      color: #252424;
-      text-decoration: none;
-      font-weight: bold;
-      
-    }
-
-    .backLogin a:hover{
-        color: #555;
-        text-decoration: underline;
-    }
-
-    .ok-button{
-      padding: 4px 10px;
-      font-size: 15px;
-      margin-top: 20px;
-    }
-
-    input, .reset-button{
-      width: 100%;
+  static styles = css`
+    * {
       box-sizing: border-box;
-      height: 50px;
-      border-radius: 10px;
-      font-size: 16px;
     }
 
-    input{
-      padding: 0 16px;
-      border: 1px solid #ccc;
-      margin-bottom: 12px;
+    :host {
+      margin-right: var(--space-7);
+      color: var(--text);
+      display: block;
+      width: 100%;
+      font-family: var(--regular-font);
     }
 
     .container {
@@ -1529,6 +735,102 @@ export class ResetPassword extends LitElement {
       max-width: 450px;
     }
 
+    .message{
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+    
+    .message-content{
+      background: white;
+      border-radius: 12px;
+      text-align: center;
+      width: 300px;
+      padding: var(--space-5);
+    }
+
+    .message h3{
+     color: #4b4848;
+     font-weight: bold;
+     font-size: var(--text-3xl);
+     font-family: var(--regular-font);
+     margin-bottom: var(--space-4);
+    }
+
+    p{
+      font-size: var(--text-md);
+      color: #8e7c53;
+    }
+
+    .reset-button {
+      width: 100%;
+      padding: var(--space-4) var(--space-2);
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: var(--space-4);
+      font-size: var(--text-lg);
+    }
+
+    .backLogin {
+      margin-top: var(--space-3);
+      font-size: var(--text-md);
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .backLogin a {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: bold;
+      
+    }
+
+    .backLogin a:hover{
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+
+    .ok-button{
+      width: 100%;
+      padding: var(--space-3) var(--space-1);
+      font-size: var(--text-sm);
+      margin-top: var(--space-4);
+      background:var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+    }
+
+    input, .reset-button{
+      width: 100%;
+      box-sizing: border-box;
+      height: 50px;
+      border-radius: 10px;
+      font-size: var(--text-md);
+    }
+
+    input{
+      width: 100%;
+      height: 50px;
+      padding: 0 var(--space-4);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      font-size: var(--text-md);
+      margin-top: var(--space-3);
+      margin-bottom: var(--space-1);
+      background: var(--surface);
+      color: var(--text);
+    }
+
     @media (max-width: 768px){
     .card{
       width: 90%;
@@ -1538,22 +840,23 @@ export class ResetPassword extends LitElement {
 
     label{
       font-weight: bold;
-      font-size: 16px;
+      font-size: var(--text-md);
       display: block;
-      margin-top: 16px;
-      margin-bottom: 10px;
+      margin-top: var(--space-4);
     }
 
     .card h2 {
-      margin-bottom: 6px;
-      color: #4b4848;
+      font-size: var(--text-2xl);
+      font-family: var(--title-font);
+      color: var(--text);
     }
 
     .card p {
-      margin-bottom: 20px;
+      color: var(--accent);
+      margin-bottom: var(--space-5);
     }
     `
-  ];
+  ;
   
 
   handleReset() {
@@ -1613,15 +916,642 @@ export class ResetPassword extends LitElement {
   }
 }
 
---- FILE: \components\story-sidebar.ts ---
+--- FILE: \components\chat\chat-Bot.ts ---
+
+export function getBotResponse(input:any) {
+  const text = input.toLowerCase();
+
+  if (text.includes('hello') || text.includes('hi')) {
+    return 'Hello! How can I help you?';
+  }
+
+  if (text.includes('date')) {
+    return `Today is ${new Date().toDateString()}`;
+  }
+
+  if (text.includes('time')) {
+    return `Current time is ${new Date().toLocaleTimeString()}`;
+  }
+
+  if (text.includes('name')) {
+    return 'I am your Lit chatbot ðŸ¤–';
+  }
+
+  if (text.includes('bye')) {
+    return 'Goodbye! ðŸ‘‹';
+  }
+
+  return "I don't understand that yet ðŸ˜…";
+}
+
+--- FILE: \components\chat\chat-box.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state, property } from 'lit/decorators.js';
+import '../ui/app-input';
+import './chat-messages';
+import { sendMessage, getMessages } from '../../api/api';
+
+// ðŸ§ª TEST BOT (remove later easily)
+import { getBotResponse } from './chat-Bot';
+
+// ðŸ”‘ SWITCH HERE
+const USE_FAKE_BOT = true;
+
+interface Message {
+  message: string;
+  sender: 'user' | 'robot';
+  id: string;
+  shouldAnimate?: boolean;
+}
+
+@customElement('chat-box')
+export class ChatBox extends LitElement {
+
+  @property({ type: Number })
+  storyId = 0;
+
+  @state() private messages: Message[] = [];
+  @state() private loading = false;
+  @state() private inputValue: string = '';
+
+  static styles = css`
+    :host {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 50rem;
+      height: 100%;
+      margin: 0 auto;
+    }
+
+    /* â”€â”€ Outer wrapper: messages + input, no card chrome â”€â”€ */
+    .box {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* â”€â”€ Messages fill space â”€â”€ */
+    .messages-area {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    chat-messages {
+      display: block;
+      height: 100%;
+    }
+
+    /* â”€â”€ Input bar: centered, floating feel â”€â”€ */
+    .input-bar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-6) var(--space-4);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+
+
+    .input-row {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 42rem;
+      background: var(--bg);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3);
+      gap: var(--space-3);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .input-field {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--space-2);
+    }
+
+    app-input {
+      flex: 1;
+      min-width: 0;
+      --input-border: none;
+      --input-bg: transparent;
+      --input-shadow: none;
+      --input-radius: 0;
+      --input-padding: 0;
+    }
+    app-input input{
+      --input-border: none;
+    }
+
+    /* Loading indicator inside the row */
+    .thinking-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   transform: scale(1);    }
+      50%       { opacity: 0.4; transform: scale(0.72); }
+    }
+
+    /* Arrow send button â€” sits inside the pill */
+
+    .send-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      background: var(--primary);
+      color: var(--bg);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .send-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 60%);
+      pointer-events: none;
+      border-radius: 50%;
+    }
+
+    .send-btn svg {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .send-btn:hover  { opacity: 0.82; transform: scale(1.05); }
+    .send-btn:active { transform: scale(0.95); }
+    .send-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .send-btn.empty {
+      opacity: 0.5;
+      // background: var(--secondary);
+    }
+
+    /* Voice input button */
+    .voice-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+      background: var(--secondary);
+      color: var(--text);
+      border: 1.5px solid var(--sand);
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.1s, border-color 0.2s;
+    }
+
+    .voice-btn svg {
+      width: 16px;
+      height: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .voice-btn:hover {
+      border-color: var(--accent);
+      opacity: 0.82;
+      transform: scale(1.05);
+    }
+    .voice-btn:active { transform: scale(0.95); }
+    .voice-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Tip row */
+    .tip-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
+      color: var(--subtittle);
+      font-style: italic;
+    }
+
+    .tip-row strong {
+      font-style: normal;
+      color: var(--link);
+    }
+  `;
+
+  async connectedCallback() {
+    super.connectedCallback();
+    await this.loadMessages();
+  }
+
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has('storyId')) {
+      this.loadMessages();
+    }
+  }
+
+  async loadMessages() {
+    try {
+      const apiMessages = await getMessages(this.storyId);
+
+      this.messages = apiMessages.map((msg: any) => ({
+        message: msg.content,
+        sender: msg.role === 'user' ? 'user' : 'robot',
+        id: msg.message_id,
+        shouldAnimate: false
+      }));
+    } catch (e) {
+      console.error('Failed to load messages', e);
+    }
+  }
+
+  private async handleMessage(text: string) {
+    if (!text.trim() || this.loading) return;
+
+    this.messages = [
+      ...this.messages,
+      { message: text, sender: 'user', id: crypto.randomUUID(), shouldAnimate: false }
+    ];
+    this.loading = true;
+
+    if (USE_FAKE_BOT) {
+      // ðŸ§ª TEST MODE
+      await new Promise(res => setTimeout(res, 500));
+      const reply = await getBotResponse(text);
+      this.messages = [
+        ...this.messages,
+        { message: reply, sender: 'robot', id: crypto.randomUUID(), shouldAnimate: true }
+      ];
+    } else {
+      // ðŸš€ REAL API MODE
+      await sendMessage(this.storyId, text);
+      await this.loadMessages();
+    }
+
+    this.loading = false;
+  }
+
+  private onInputSubmit(e: CustomEvent<{ value: string }>) {
+    const input = this.renderRoot.querySelector('app-input') as any;
+    const val = e.detail.value?.trim();
+    if (!val) return;
+    this.handleMessage(val);
+    input?.clear();
+    this.inputValue = '';
+  }
+
+  private onValueChange(e: CustomEvent<string>) {
+    this.inputValue = e.detail;
+  }
+
+  private onSendClick() {
+    const input = this.renderRoot.querySelector('app-input') as any;
+    const value = input?.getValue()?.trim();
+    if (!value) return;
+    this.handleMessage(value);
+    input.clear();
+    this.inputValue = '';
+  }
+
+  private onVoiceClick() {
+    // TODO: Implement voice input functionality
+    console.log('Voice input clicked');
+  }
+
+  render() {
+    return html`
+      <div class="box">
+
+        <div class="messages-area">
+          <chat-messages .messages=${this.messages}></chat-messages>
+        </div>
+
+        <div class="input-bar">
+          <div class="input-row">
+            <div class="input-field">
+              ${this.loading ? html`<div class="thinking-dot"></div>` : ''}
+              <app-input
+                mode="textarea"
+                autoGrow
+                placeholder="What happens next..."
+                @input-submit=${this.onInputSubmit}
+                @value-change=${this.onValueChange}
+              ></app-input>
+            </div>
+            <div class="button-row">
+              <button
+                class="voice-btn"
+                ?disabled=${this.loading}
+                @click=${this.onVoiceClick}
+                aria-label="Voice input"
+              >
+                <!-- Microphone icon -->
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 1C6.89543 1 6 1.89543 6 3V8C6 9.10457 6.89543 10 8 10C9.10457 10 10 9.10457 10 8V3C10 1.89543 9.10457 1 8 1Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 6V8C14 11.3137 11.3137 14 8 14C4.68629 14 2 11.3137 2 8V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 14V16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button
+                class="send-btn ${this.inputValue.trim() === '' ? 'empty' : ''}"
+                ?disabled=${this.loading || this.inputValue.trim() === ''}
+                @click=${this.onSendClick}
+                aria-label="Send"
+              >
+                <!-- Up-arrow icon -->
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 13V3M8 3L3.5 7.5M8 3L12.5 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\chat\chat-message.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+
+@customElement('chat-message')
+export class ChatMessage extends LitElement {
+
+  @property({ type: String }) message = '';
+  @property({ type: String }) sender: 'user' | 'robot' = 'robot';
+  @property({ type: Boolean }) shouldAnimate = false;
+
+  @state() private displayedText = '';
+
+  private typingSpeed = 20;
+
+  static styles = css`
+    .message {
+      display: flex;
+      margin: var(--space-2) 0;
+    }
+
+    .user  { justify-content: flex-end; }
+    .robot { justify-content: flex-start; }
+
+    .bubble {
+      padding: var(--space-3) var(--space-4);
+      border-radius: 14px;
+      max-width: 68%;
+      line-height: var(--line-height-body);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      word-break: break-word;
+    }
+
+    /* â”€â”€ User bubble: warm sand, no dark colors â”€â”€ */
+    .user .bubble {
+      background: var(--parchment, #ede6d6);
+      color: var(--text, #2a2118);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: 14px 14px 4px 14px;
+    }
+
+    .robot .bubble {
+      background: var(--surface, #ffffff);
+      color: var(--text, #2a2118);
+      border: 1.5px solid var(--sand, #d9cdb8);
+      border-left: 3px solid var(--gold, #b8953a);
+      border-radius: 14px 14px 14px 4px;
+      font-size: var(--text-sm);
+      line-height: var(--line-height-body);
+    }
+
+    /* Gold âœ¦ spark prefix on AI messages (CSS only, no DOM change) */
+    .robot .bubble::before {
+      content: 'âœ¦ ';
+      color: var(--gold, #b8953a);
+      font-style: normal;
+      font-size: var(--text-xs);
+    }
+
+    /* Blinking pen cursor â€” gold to match theme */
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 14px;
+      background: var(--gold, #b8953a);
+      margin-left: var(--space-1);
+      vertical-align: middle;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75%      { opacity: 0; }
+    }
+  `;
+
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has('message') || changedProps.has('shouldAnimate')) {
+      if (this.sender === 'robot' && this.shouldAnimate) {
+        this.startTyping();
+      } else {
+        this.displayedText = this.message;
+      }
+    }
+  }
+
+  private async startTyping() {
+    this.displayedText = '';
+    for (let i = 0; i < this.message.length; i++) {
+      this.displayedText += this.message[i];
+      await this.sleep(this.typingSpeed);
+    }
+    this.shouldAnimate = false; // stop cursor
+  }
+
+  private sleep(ms: number) {
+    return new Promise(res => setTimeout(res, ms));
+  }
+
+  render() {
+    const isTyping = this.sender === 'robot' && this.displayedText.length < this.message.length;
+
+    return html`
+      <div class="message ${this.sender}">
+        <div class="bubble">
+          ${this.displayedText}
+          ${isTyping ? html`<span class="cursor"></span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\chat\chat-messages.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import './chat-message';
+
+interface Message {
+  message: string;
+  sender: 'user' | 'robot';
+  id: string;
+  shouldAnimate?: boolean;
+}
+
+@customElement('chat-messages')
+export class ChatMessages extends LitElement {
+
+  @property({ type: Array })
+  messages: Message[] = [];
+
+  static styles = css`
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Scrollable messages column */
+    .container {
+      flex: 1;
+      height: 100%;
+      overflow-y: auto;
+      padding: var(--space-5) var(--space-6);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scrollbar matches the HTML reference */
+    .container::-webkit-scrollbar        { width: 5px; }
+    .container::-webkit-scrollbar-track  { background: transparent; }
+    .container::-webkit-scrollbar-thumb  {
+      background: var(--sand, #d9cdb8);
+      border-radius: 3px;
+    }
+
+    /* â”€â”€ Empty state â”€â”€ */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-1);
+      text-align: center;
+      padding: var(--space-6) var(--space-5);
+      color: var(--ink-muted, #8a7a68);
+    }
+
+    /* Mirrors .scene-icon-wrap from the HTML */
+    .empty-icon {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-3xl);
+      margin-bottom: var(--space-2);
+      fill: var(--accent);
+    }
+
+    .empty-title {
+      font-family: var(--regular-font);
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--text, #2a2118);
+    }
+
+    .empty-desc {
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      color: var(--accent);
+      line-height: var(--line-height-body);
+      max-width: 260px;
+    }
+  `;
+
+  updated(changedProps: Map<string, unknown>) {
+    if (changedProps.has('messages')) {
+      const div = this.renderRoot.querySelector('.container') as HTMLDivElement;
+      if (div) {
+        requestAnimationFrame(() => { div.scrollTop = div.scrollHeight; });
+      }
+    }
+  }
+
+  render() {
+    if (!this.messages.length) {
+      return html`
+        <div class="container">
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="empty-icon"><path d="M480-160q-48-38-104-59t-116-21q-42 0-82.5 11T100-198q-21 11-40.5-1T40-234v-482q0-11 5.5-21T62-752q46-24 96-36t102-12q58 0 113.5 15T480-740v484q51-32 107-48t113-16q36 0 70.5 6t69.5 18v-480q15 5 29.5 10.5T898-752q11 5 16.5 15t5.5 21v482q0 23-19.5 35t-40.5 1q-37-20-77.5-31T700-240q-60 0-116 21t-104 59Zm80-200v-380l200-200v400L560-360Zm-160 65v-396q-33-14-68.5-21.5T260-720q-37 0-72 7t-68 21v397q35-13 69.5-19t70.5-6q36 0 70.5 6t69.5 19Zm0 0v-396 396Z"/></svg>
+            <div class="empty-title">Start a Story</div>
+            <p class="empty-desc">Describe a scene to create a story.</p>
+          </div>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="container">
+        ${this.messages.map(msg => html`
+          <chat-message
+            .message=${msg.message}
+            .sender=${msg.sender}
+            .shouldAnimate=${msg.shouldAnimate ?? false}
+          ></chat-message>
+        `)}
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\chat\chat-sidebar.ts ---
 
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getUserStories } from '../api/api';
+import { getUserStories, getAvatar, getUsername } from '../../api/api';
 import { Router } from '@vaadin/router';
 
 interface Story {
   story_id: number;
+  avatar_id: number;
   title?: string;
 }
 
@@ -1632,6 +1562,7 @@ export class StorySidebar extends LitElement {
   @state() private selectedId: number | null = null;
   @state() private collapsed = false;
   @state() private searchQuery = '';
+  @state() private username = 'My Account';
 
   static styles = css`
     :host {
@@ -1640,13 +1571,13 @@ export class StorySidebar extends LitElement {
       height: 100vh;
       width: 272px;
       flex-shrink: 0;
-      background: #ffffff;
-      border-right: 1px solid #d9cdb8;
+      background: var(--surface, #ffffff);
+      border-right: 1px solid var(--sand, #d9cdb8);
+      color: var(--text, #2a2118);
       overflow: hidden;
       transition: width 0.25s ease;
-      font-family: 'Lora', Georgia, serif;
+      font-family: var(--regular-font);
       box-sizing: border-box;
-      position: relative;
     }
 
     :host(.collapsed) {
@@ -1657,25 +1588,30 @@ export class StorySidebar extends LitElement {
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 16px 12px;
-      border-bottom: 1px solid #ede6d6;
+      gap: var(--space-2);
+      padding: var(--space-4) var(--space-3);
+      border-bottom: 1px solid var(--parchment, #ede6d6);
       flex-shrink: 0;
-      min-width: 0;
-      height: 60px;
+      height: 56px;
+      box-sizing: border-box;
     }
 
     .logo-icon {
-      font-size: 20px;
+      font-size: var(--text-xl);
       line-height: 1;
       flex-shrink: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    :host(.collapsed) .logo-icon {
+      display: none;
     }
 
     .logo-text {
-      font-family: 'Cinzel', serif;
-      font-size: 16px;
+      font-family: var(--title-font);
+      font-size: var(--text-sm);
       font-weight: 700;
-      color: #2a2118;
+      color: var(--text, #2a2118);
       letter-spacing: 0.02em;
       white-space: nowrap;
       overflow: hidden;
@@ -1687,38 +1623,15 @@ export class StorySidebar extends LitElement {
 
     :host(.collapsed) .logo-text {
       opacity: 0;
+      pointer-events: none;
       width: 0;
-    }
-
-    /* New story button â€” hidden when collapsed */
-    .new-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      color: #8a7a68;
-      transition: background 0.15s, color 0.15s;
-      flex-shrink: 0;
-      opacity: 1;
-      transition: opacity 0.15s;
-    }
-
-    .new-btn:hover {
-      background: #ede6d6;
-      color: #2a2118;
+      flex: 0;
     }
 
     :host(.collapsed) .new-btn {
       display: none;
     }
 
-    /* Toggle button â€” ALWAYS visible, always the last item in logo row */
     .toggle-btn {
       background: none;
       border: none;
@@ -1729,24 +1642,94 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
-      color: #8a7a68;
-      transition: background 0.15s, color 0.15s;
+      color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+      padding: 0;
     }
 
     .toggle-btn:hover {
-      background: #ede6d6;
-      color: #2a2118;
+      color: var(--text, #2a2118);
     }
 
-    /* â”€â”€â”€ Search â”€â”€â”€ */
+    .toggle-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    :host(.collapsed) .logo {
+      justify-content: center;
+      padding: var(--space-4) 0;
+      width: 100%;
+    }
+
+    :host(.collapsed) .toggle-btn {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto;
+    }
+
+    .collapsed-new-btn {
+      display: none;
+      margin: var(--space-2) auto 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1.5px solid var(--sand, #d9cdb8);
+      background: none;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      font-size: var(--text-xl);
+      color: var(--accent, #d5ad0f);
+      transition: background 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+
+    .collapsed-new-btn:hover {
+      background: var(--parchment, #ede6d6);
+      border-color: var(--accent, #d5ad0f);
+    }
+
+    :host(.collapsed) .collapsed-new-btn {
+      display: flex;
+    }
+
+    .create-story-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      margin: var(--space-2) var(--space-3) var(--space-1);
+      padding: var(--space-3) var(--space-4);
+      background: var(--bg);
+      color: var(--primary);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-lg);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .create-story-btn:hover {
+      background: #c49e0a;
+      box-shadow: 0 4px 10px rgba(213,173,15,0.4);
+      transform: translateY(-1px);
+    }
+
+    :host(.collapsed) .create-story-btn {
+      display: none;
+    }
+
     .search-wrap {
-      padding: 12px 12px 6px;
+      padding: var(--space-3) var(--space-3) var(--space-1);
       flex-shrink: 0;
       overflow: hidden;
-      transition: opacity 0.15s, padding 0.2s, height 0.2s;
-      height: auto;
+      transition: opacity 0.15s, height 0.2s, padding 0.2s;
     }
 
     :host(.collapsed) .search-wrap {
@@ -1759,16 +1742,16 @@ export class StorySidebar extends LitElement {
     .search-box {
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: #FFFCF0;
-      border: 1px solid #d9cdb8;
-      border-radius: 10px;
-      padding: 8px 12px;
+      gap: var(--space-2);
+      background: var(--bg, #FFFCF0);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2) var(--space-3);
     }
 
     .search-icon {
-      font-size: 13px;
-      color: #8a7a68;
+      font-size: var(--text-xs);
+      color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
     }
 
@@ -1776,20 +1759,18 @@ export class StorySidebar extends LitElement {
       border: none;
       background: none;
       outline: none;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
-      color: #2a2118;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
+      color: var(--text, #2a2118);
       width: 100%;
     }
 
     .search-input::placeholder {
-      color: #8a7a68;
-      font-style: italic;
+      color: var(--accent);
     }
 
-    /* â”€â”€â”€ Nav â”€â”€â”€ */
     .nav-section {
-      padding: 6px 0 2px;
+      padding: var(--space-1) 0 var(--space-1);
       flex-shrink: 0;
       overflow: hidden;
       transition: opacity 0.15s;
@@ -1805,30 +1786,29 @@ export class StorySidebar extends LitElement {
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 9px 18px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       font-weight: 500;
-      color: #5a4a38;
+      color: var(--ink-light, #5a4a38);
       cursor: pointer;
       border-radius: 8px;
-      margin: 1px 8px;
+      margin: var(--space-1) var(--space-2);
       transition: background 0.15s;
     }
 
-    .nav-item:hover { background: #FFFCF0; }
-    .nav-icon { font-size: 14px; flex-shrink: 0; }
+    .nav-item:hover { background: var(--bg, #FFFCF0); }
+    .nav-icon { font-size: 13px; flex-shrink: 0; }
 
-    /* â”€â”€â”€ Section label â”€â”€â”€ */
     .section-label {
-      font-family: 'Cinzel', serif;
-      font-size: 10px;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       font-weight: 600;
-      color: #8a7a68;
+      color: var(--ink-muted, #8a7a68);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      padding: 10px 18px 4px;
+      padding: var(--space-2) var(--space-4) var(--space-1);
       flex-shrink: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -1841,45 +1821,47 @@ export class StorySidebar extends LitElement {
       padding: 0;
     }
 
-    /* â”€â”€â”€ Story list â”€â”€â”€ */
     .stories-list {
       flex: 1;
       overflow-y: auto;
-      padding: 4px 0;
+      padding: var(--space-1) 0;
     }
 
     .stories-list::-webkit-scrollbar { width: 4px; }
     .stories-list::-webkit-scrollbar-track { background: transparent; }
     .stories-list::-webkit-scrollbar-thumb {
-      background: #d9cdb8;
+      background: var(--sand, #d9cdb8);
       border-radius: 2px;
     }
 
     .story-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 9px 18px;
-      margin: 2px 8px;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      margin: var(--space-1) var(--space-2);
       border-radius: 8px;
       cursor: pointer;
       transition: background 0.15s;
       min-width: 0;
     }
 
-    .story-item:hover { background: #FFFCF0; }
-    .story-item.active { background: #ede6d6; }
+    .story-item:hover { background: var(--bg, #FFFCF0); }
+
+    .story-item.active {
+      background: var(--parchment, #ede6d6);
+    }
 
     .story-item-icon {
-      font-size: 15px;
+      font-size: var(--text-sm);
       flex-shrink: 0;
     }
 
     .story-item-label {
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       font-weight: 500;
-      color: #5a4a38;
+      color: var(--ink-light, #5a4a38);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -1888,13 +1870,13 @@ export class StorySidebar extends LitElement {
     }
 
     .story-item.active .story-item-label {
-      color: #2a2118;
+      color: var(--text, #2a2118);
       font-weight: 600;
     }
 
     :host(.collapsed) .story-item {
       justify-content: center;
-      padding: 10px 0;
+      padding: var(--space-2) 0;
     }
 
     :host(.collapsed) .story-item-label {
@@ -1902,42 +1884,60 @@ export class StorySidebar extends LitElement {
     }
 
     .empty-list {
-      padding: 20px 18px;
-      font-size: 13px;
-      color: #8a7a68;
-      font-style: italic;
+      padding: var(--space-5) var(--space-4);
+      font-size: var(--text-xs);
+      color: var(--ink-muted, #8a7a68);
       text-align: center;
-      line-height: 1.6;
+      line-height: var(--line-height-body);
     }
 
     :host(.collapsed) .empty-list { display: none; }
 
     /* â”€â”€â”€ Footer â”€â”€â”€ */
     .sidebar-footer {
-      padding: 14px 16px;
-      border-top: 1px solid #ede6d6;
+      padding: var(--space-3) var(--space-4);
+      border-top: 1px solid var(--parchment, #ede6d6);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-3);
       flex-shrink: 0;
+      /* Make the whole footer a hover target */
+      border-radius: 0 0 0 0;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+
+    .sidebar-footer:hover {
+      background: var(--bg, #FFFCF0);
+    }
+
+    /* Subtle "open settings" hint that appears on hover */
+    .sidebar-footer:hover .settings-hint {
+      opacity: 1;
     }
 
     :host(.collapsed) .sidebar-footer {
       justify-content: center;
-      padding: 14px 0;
+      padding: var(--space-3) 0;
     }
 
     .avatar {
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: #ede6d6;
-      border: 1.5px solid #d9cdb8;
+      background: var(--parchment, #ede6d6);
+      border: 1.5px solid var(--sand, #d9cdb8);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
+      font-size: var(--text-sm);
       flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+
+    .sidebar-footer:hover .avatar {
+      border-color: var(--gold, #b8953a);
     }
 
     .user-info {
@@ -1949,25 +1949,78 @@ export class StorySidebar extends LitElement {
     :host(.collapsed) .user-info { display: none; }
 
     .user-name {
-      font-size: 13px;
+      font-size: var(--text-xs);
       font-weight: 600;
-      color: #2a2118;
+      color: var(--text, #2a2118);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .user-role { font-size: 11px; color: #8a7a68; }
+    .user-role { font-size: var(--text-xs); color: var(--ink-muted, #8a7a68); }
 
-    .crown { font-size: 16px; flex-shrink: 0; }
-    :host(.collapsed) .crown { display: none; }
+    /* Settings gear icon â€” replaces crown on hover in expanded mode */
+    .footer-right {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      color: var(--ink-muted, #8a7a68);
+      transition: color 0.15s;
+    }
+
+    :host(.collapsed) .footer-right { display: none; }
+
+    .sidebar-footer:hover .footer-right {
+      color: var(--text, #2a2118);
+    }
+
+    .icon-crown,
+    .icon-gear {
+      position: absolute;
+      transition: opacity 0.15s;
+    }
+
+    .icon-crown { opacity: 1; }
+    .icon-gear  { opacity: 0; }
+
+    .sidebar-footer:hover .icon-crown { opacity: 0; }
+    .sidebar-footer:hover .icon-gear  { opacity: 1; }
   `;
 
-  async connectedCallback() {
+  connectedCallback() {
     super.connectedCallback();
+    this.username = getUsername();
+
+    const path = window.location.pathname;
+    const match = path.match(/\/story\/(\d+)/);
+    if (match) {
+      this.selectedId = Number(match[1]);
+    }
+
+    this.loadStories();
+  }
+
+  private async loadStories() {
     try {
-      this.stories = await getUserStories();
-      if (this.stories.length > 0) {
+      const stories = await getUserStories();
+
+      const storiesWithTitles = await Promise.all(
+        stories.map(async (s: any) => {
+          try {
+            const avatar = await getAvatar(s.avatar_id);
+            return { ...s, title: avatar.avatar_name };
+          } catch {
+            return { ...s, title: `Story ${s.story_id}` };
+          }
+        })
+      );
+
+      this.stories = storiesWithTitles;
+
+      if (this.stories.length > 0 && this.selectedId === null) {
         const latest = this.stories[this.stories.length - 1];
         this.selectedId = latest.story_id;
         Router.go(`/story/${latest.story_id}`);
@@ -1978,6 +2031,7 @@ export class StorySidebar extends LitElement {
   }
 
   private selectStory(id: number) {
+    if (this.selectedId === id) return;
     this.selectedId = id;
     Router.go(`/story/${id}`);
   }
@@ -1999,51 +2053,62 @@ export class StorySidebar extends LitElement {
     );
   }
 
+  /** Fire an event the chat-page listens to â€” opens the settings overlay */
+  private openSettings() {
+    this.dispatchEvent(new CustomEvent('open-settings', {
+      bubbles: true,   // bubbles up through the DOM
+      composed: true,  // crosses shadow DOM boundaries
+    }));
+  }
+
+  private get sidebarIcon() {
+    return html`
+      <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1.5" y="1.5" width="5" height="15" rx="1.5" fill="currentColor" opacity="0.5"/>
+        <rect x="8.5" y="1.5" width="8" height="15" rx="1.5" fill="currentColor"/>
+      </svg>
+    `;
+  }
+
   render() {
     const stories = this.filteredStories;
 
     return html`
-      <!-- Logo row â€” toggle btn is ALWAYS rendered last, never hidden -->
+      <!-- Logo row -->
       <div class="logo">
-        <span class="logo-icon">ðŸ°</span>
+        <span class="logo-icon"></span>
         <span class="logo-text">StoryRealm</span>
-        <button class="new-btn" title="New story"
-          @click=${() => Router.go('/story/new')}>âœï¸</button>
         <button class="toggle-btn"
           title=${this.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           @click=${this.toggleCollapse}>
-          ${this.collapsed ? 'â†’' : 'â†'}
+          ${this.sidebarIcon}
         </button>
       </div>
 
-      <!-- Search -->
+      <button class="collapsed-new-btn" title="New story"
+        @click=${() => Router.go('/avatar')}>+</button>
+
+      <button class="create-story-btn" @click=${() => Router.go('/avatar')}>
+        Create a New Story!
+      </button>
+
+      <div class="section-label">Stories</div>
+
       <div class="search-wrap">
         <div class="search-box">
-          <span class="search-icon">ðŸ”</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--accent)">
+            <path d="M784-120 532-372q-30 24-69 38t-83 14q-109 0-184.5-75.5T120-580q0-109 75.5-184.5T380-840q109 0 184.5 75.5T640-580q0 44-14 83t-38 69l252 252-56 56ZM380-400q75 0 127.5-52.5T560-580q0-75-52.5-127.5T380-760q-75 0-127.5 52.5T200-580q0 75 52.5 127.5T380-400Z"/>
+          </svg>
           <input
             class="search-input"
             type="text"
-            placeholder="Search stories..."
+            placeholder="Search"
             .value=${this.searchQuery}
             @input=${this.handleSearch}
           />
         </div>
       </div>
 
-      <!-- Nav -->
-      <nav class="nav-section">
-        <div class="nav-item">
-          <span class="nav-icon">ðŸ“š</span>
-          My Stories
-        </div>
-        <div class="nav-item">
-          <span class="nav-icon">âœ¦</span>
-          Explore
-        </div>
-      </nav>
-
-      <!-- Stories -->
-      <div class="section-label">Recent</div>
       <div class="stories-list">
         ${stories.length === 0
           ? html`<div class="empty-list">No stories yet.<br>Start writing!</div>`
@@ -2062,15 +2127,1613 @@ export class StorySidebar extends LitElement {
         }
       </div>
 
-      <!-- Footer -->
-      <div class="sidebar-footer">
+      <!-- Footer â€” click anywhere to open settings -->
+      <div class="sidebar-footer" @click=${this.openSettings} title="Open settings">
         <div class="avatar">ðŸ‘¤</div>
+
         <div class="user-info">
-          <div class="user-name">My Account</div>
+          <div class="user-name">${this.username}</div>
           <div class="user-role">Explorer</div>
         </div>
-        <span class="crown">ðŸ‘‘</span>
+
+        <!-- Crown fades to gear on hover -->
+        <div class="footer-right">
+          <!-- Crown (default) -->
+          <svg class="icon-crown" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+               viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
+          </svg>
+          <!-- Gear (hover) -->
+          <svg class="icon-gear" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+          </svg>
+        </div>
       </div>
+    `;
+  }
+}
+
+--- FILE: \components\settings\settings-overlay.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+
+/**
+ * <settings-overlay open></settings-overlay>
+ *
+ * Fires a 'close' custom event when the user dismisses the overlay.
+ */
+@customElement('settings-overlay')
+export class SettingsOverlay extends LitElement {
+
+  @property({ type: Boolean, reflect: true }) open = false;
+
+  @state() private activeSection: 'general' | 'account' = 'general';
+  @state() private theme: 'light' | 'dark' = 'light';
+  @state() private selectedFont: string = 'Default';
+
+  // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    // 1. Check saved preference
+    const saved = localStorage.getItem('theme');
+
+    if (saved) {
+      this.theme = saved as 'light' | 'dark';
+    } else {
+      // 2. Fall back to system preference
+      this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+  }
+
+  // â”€â”€ Theme helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  private applyTheme(theme: 'light' | 'dark') {
+    this.theme = theme;
+    localStorage.setItem('theme', theme);
+
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }
+
+  // â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  static styles = css`
+    /* â”€â”€ Backdrop â”€â”€ */
+    :host {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      background: rgba(30, 24, 16, 0.45);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      animation: fadeIn 0.18s ease;
+    }
+
+    :host([open]) {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* â”€â”€ Modal card â”€â”€ */
+    .modal {
+      background: #f9f6ef;
+      border-radius: 18px;
+      box-shadow:
+        0 8px 40px rgba(30, 24, 16, 0.18),
+        0 2px 8px rgba(30, 24, 16, 0.10);
+      width: 620px;
+      max-width: calc(100vw - 40px);
+      max-height: calc(100vh - 80px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: slideUp 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(14px) scale(0.98); opacity: 0; }
+      to   { transform: translateY(0)    scale(1);    opacity: 1; }
+    }
+
+    /* â”€â”€ Header â”€â”€ */
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 26px 18px;
+      flex-shrink: 0;
+    }
+
+    .modal-title {
+      font-family: var(--heading-font, Georgia, serif);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text, #2a2118);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    .close-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--ink-muted, #8a7a68);
+      font-size: 1.1rem;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      background: var(--sand, #d9cdb8);
+      color: var(--text, #2a2118);
+    }
+
+    /* â”€â”€ Body: sidebar + panel â”€â”€ */
+    .modal-body {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      padding: 0 18px 18px;
+      gap: 14px;
+    }
+
+    /* â”€â”€ Left sidebar â”€â”€ */
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e8e1d5;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-card {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 16px 16px 14px;
+      border-bottom: 1px solid #ede6d6;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #e0d9cc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #8a7a68;
+    }
+
+    .user-info {
+      min-width: 0;
+    }
+
+    .user-name {
+      font-family: var(--regular-font, sans-serif);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text, #2a2118);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-sub {
+      font-family: var(--regular-font, sans-serif);
+      font-size: 0.73rem;
+      color: var(--ink-muted, #8a7a68);
+      margin-top: 1px;
+    }
+
+    .nav-list {
+      list-style: none;
+      margin: 0;
+      padding: 8px 0;
+      flex: 1;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 9px;
+      margin: 0 6px;
+      font-family: var(--regular-font, sans-serif);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text, #2a2118);
+      transition: background 0.13s;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: #f0ebe0;
+    }
+
+    .nav-item.active {
+      background: #ede6d6;
+      font-weight: 600;
+    }
+
+    .nav-item-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: #e8e1d5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #8a7a68;
+    }
+
+    .nav-arrow {
+      color: #c5baa8;
+      font-size: 0.75rem;
+    }
+
+    /* â”€â”€ Right panel â”€â”€ */
+    .panel {
+      flex: 1;
+      background: #f0ebe0;
+      border-radius: 14px;
+      border: 1px solid #e8e1d5;
+      overflow-y: auto;
+      padding: 8px 6px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-radius: 9px;
+      background: transparent;
+      transition: background 0.13s;
+      cursor: default;
+    }
+
+    .setting-row:hover {
+      background: rgba(255,255,255,0.5);
+    }
+
+    .setting-row + .setting-row {
+      border-top: 1px solid rgba(210,200,185,0.45);
+    }
+
+    .setting-label {
+      font-family: var(--regular-font, sans-serif);
+      font-size: 0.875rem;
+      color: var(--text, #2a2118);
+    }
+
+    /* â”€â”€ Theme toggle pill â”€â”€ */
+    .toggle-pill {
+      display: flex;
+      background: #e0d9cc;
+      border-radius: 10px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .toggle-option {
+      padding: 5px 14px;
+      border-radius: 7px;
+      font-family: var(--regular-font, sans-serif);
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #8a7a68;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .toggle-option.active {
+      background: #2a2118;
+      color: #f9f6ef;
+    }
+
+    /* â”€â”€ Font selector â”€â”€ */
+    .font-select {
+      font-family: var(--regular-font, sans-serif);
+      font-size: 0.8rem;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1.5px solid #d9cdb8;
+      background: #f9f6ef;
+      color: var(--text, #2a2118);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a7a68' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 26px;
+    }
+
+    .font-select:focus {
+      border-color: var(--gold, #b8953a);
+    }
+
+    /* â”€â”€ Other settings link â”€â”€ */
+    .other-settings {
+      cursor: pointer;
+      color: var(--ink-muted, #8a7a68);
+    }
+
+    .other-settings:hover {
+      color: var(--text, #2a2118);
+    }
+  `;
+
+  // â”€â”€ Event handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  private _close() {
+    this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+  }
+
+  private _handleBackdropClick(e: MouseEvent) {
+    if (e.target === e.currentTarget) this._close();
+  }
+
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  render() {
+    return html`
+      <div class="modal-backdrop" @click=${this._handleBackdropClick}
+           style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;">
+        <div class="modal" @click=${(e: Event) => e.stopPropagation()}>
+
+          <!-- Header -->
+          <header class="modal-header">
+            <h2 class="modal-title">Settings</h2>
+            <button class="close-btn" @click=${this._close} aria-label="Close settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </header>
+
+          <!-- Body -->
+          <div class="modal-body">
+
+            <!-- Sidebar -->
+            <nav class="sidebar">
+              <!-- User card -->
+              <div class="user-card">
+                <div class="avatar">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="1.8">
+                    <circle cx="12" cy="8" r="4"/>
+                    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                  </svg>
+                </div>
+                <div class="user-info">
+                  <div class="user-name">John</div>
+                  <div class="user-sub">Edit Account</div>
+                </div>
+              </div>
+
+              <!-- Nav items -->
+              <ul class="nav-list">
+                <li class="nav-item ${this.activeSection === 'general' ? 'active' : ''}"
+                    @click=${() => this.activeSection = 'general'}>
+                  <span class="nav-item-left">
+                    <span class="nav-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+                      </svg>
+                    </span>
+                    General
+                  </span>
+                  <span class="nav-arrow">â€º</span>
+                </li>
+              </ul>
+            </nav>
+
+            <!-- Settings panel -->
+            <div class="panel">
+              ${this.activeSection === 'general' ? html`
+                <!-- Theme -->
+                <div class="setting-row">
+                  <span class="setting-label">Theme</span>
+                  <div class="toggle-pill">
+                    <button class="toggle-option ${this.theme === 'light' ? 'active' : ''}"
+                            @click=${() => this.applyTheme('light')}>Light</button>
+                    <button class="toggle-option ${this.theme === 'dark' ? 'active' : ''}"
+                            @click=${() => this.applyTheme('dark')}>Dark</button>
+                  </div>
+                </div>
+
+                <!-- Font -->
+                <div class="setting-row">
+                  <span class="setting-label">Font</span>
+                  <select class="font-select"
+                          .value=${this.selectedFont}
+                          @change=${(e: Event) => this.selectedFont = (e.target as HTMLSelectElement).value}>
+                    <option>Default</option>
+                    <option>Serif</option>
+                    <option>Mono</option>
+                    <option>Dyslexic</option>
+                  </select>
+                </div>
+
+                <!-- Other -->
+                <div class="setting-row other-settings">
+                  <span class="setting-label">Other Settingsâ€¦</span>
+                </div>
+              ` : ''}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\story\story-onboarding.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+import '../ui/step-card';
+
+@customElement('story-onboarding')
+export class StoryOnboarding extends LitElement {
+
+  @state() current = 0;
+
+  steps = [
+    { number: 1, image:"/images/idea_icon.png", title: "Start with an Idea", desc: "Think of anything you love or imagine!" },
+    { number: 2, image:"/images/book.png", title: "Build Your Story", desc: "Add characters, setting, and what happens." },
+    { number: 3, image:"/images/star.png", title: "See Your Story Grow", desc: "Watch your ideas turn into a magical tale!" },
+    { number: 4, image:"/images/dragon.png", title: "You're in Control", desc: "Edit, change, or start over anytime you want." }
+  ];
+
+  goToLogin(){
+    Router.go('/login');
+  }
+
+  next() {
+    if (this.current < this.steps.length - 1) this.current++;
+  }
+
+  prev() {
+    if (this.current > 0) this.current--;
+  }
+
+  static styles = css`
+    :host {
+      display: block;
+      width: 100%;
+      font-family: var(--regular-font);
+    }
+
+    .container {
+      margin: auto;
+      padding: var(--space-7) var(--space-6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      color: var(--onboarding-h1);
+      font-size: var(--text-5xl);
+      font-family: var(--title-font);
+      margin: 0;
+      text-align: center;
+    }
+
+    .subtitle {
+      color: var(--subtittle);
+      font-size: var(--text-lg);
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .steps-mobile,
+    .steps-desktop {
+      flex: 1;
+      align-items: center;
+    }
+
+    /* ================= MOBILE ================= */
+    @media (max-width: 480px){
+      .steps-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        width: 100%;
+        gap: var(--space-2);
+      }
+
+      step-card {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        justify-content: center;
+      }
+
+      h1 {
+        font-size: var(--text-2xl);
+      }
+
+      .subtitle {
+        font-size: var(--text-md);
+      }
+
+    }
+    
+
+    /* ================= DESKTOP ================= */
+    .steps-desktop {
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .steps-mobile {
+        display: none;
+      }
+
+      .steps-desktop {
+        display: flex;
+        position: relative;
+        align-items: center;
+        width: 100%;
+        max-width: 1000px;
+        gap: var(--space-5);
+        flex-shrink: 0;
+      }
+
+      .steps-desktop::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 5%;
+        right: 5%;
+        border-top: 2px dashed #c9c1ad;
+        z-index: 0;
+      }
+
+      step-card {
+        position: relative;
+        z-index: 1;
+      }
+    }
+
+    /* tip */
+    .tip {
+      background: #f7f0df;
+      padding: var(--space-3);
+      border-radius: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+      max-width: 26rem;
+      color: black;
+      text-align: center;
+    }
+
+    /* button */
+    .start-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: var(--space-4) var(--space-7);
+      border-radius: 18px;
+      font-size: var(--text-xl);
+      cursor: pointer;
+    }
+
+    .start-btn:hover {
+      color: var(--link-hover);
+    }
+
+    /* arrows */
+    .arrow {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      font-size: var(--text-2xl);
+      cursor: pointer;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      color: #605126;
+      font-weight: 700;
+    }
+
+    @media (min-width: 768px) {
+      .arrow {
+        display: none;
+      }
+    }
+  `;
+
+  render() {
+    const step = this.steps[this.current];
+
+    return html`
+      <div class="container">
+
+        <h1>Let's Create Your First Story</h1>
+
+        <div class="subtitle">
+          Follow the steps below to build your own magical adventure, one idea at a time.
+        </div>
+
+        <!-- MOBILE -->
+        <div class="steps-mobile">
+          <button class="arrow" @click=${this.prev}>â†</button>
+
+          <step-card
+            .number=${step.number}
+            .image=${step.image}
+            .title=${step.title}
+            .desc=${step.desc}>
+          </step-card>
+
+          <button class="arrow" @click=${this.next}>â†’</button>
+        </div>
+
+        <!-- DESKTOP -->
+        <div class="steps-desktop">
+          ${this.steps.map(step => html`
+            <step-card
+              .number=${step.number}
+              .image=${step.image}
+              .title=${step.title}
+              .desc=${step.desc}>
+            </step-card>
+          `)}
+        </div>
+
+        <div class="tip">
+          â­ Tip: There are no wrong ideas! Every great story starts with your imagination.
+        </div>
+
+        <button class="start-btn" @click=${this.goToLogin}>Start</button>
+
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\ui\app-input.ts ---
+
+import { LitElement, html } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('app-input')
+export class AppInput extends LitElement {
+
+  @property() mode: 'input' | 'textarea' = 'input';
+  @property({ type: Boolean }) autoGrow = false;
+
+  @property() variant: 'default' | 'form' | 'chat' = 'default';
+
+  @property() value: string = '';
+  @property() placeholder: string = '';
+  @property() type: string = 'text';
+
+  @property({ type: Boolean }) required = false;
+  @property() validateType: 'none' | 'email' | 'password' = 'none';
+
+  @property() error: string = '';
+
+  private handleInput(e: Event) {
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+    this.value = target.value || '';
+
+    if (this.error) this.error = '';
+
+    this.dispatchEvent(new CustomEvent('value-change', {
+      detail: this.value,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  private handleTextareaInput(e: Event) {
+    const target = e.target as HTMLTextAreaElement;
+    this.value = target.value || '';
+
+    if (this.autoGrow) {
+      target.style.height = 'auto';
+
+      const lineHeight = 20;
+      const maxLines = 6;
+      const maxHeight = lineHeight * maxLines;
+
+      target.style.height = Math.min(target.scrollHeight, maxHeight) + 'px';
+
+      target.style.overflowY =
+        target.scrollHeight > maxHeight ? 'auto' : 'hidden';
+    }
+
+    if (this.error) this.error = '';
+
+    this.dispatchEvent(new CustomEvent('value-change', {
+      detail: this.value,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  private handleKey(e: KeyboardEvent) {
+    if (this.mode === 'textarea' && this.autoGrow) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        this.submit();
+      }
+    } else {
+      if (e.key === 'Enter') {
+        this.submit();
+      }
+    }
+  }
+
+  private submit() {
+    this.dispatchEvent(new CustomEvent('input-submit', {
+      detail: { value: this.value },
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  // âœ… âœ… âœ… FIX 1: VALIDATION METHOD ADDED BACK
+  public validate(): boolean {
+    if (this.required && !this.value.trim()) {
+      this.error = 'This field is required';
+      return false;
+    }
+
+    if (this.validateType === 'email') {
+      const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value);
+      if (!valid) {
+        this.error = 'Invalid email format';
+        return false;
+      }
+    }
+
+    if (this.validateType === 'password') {
+      if (this.value.length < 6) {
+        this.error = 'Password must be at least 6 characters';
+        return false;
+      }
+    }
+
+    this.error = '';
+    return true;
+  }
+
+  public getValue() {
+    const el = this.querySelector('input, textarea') as HTMLInputElement | HTMLTextAreaElement;
+    return el?.value ?? '';
+  }
+
+  public clear() {
+    this.value = '';
+    this.error = '';
+  }
+
+  createRenderRoot() {
+    return this; // keep light DOM
+  }
+
+  render() {
+    return html`
+      <style>
+
+        /* âœ… FIX 2: REMOVE app-input prefix */
+        input,
+        textarea {
+          width: 100%;
+          // padding: var(--space-3) var(--space-4);
+          box-sizing: border-box;
+          border-radius: 10px;
+
+          background: var(--bg, #FFFCF0);
+          border: var(--input-border, 1px solid var(--border, #d9cdb8));
+
+          font-family: var(--regular-font);
+          font-size: var(--text-sm);
+          color: var(--text, #2a2118);
+
+          outline: none;
+          transition: border-color 0.2s;
+        }
+
+        /* âœ… FIX 3: correct variant selector */
+        :host([variant="form"]) input,
+        :host([variant="form"]) textarea {
+          background: var(--surface);
+          border: none;
+          border-radius: var(--radius);
+          font-family: var(--regular-font);
+          font-size: var(--text-md);
+          padding: var(--space-3) var(--space-4);
+
+          box-shadow: var(--shadow-glow);
+          transition: box-shadow 0.2s, transform 0.15s;
+        }
+
+        :host([variant="form"]) input:focus,
+        :host([variant="form"]) textarea:focus {
+          box-shadow:
+            0 0 0 2px rgba(201,168,76,0.15),
+            0 0 12px rgba(201,168,76,0.25);
+          transform: translateY(-1px);
+        }
+
+        textarea {
+          resize: none;
+          min-height: 42px;
+          overflow-y: hidden;
+          overflow-x: hidden;
+          line-height: var(--line-height-body);
+        }
+
+        input.error,
+        textarea.error {
+          border-color: var(--error, #c0392b);
+        }
+
+        app-input .error-text {
+          font-size: var(--text-xs);
+          color: var(--error, #c0392b);
+          margin-top: var(--space-1);
+        }
+      </style>
+
+      ${this.mode === 'textarea'
+        ? html`
+            <textarea
+              class=${this.error ? 'error' : ''}
+              .value=${this.value}
+              placeholder=${this.placeholder}
+              rows="1"
+              @input=${this.handleTextareaInput}
+              @keydown=${this.handleKey}
+            ></textarea>
+          `
+        : html`
+            <input
+              class=${this.error ? 'error' : ''}
+              .value=${this.value}
+              type=${this.type}
+              placeholder=${this.placeholder}
+              @input=${this.handleInput}
+              @keydown=${this.handleKey}
+            />
+          `
+      }
+
+      ${this.error
+        ? html`<div class="error-text">${this.error}</div>`
+        : ''}
+    `;
+  }
+}
+
+--- FILE: \components\ui\auth-layout.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
+
+@customElement('auth-layout')
+export class AuthLayout extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .background {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        var(--img-object) right top no-repeat,
+        var(--img-castle) center / cover no-repeat,
+        var(--bg);
+      background-size: 15% auto, cover;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      height: 100%;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .top-slot {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      z-index: 2;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+      padding: var(--space-5);
+      padding-right: var(--space-7);
+    }
+
+    ::slotted(*) {
+      width: 100%;
+      max-width: 420px;
+      margin: 0;
+    }
+
+    /* Tablet + Mobile */
+    @media (max-width: 768px) {
+      .background {
+        background-size: 28% auto, cover;
+        background-position: top right, center;
+      }
+
+      .content {
+        justify-content: center;
+        padding: var(--space-4);
+      }
+
+      .top-slot {
+        top: var(--space-3);
+        right: var(--space-3);
+      }
+
+      ::slotted(*) {
+        max-width: 100%;
+      }
+    }
+
+    /* Small phones */
+    @media (max-width: 480px) {
+      .background {
+        background-size: 35% auto, cover;
+      }
+
+      .content {
+        padding: var(--space-3);
+      }
+    }
+  `;
+
+  render() {
+    return html`
+      <div class="background"></div>
+
+      <div class="container">
+        <div class="top-slot">
+          <slot name="top"></slot>
+        </div>
+
+        <div class="content">
+          <slot></slot>
+        </div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\ui\selection-card.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('selection-card')
+export class SelectionCard extends LitElement {
+  @property() label = '';
+  @property() image = '';
+  @property({ type: Boolean }) selected = false;
+
+  static styles = css`
+    .wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: pointer;
+    }
+    .card {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      background: #1c1814;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.85) saturate(0.7);
+      transition: filter 0.2s;
+    }
+    .wrapper:hover .card {
+      transform: translateY(-2px);
+    }
+    .selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
+    }
+    .label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+  `;
+
+  private handleClick() {
+    this.dispatchEvent(new CustomEvent('select', {
+      detail: this.label,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  render() {
+    return html`
+      <div class="wrapper" @click=${this.handleClick}>
+        <div class="card ${this.selected ? 'selected' : ''}">
+          <img src="${this.image}" />
+        </div>
+        <div class="label">${this.label}</div>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\ui\selection-panel.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import './selection-card';
+
+type Item = {
+  id?: string;
+  label: string;
+  image: string;
+};
+
+@customElement('selection-panel')
+export class SelectionPanel extends LitElement {
+
+  @property() title = '';
+  @property({ type: Array }) items: Item[] = [];
+  @property() selected: string | null = null;
+
+  // carousel index for mobile
+  @state() private carouselIndex = 0;
+
+  static styles = css`
+    :host {
+      display: block;
+      width: 90%;
+    }
+
+    .panel {
+      width: 100%;
+      border-radius: 14px;
+      padding: var(--space-5);
+    }
+
+    .title {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: var(--space-4);
+    }
+
+    /* â”€â”€ Grid layout (default: tablet and up) â”€â”€ */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: var(--space-3);
+    }
+
+    /* â”€â”€ Carousel layout (mobile only) â”€â”€ */
+    .carousel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-4);
+      width: 100%;
+    }
+
+    .carousel-track {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      gap: 0;
+      position: relative;
+      height: 160px;
+      overflow: visible;
+    }
+
+    /* Each slot: left-ghost, center, right-ghost */
+    .carousel-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      transition: transform 0.35s cubic-bezier(0.34, 1.3, 0.64, 1),
+                  opacity 0.3s ease,
+                  filter 0.3s ease;
+      position: absolute;
+      cursor: pointer;
+    }
+
+    /* Center (active) card */
+    .carousel-slot.center {
+      transform: scale(1) translateX(0);
+      opacity: 1;
+      filter: none;
+      z-index: 2;
+    }
+
+    /* Side ghost cards */
+    .carousel-slot.side-left {
+      transform: scale(0.65) translateX(-110px);
+      opacity: 0.45;
+      filter: brightness(0.45) saturate(0.3);
+      z-index: 1;
+    }
+
+    .carousel-slot.side-right {
+      transform: scale(0.65) translateX(110px);
+      opacity: 0.45;
+      filter: brightness(0.45) saturate(0.3);
+      z-index: 1;
+    }
+
+    .carousel-card {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      overflow: hidden;
+      background: #1c1814;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .carousel-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .carousel-card.selected {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.22);
+    }
+
+    .carousel-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* â”€â”€ Arrows â”€â”€ */
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+    }
+
+    .arrow-btn {
+      background: none;
+      border: 1px solid var(--gold-dim, #7a6230);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      cursor: pointer;
+      color: var(--gold, #c9a84c);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .arrow-btn:hover {
+      background: rgba(201, 168, 76, 0.1);
+      border-color: var(--gold, #c9a84c);
+    }
+
+    /* Dot indicators */
+    .carousel-dots {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted, #6b6358);
+      opacity: 0.4;
+      transition: opacity 0.2s, background 0.2s;
+    }
+
+    .dot.active {
+      background: var(--gold, #c9a84c);
+      opacity: 1;
+    }
+
+    /* â”€â”€ Responsive breakpoints â”€â”€ */
+
+    /* Tablet: switch panels to column (handled by parent avatar-page),
+       grid stays as-is until mobile */
+
+    /* Mobile: swap grid â†’ carousel */
+    @media (max-width: 480px) {
+      .grid {
+        display: none;
+      }
+      .carousel {
+        display: flex;
+      }
+    }
+  `;
+
+  private handleSelect(e: CustomEvent) {
+    this.dispatchEvent(new CustomEvent('change', {
+      detail: e.detail,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  private carouselSelect(label: string) {
+    this.dispatchEvent(new CustomEvent('change', {
+      detail: label,
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  private prev() {
+    this.carouselIndex = (this.carouselIndex - 1 + this.items.length) % this.items.length;
+    // auto-select the center item
+    const item = this.items[this.carouselIndex];
+    if (item) this.carouselSelect(item.id ?? item.label);
+  }
+
+  private next() {
+    this.carouselIndex = (this.carouselIndex + 1) % this.items.length;
+    const item = this.items[this.carouselIndex];
+    if (item) this.carouselSelect(item.id ?? item.label);
+  }
+
+  private getSlotItem(offset: -1 | 0 | 1): Item | undefined {
+    const len = this.items.length;
+    if (len === 0) return undefined;
+    return this.items[(this.carouselIndex + offset + len) % len];
+  }
+
+  render() {
+    const leftItem  = this.getSlotItem(-1);
+    const centerItem = this.getSlotItem(0);
+    const rightItem = this.getSlotItem(1);
+
+    return html`
+      <div class="panel">
+        <div class="title">${this.title}</div>
+
+        <!-- â”€â”€ Grid (tablet+) â”€â”€ -->
+        <div class="grid">
+          ${this.items.map(item => {
+            const value = item.id ?? item.label;
+            return html`
+              <selection-card
+                .label=${item.label}
+                .image=${item.image}
+                .selected=${this.selected === value}
+                @select=${this.handleSelect}
+              ></selection-card>
+            `;
+          })}
+        </div>
+
+        <!-- â”€â”€ Carousel (mobile) â”€â”€ -->
+        <div class="carousel">
+          <div class="carousel-track">
+
+            ${leftItem ? html`
+              <div class="carousel-slot side-left"
+                @click=${() => this.prev()}>
+                <div class="carousel-card ${this.selected === (leftItem.id ?? leftItem.label) ? 'selected' : ''}">
+                  <img src="${leftItem.image}" alt="${leftItem.label}" />
+                </div>
+              </div>
+            ` : ''}
+
+            ${centerItem ? html`
+              <div class="carousel-slot center"
+                @click=${() => this.carouselSelect(centerItem.id ?? centerItem.label)}>
+                <div class="carousel-card ${this.selected === (centerItem.id ?? centerItem.label) ? 'selected' : ''}">
+                  <img src="${centerItem.image}" alt="${centerItem.label}" />
+                </div>
+                <div class="carousel-label">${centerItem.label}</div>
+              </div>
+            ` : ''}
+
+            ${rightItem ? html`
+              <div class="carousel-slot side-right"
+                @click=${() => this.next()}>
+                <div class="carousel-card ${this.selected === (rightItem.id ?? rightItem.label) ? 'selected' : ''}">
+                  <img src="${rightItem.image}" alt="${rightItem.label}" />
+                </div>
+              </div>
+            ` : ''}
+
+          </div>
+
+          <!-- Arrow controls + dots -->
+          <div class="carousel-controls">
+            <button class="arrow-btn" @click=${this.prev} aria-label="Previous">&#8592;</button>
+            <div class="carousel-dots">
+              ${this.items.map((_, i) => html`
+                <div class="dot ${i === this.carouselIndex ? 'active' : ''}"></div>
+              `)}
+            </div>
+            <button class="arrow-btn" @click=${this.next} aria-label="Next">&#8594;</button>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\ui\step-card.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+
+@customElement('step-card')
+export class StepCard extends LitElement {
+
+  @property() number = '';
+  @property() title = '';
+  @property() desc = '';
+  @property() image = '';
+
+  static styles = css`
+    .card {
+      background: #FFFCF0;
+      padding: var(--space-5) var(--space-4);
+      max-width: 260px;
+      min-height: 220px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .number {
+      width: 40px;
+      height: 40px;
+      font-weight: bold;
+      border-radius: 50%;
+      background: #a9c995;
+      color: white;
+      font-size: var(--text-xl);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      align-self: flex-start;
+    }
+
+    .img-box{
+      width: 120px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .img-box img{
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    @media(max-width: 480px){
+    .card{
+      max-width: 200px;
+      padding: var(--space-4);
+      }
+
+    .img-box{
+      width: 60px;
+      height: 60px;
+    }
+    }
+
+    h2{
+      color: #605126;
+      font-size: var(--text-xl);
+      text-align: center;
+    }
+
+    p{
+      margin: 0;
+      font-size: var(--text-md);
+      color: black;
+      text-align: center;
+    }
+  `;
+
+  render() {
+    return html`
+      <div class="card">
+        <div class="number">${this.number}</div>
+        <div class="img-box">
+          <img src="${this.image}"/>
+        </div>
+        <h2>${this.title}</h2>
+        <p>${this.desc}</p>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \components\ui\theme-toggle.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+
+@customElement('theme-toggle')
+export class ThemeToggle extends LitElement {
+
+  @state()
+  private isDark = false;
+
+  static styles = css`
+    button {
+      padding: var(--space-2) var(--space-4);
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      position: fixed;
+      z-index: 999;
+    }
+  `;
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    // 1. Check saved preference
+    const saved = localStorage.getItem('theme');
+
+    if (saved) {
+      this.isDark = saved === 'dark';
+    } else {
+      // 2. Use system preference
+      this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    this.applyTheme();
+  }
+
+  private toggleTheme() {
+    this.isDark = !this.isDark;
+
+    // Save preference
+    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+
+    this.applyTheme();
+  }
+
+  private applyTheme() {
+    const root = document.documentElement;
+
+    if (this.isDark) {
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+  }
+
+  render() {
+    return html`
+      <button @click=${this.toggleTheme}>
+        ${this.isDark ? 'â˜€ï¸ Light Mode' : 'ðŸŒ™ Dark Mode'}
+      </button>
     `;
   }
 }
@@ -2080,7 +3743,7 @@ export class StorySidebar extends LitElement {
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import './app-input';
+import './ui/app-input';
 
 import { login } from '../api/api';
 import '../styles/theme.css';
@@ -2110,7 +3773,7 @@ static styles = css`
 
   :host {
     width: 30rem;
-    margin-right: 3rem;
+    margin-right: var(--space-7);
     color: var(--text);
   }
 
@@ -2128,12 +3791,12 @@ static styles = css`
   app-input input {
     width: 100%;
     height: 50px;
-    padding: 0 16px;
+    padding: 0 var(--space-4);
     border: 1px solid var(--input-border);
     border-radius: 10px;
-    font-size: 16px;
-    margin-top: 10px;
-    margin-bottom: 5px;
+    font-size: var(--text-md);
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-1);
     background: var(--surface);
     color: var(--text);
   }
@@ -2144,29 +3807,29 @@ static styles = css`
 
   app-input .error-text {
     color: var(--error);
-    font-size: 13px;
+    font-size: var(--text-xs);
     min-height: 16px;
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: var(--space-1);
   }
 
   h2 {
-    margin-bottom: 24px;
-    font-size: 26px;
-    font-family: 'Times New Roman', Times, serif;
+    margin-bottom: var(--space-5);
+    font-size: var(--text-2xl);
+    font-family: var(--title-font);
     color: var(--text);
   }
 
   button {
     width: 100%;
-    padding: 16px 8px;
+    padding: var(--space-4) var(--space-2);
     background: var(--primary);
     color: white;
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    margin-top: 12px;
-    font-size: 18px;
+    margin-top: var(--space-3);
+    font-size: var(--text-lg);
   }
 
   button:disabled {
@@ -2178,18 +3841,18 @@ static styles = css`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 10px;
+    margin-top: var(--space-3);
   }
 
   .login-error {
     color: var(--error);
-    font-size: 14px;
+    font-size: var(--text-sm);
     flex: 1;
   }
 
   .signup {
-    margin-top: 12px;
-    font-size: 16px;
+    margin-top: var(--space-3);
+    font-size: var(--text-md);
     color: var(--accent);
     text-align: center;
   }
@@ -2207,7 +3870,7 @@ static styles = css`
 
   .skip {
     text-align: right;
-    font-size: 20px;
+    font-size: var(--text-xl);
     position: absolute;
     bottom: 40px;
     right: 40px;
@@ -2226,12 +3889,12 @@ static styles = css`
 
   label {
     font-weight: bold;
-    font-size: 16px;
+    font-size: var(--text-md);
   }
 
   .forgot {
-    margin-bottom: 8px;
-    font-size: 16px;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-md);
     font-weight: bold;
     color: var(--link);
     cursor: pointer;
@@ -2329,69 +3992,600 @@ static styles = css`
   }
 }
 
---- FILE: \components\theme-toggle.ts ---
+--- FILE: \pages\admin-page.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement } from 'lit/decorators.js';
 
-@customElement('theme-toggle')
-export class ThemeToggle extends LitElement {
-
-  @state()
-  private isDark = false;
-
+@customElement('admin-page')
+export class AdminPage extends LitElement {
   static styles = css`
-    button {
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: none;
+    :host {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: #f8f6ea;
+    color: #1f2937;
+    font-family: Inter, Arial, sans-serif;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .layout {
+    display: flex;
+    min-height: 120vh;
+    width: 100%;
+    background:
+        radial-gradient(circle at top right, rgba(250, 204, 21, 0.18), transparent 35%),
+        #f8f6ea;
+    }
+
+    .sidebar {
+      width: 245px;
+      background: rgba(255, 253, 240, 0.92);
+      border-right: 1px solid #e8e1bd;
+      padding: 26px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.35);
+    }
+
+    .brand h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #111827;
+      font-family: Georgia, serif;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .stars {
+      color: #f59e0b;
+      font-size: 14px;
+      margin-bottom: 26px;
+    }
+
+    .menu-title {
+      font-size: 11px;
+      color: #9ca3af;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      color: #374151;
+      text-decoration: none;
+      font-size: 14px;
       cursor: pointer;
-      background: var(--primary);
+      transition: 0.2s ease;
+    }
+
+    nav a:hover {
+      background: #fff7bf;
+      transform: translateX(4px);
+    }
+
+    nav a.active {
+      background: linear-gradient(135deg, #facc15, #fde68a);
+      color: #111827;
+      font-weight: 700;
+      box-shadow: 0 8px 18px rgba(250, 204, 21, 0.28);
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      background: #fff9cf;
+      border: 1px solid #f4df7a;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #facc15;
+      box-shadow: 0 6px 14px rgba(250, 204, 21, 0.35);
+    }
+
+    .profile strong {
+      font-size: 14px;
+      color: #111827;
+    }
+
+    .profile p {
+      margin: 2px 0 0;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .main {
+        flex: 1;
+        padding: 0 34px 120px;
+    }
+
+    .topbar {
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #e8e1bd;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .breadcrumb {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .dashboard-btn {
+      border: none;
+      border-radius: 14px;
+      padding: 11px 28px;
+      background: linear-gradient(135deg, #facc15, #f59e0b);
+      color: #111827;
+      font-weight: 700;
+      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.28);
+      cursor: pointer;
+    }
+
+    .icons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .icons span {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #fff9cf;
+      border: 1px solid #f4df7a;
+      color: #111827;
+    }
+
+    .hero {
+      margin: 28px 0 24px;
+      padding: 24px 28px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #fff8c8, #ffffff);
+      border: 1px solid #f4df7a;
+      box-shadow: 0 14px 35px rgba(17, 24, 39, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 30px;
+      color: #111827;
+      font-family: Georgia, serif;
+    }
+
+    .hero p {
+      margin: 6px 0 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .hero-badge {
+      background: #111827;
       color: white;
-      font-weight: bold;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      box-shadow: 0 10px 20px rgba(17, 24, 39, 0.22);
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 22px;
+      margin-bottom: 26px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #e5e7eb;
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 14px 28px rgba(17, 24, 39, 0.08);
+      transition: 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 18px 38px rgba(17, 24, 39, 0.12);
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      right: -28px;
+      top: -28px;
+      width: 95px;
+      height: 95px;
+      border-radius: 50%;
+      background: rgba(250, 204, 21, 0.18);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: #fff7bf;
+      font-size: 21px;
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      margin: 0;
+      font-size: 34px;
+      color: #111827;
+      font-weight: 800;
+    }
+
+    .card p {
+      margin: 4px 0 0;
+      color: #4b5563;
+      font-size: 13px;
+    }
+
+    .trend {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #16a34a;
+      font-weight: 700;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 14px 30px rgba(17, 24, 39, 0.1);
+    }
+
+    .panel h3 {
+      margin: 0 0 22px;
+      color: #111827;
+      font-size: 21px;
+      font-family: Georgia, serif;
+    }
+
+    .reader,
+    .story {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .reader:last-child,
+    .story:last-child {
+      border-bottom: none;
+    }
+
+    .emoji {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: #fff7bf;
+      font-size: 18px;
+    }
+
+    .reader-info,
+    .story-info {
+      flex: 1;
+    }
+
+    .reader-info strong,
+    .story-info strong {
+      display: block;
+      color: #111827;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .reader-info p,
+    .story-info p {
+      margin: 4px 0 0;
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    .status {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.12);
+    }
+
+    .status.offline {
+      background: #cbd5e1;
+      box-shadow: none;
+    }
+
+    .badge {
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .alert {
+      margin-top: 26px;
+      border-radius: 22px;
+      padding: 20px 24px;
+      background: linear-gradient(135deg, #fef3c7, #fffbea);
+      border: 1px solid #facc15;
+      box-shadow: 0 12px 25px rgba(250, 204, 21, 0.16);
+    }
+
+    .alert strong {
+      color: #111827;
+      font-size: 16px;
+    }
+
+    .alert p {
+      margin: 6px 0 0;
+      color: #4b5563;
+      font-size: 13px;
+    }
+
+    @media (max-width: 1000px) {
+      .cards,
+      .content {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .sidebar {
+        width: 220px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .layout {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+      }
+
+      .cards,
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
     }
   `;
 
-  connectedCallback() {
-    super.connectedCallback();
-
-    // 1. Check saved preference
-    const saved = localStorage.getItem('theme');
-
-    if (saved) {
-      this.isDark = saved === 'dark';
-    } else {
-      // 2. Use system preference
-      this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-
-    this.applyTheme();
-  }
-
-  private toggleTheme() {
-    this.isDark = !this.isDark;
-
-    // Save preference
-    localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
-
-    this.applyTheme();
-  }
-
-  private applyTheme() {
-    const root = document.documentElement;
-
-    if (this.isDark) {
-      root.setAttribute('data-theme', 'dark');
-    } else {
-      root.removeAttribute('data-theme');
-    }
-  }
-
   render() {
     return html`
-      <button @click=${this.toggleTheme}>
-        ${this.isDark ? 'â˜€ï¸ Light Mode' : 'ðŸŒ™ Dark Mode'}
-      </button>
+      <div class="layout">
+        <aside class="sidebar">
+          <div>
+            <div class="brand">
+              <div class="logo"></div>
+              <div>
+                <h2>Story</h2>
+                <p>Admin Portal</p>
+              </div>
+            </div>
+
+            <div class="stars">â­ â­ â­</div>
+
+            <div class="menu-title">MENU</div>
+
+            <nav>
+              <a class="active">â–¦ Dashboard</a>
+              <a>ðŸ“– Stories</a>
+              <a>ðŸ‘¥ Users</a>
+              <a>âš™ Settings</a>
+            </nav>
+          </div>
+
+          <div class="profile">
+            <div class="avatar">ðŸ‘¤</div>
+            <div>
+              <strong>John</strong>
+              <p>Story Master âœ¨</p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <header class="topbar">
+            <div class="top-left">
+              <span class="breadcrumb">âœ¨ Story / Admin</span>
+              <button class="dashboard-btn">Dashboard</button>
+            </div>
+
+            <div class="icons">
+              <span>ðŸ‘¤</span>
+              <span>âš™</span>
+            </div>
+          </header>
+
+          <section class="hero">
+            <div>
+              <h1>Admin Dashboard</h1>
+              <p>Manage readers, stories, and AI-generated content from one place.</p>
+            </div>
+            <div class="hero-badge">Todayâ€™s Status: Excellent âœ¨</div>
+          </section>
+
+          <section class="cards">
+            <div class="card">
+              <div class="card-icon">ðŸ“–</div>
+              <h2>142</h2>
+              <p>Total Stories</p>
+              <div class="trend">â†‘ 12% this week</div>
+            </div>
+
+            <div class="card">
+              <div class="card-icon">ðŸ‘¥</div>
+              <h2>38</h2>
+              <p>Active Readers</p>
+              <div class="trend">â†‘ 8 new readers</div>
+            </div>
+
+            <div class="card">
+              <div class="card-icon">âœ¨</div>
+              <h2>89</h2>
+              <p>AI Generated</p>
+              <div class="trend">â†‘ 24 stories</div>
+            </div>
+
+            <div class="card">
+              <div class="card-icon">ðŸ“—</div>
+              <h2>7</h2>
+              <p>Reading Now</p>
+              <div class="trend">Live activity</div>
+            </div>
+          </section>
+
+          <section class="content">
+            <div class="panel">
+              <h3>ðŸ‘¥ Recent Readers</h3>
+
+              <div class="reader">
+                <span class="emoji">ðŸ§¸</span>
+                <div class="reader-info">
+                  <strong>Aisha Lim</strong>
+                  <p>aisha@example.com</p>
+                </div>
+                <span class="status"></span>
+              </div>
+
+              <div class="reader">
+                <span class="emoji">ðŸ¦</span>
+                <div class="reader-info">
+                  <strong>Ben Kumar</strong>
+                  <p>ben@example.com</p>
+                </div>
+                <span class="status"></span>
+              </div>
+
+              <div class="reader">
+                <span class="emoji">ðŸ¦Š</span>
+                <div class="reader-info">
+                  <strong>Clara Tan</strong>
+                  <p>clara@example.com</p>
+                </div>
+                <span class="status offline"></span>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>ðŸ“– Recent Stories</h3>
+
+              <div class="story">
+                <span class="emoji">ðŸ§š</span>
+                <div class="story-info">
+                  <strong>The Magic Forest</strong>
+                  <p>by Aisha</p>
+                </div>
+                <span class="badge">Age 5â€“7</span>
+              </div>
+
+              <div class="story">
+                <span class="emoji">ðŸš€</span>
+                <div class="story-info">
+                  <strong>Space Explorer</strong>
+                  <p>by Ben</p>
+                </div>
+                <span class="badge">Age 8â€“10</span>
+              </div>
+
+              <div class="story">
+                <span class="emoji">ðŸ‰</span>
+                <div class="story-info">
+                  <strong>Dragon's Quest</strong>
+                  <p>by Clara</p>
+                </div>
+                <span class="badge">Age 6â€“9</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="alert">
+            <strong>âœ¨ Everything looks great today!</strong>
+            <p>142 stories have been read this week. Keep up the magic!</p>
+          </div>
+        </main>
+      </div>
     `;
   }
 }
@@ -2401,67 +4595,79 @@ export class ThemeToggle extends LitElement {
 import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import '../components/theme-toggle';
+import { Router } from '@vaadin/router';
+import '../components/ui/theme-toggle';
+import '../components/ui/selection-panel';
 
-const images = import.meta.glob('../assets/*.jpg', {
+
+const images = import.meta.glob('../assets/**/*.jpg', {
   eager: true,
   import: 'default'
 }) as Record<string, string>;
 
-function getImage(name: string): string {
-  return images[`../assets/${name.toLowerCase()}.jpg`] || '';
+
+const characters: string[] = ['Robot', 'Dragon', 'Unicorn', 'Pirate', 'Ninja', 'Alien', 'Dinosaur', 'Wizard'];
+const personalityTypes: string[] = [ 'Brave','Funny', 'Curious', 'Kind', 'Energetic', 'Creative', 'wise', 'Adventurous'];
+const randomNames: string[] = ['Arin', 'Lyra', 'Thorin', 'Kael', 'Zara', 'Eldon', 'Mira', 'Riven'];
+
+function createItems(folder: string, list: string[]) {
+  return list.map(name => {
+    const path = `../assets/${folder}/${name.toLowerCase()}.jpg`;
+    return {
+      label: name,
+      image: images[path] || ''
+    };
+  });
 }
 
-const races: string[] = ['Human', 'Elf', 'Dwarf', 'Orc', 'Halfling', 'Dragonborn'];
-const classes: string[] = ['Warrior', 'Mage', 'Rogue', 'Archer', 'Paladin', 'Necromancer', 'Monk'];
-const randomNames: string[] = ['Arin', 'Lyra', 'Thorin', 'Kael', 'Zara', 'Eldon', 'Mira', 'Riven'];
+const charactersItems = createItems('characters', characters);
+const personalityTypesItems = createItems('personalityTypes', personalityTypes);
 
 @customElement('avatar-page')
 export class AvatarPage extends LitElement {
 
   static styles = css`
     /* â”€â”€ Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-:host {
-  --surface: #FFFCF0;
-  --border:    #2a2520;
-  --border-hi: #3d3730;
-  --gold:      #c9a84c;
-  --gold-dim:  #7a6230;
-  --muted:     #6b6358;
-  --shadow-glow: 0px 0px 5px 5px #e8e0d0;
-  --radius:    10px;
-  --font-head: 'Cinzel', 'Palatino Linotype', serif;
-  --font-body: 'Cormorant Garamond', 'Georgia', serif;
+    :host {
+      --surface: #FFFCF0;
+      --border:    #2a2520;
+      --border-hi: #3d3730;
+      --gold:      #c9a84c;
+      --gold-dim:  #7a6230;
+      --muted:     #6b6358;
+      --radius:    10px;
+      --font-head: 'Cinzel', 'Palatino Linotype', serif;
+      --font-body: 'Cormorant Garamond', 'Georgia', serif;
 
-  display: flex;                /* âœ… REQUIRED */
-  justify-content: center;      /* horizontal center */
-  align-items: center;          /* vertical center */
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-  min-height: 100vh;            /* better than height */
-  width: 100vw;
+      min-height: 100vh;
+      width: 100vw;
 
-  background: 
-    url('/images/Objects-1.png') right top no-repeat,
-    url('/images/OBJECTS.png') center/cover no-repeat, 
-    var(--bg);
+      background: 
+        url('/images/Objects-1.png') right top no-repeat,
+        url('/images/OBJECTS.png') center/cover no-repeat, 
+        var(--bg);
 
-  background-size: 15% auto, cover;
-  padding: 20px;
-  box-sizing: border-box;
-  font-family: sans-serif;
-  color: #000;
-}
-    main{
+      background-size: 15% auto, cover;
+      padding: var(--space-5);
+      box-sizing: border-box;
+      font-family: var(--regular-font);
+      color: #000;
+    }
+
+    main {
       display: block;
       min-height: 20%;
-      border-radius:20px;
+      border-radius: 20px;
       width: 50%;
-      /* subtle noise grain */
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 16px;
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
       box-sizing: border-box;
-      padding: 40px 24px 60px;
+      padding: var(--space-6) var(--space-5) var(--space-7);
     }
 
     /* â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -2470,28 +4676,28 @@ export class AvatarPage extends LitElement {
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 36px;
+      gap: var(--space-6);
     }
 
     /* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .page-header {
       text-align: center;
-      padding-bottom: 8px;
+      padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--border);
     }
 
     .page-header h1 {
-      font-family: var(--font-head);
+      font-family: var(--title-font);
       font-size: clamp(1.6rem, 3.5vw, 2.6rem);
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--gold);
-      margin: 0 0 4px;
+      margin: 0 0 var(--space-1);
     }
 
     .page-header p {
-      font-size: 0.9rem;
+      font-size: var(--text-sm);
       color: var(--muted);
       letter-spacing: 0.06em;
       margin: 0;
@@ -2500,25 +4706,75 @@ export class AvatarPage extends LitElement {
     /* â”€â”€ Identity Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .identity-row {
       display: flex;
-      gap: 12px;
-      align-items: stretch;
+      gap: var(--space-3);
+      align-items: flex-end;
     }
 
     .field-wrap {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: var(--space-2);
       flex: 1;
     }
 
     .field-wrap.gender { flex: 0 0 160px; }
 
     label {
-      font-family: var(--font-head);
-      font-size: 0.65rem;
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.2em;
       text-transform: uppercase;
       color: var(--muted);
+    }
+
+    /* â”€â”€ Name input wrapper â€” dice lives inside â”€â”€ */
+    .name-input-wrap {
+      display: flex;
+      align-items: center;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s;
+      overflow: hidden;
+    }
+
+    .name-input-wrap:focus-within {
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .name-input-wrap app-input {
+      flex: 1;
+    }
+
+    .name-input-wrap app-input input,
+    .name-input-wrap app-input ::part(input) {
+      box-shadow: none !important;
+      border-radius: 0;
+    }
+
+    .dice-btn {
+      flex-shrink: 0;
+      background: none;
+      border: none;
+      border-left: 1px solid var(--sand, #d9cdb8);
+      color: var(--gold);
+      font-size: var(--text-lg, 1.2rem);
+      padding: 0 var(--space-3);
+      height: 100%;
+      cursor: pointer;
+      transition: background 0.2s;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+    }
+
+    .dice-btn:hover {
+      background: rgba(201, 168, 76, 0.09);
     }
 
     input[type="text"], select, textarea {
@@ -2526,14 +4782,12 @@ export class AvatarPage extends LitElement {
       border: none;
       border-radius: var(--radius);
       color: var(--text);
-      font-family: var(--font-body);
-      font-size: 1rem;
-      padding: 12px 16px;
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      padding: var(--space-3) var(--space-4);
       outline: none;
       width: 100%;
       box-sizing: border-box;
-
-      /* âœ… match panel style */
       box-shadow: var(--shadow-glow);
       transition: box-shadow 0.2s, transform 0.15s;
     }
@@ -2555,153 +4809,113 @@ export class AvatarPage extends LitElement {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%236b6358'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 14px center;
-      padding-right: 36px;
+      padding-right: var(--space-6);
     }
 
     select option { background: #1a1714; }
 
-    .dice-btn {
-      flex: 0 0 auto;
-      align-self: flex-end;
-      background: var(--bg);
-      box-shadow: var(--shadow-glow);
-      border: none;
-      border-radius: var(--radius);
-      color: var(--gold);
-      font-size: 1.3rem;
-      padding: 11px 16px;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-      line-height: 1;
-    }
-
-    .dice-btn:hover {
-      border-color: var(--gold-dim);
-      background: rgba(201, 168, 76, 0.07);
+    /* â”€â”€ Panel field-wraps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    .field-wrap.panel {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
     }
 
     /* â”€â”€ Selection Panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .panels {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
     }
 
-    .panel {
+    @media (min-width: 1492px) {
+      .panels {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      main {
+        width: 80%;
+      }
+    }
+
+    @media (max-width: 657px) {
+      .identity-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .field-wrap.gender {
+        flex: 1 1 auto;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      main {
+        width: 95%;
+        padding: var(--space-4) var(--space-3) var(--space-6);
+      }
+
+      :host {
+        padding: var(--space-3);
+        align-items: flex-start;
+      }
+    }
+
+    .panel-container {
       background: var(--bg);
       border-radius: 14px;
-      padding: 24px;
       box-shadow: var(--shadow-glow);
-    }
-
-    .panel-title {
-      font-family: var(--font-head);
-      font-size: 0.7rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin: 0 0 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .panel-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: 14px;
-    }
-
-    /* â”€â”€ Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    .card-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-
-    .card {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      overflow: hidden;
-      background: #1c1814;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-
-    .card img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: brightness(0.85) saturate(0.7);
-      transition: filter 0.2s;
-    }
-
-    .card-wrapper:hover .card {
-      transform: translateY(-2px);
-      border-color: var(--border-hi);
-    }
-
-    .card-wrapper:hover .card img {
-      filter: brightness(1) saturate(1);
-    }
-
-    .card.selected {
-      border-color: var(--gold);
-      box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.18), 0 0 18px rgba(201, 168, 76, 0.12);
-    }
-
-    .card.selected img {
-      filter: brightness(1.05) saturate(1.1);
-    }
-
-    .card-label {
-      font-family: var(--font-head);
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      text-align: center;
-      transition: color 0.2s;
-    }
-
-    .card-wrapper:hover .card-label,
-    .card-wrapper:has(.selected) .card-label {
-      color: var(--text);
     }
 
     /* â”€â”€ Description â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .desc-section {
       display: flex;
       flex-direction: column;
-      gap: 6px;
     }
 
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-      line-height: 1.6;
+    /* Pull the label down toward the box without pushing the box */
+    .desc-section label {
+      margin-bottom: var(--space-2);
+      margin-top: var(--space-2);
     }
 
-    textarea::placeholder { color: var(--muted); }
+    app-input {
+      display: block;
+      width: 100%;
+    }
+
+    app-input[variant="form"] textarea {
+      background: var(--surface);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      padding: var(--space-3) var(--space-4);
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s;
+      min-height: 120px;
+      resize: none;
+      line-height: var(--line-height-body);
+    }
+
+    app-input[variant="form"] textarea:focus {
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
+    }
 
     /* â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     .error {
-      font-family: var(--font-head);
-      font-size: 0.72rem;
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
       letter-spacing: 0.1em;
       color: var(--error);
       text-align: center;
@@ -2718,11 +4932,11 @@ export class AvatarPage extends LitElement {
       border: 1px solid var(--gold-dim);
       border-radius: var(--radius);
       color: var(--gold);
-      font-family: var(--font-head);
-      font-size: 0.8rem;
+      font-family: var(--title-font);
+      font-size: var(--text-sm);
       letter-spacing: 0.3em;
       text-transform: uppercase;
-      padding: 16px 56px;
+      padding: var(--space-4) var(--space-7);
       cursor: pointer;
       transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
     }
@@ -2732,19 +4946,12 @@ export class AvatarPage extends LitElement {
       border-color: var(--gold);
       box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
     }
-
-    /* â”€â”€ Responsive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    @media (max-width: 680px) {
-      .panels { grid-template-columns: 1fr; }
-      .identity-row { flex-wrap: wrap; }
-      .field-wrap.gender { flex: 1 1 120px; }
-    }
   `;
 
   @state() private name: string = '';
   @state() private gender: string = '';
-  @state() private race: string | null = null;
-  @state() private charClass: string | null = null;
+  @state() private character: string | null = null;
+  @state() private charPersonality: string | null = null;
   @state() private description: string = '';
   @state() private error: string = '';
 
@@ -2753,28 +4960,25 @@ export class AvatarPage extends LitElement {
   }
 
   private handleCreate(): void {
-    if (!this.name || !this.gender || !this.race || !this.charClass) {
+    if (!this.name || !this.gender || !this.character || !this.charPersonality) {
       this.error = 'All fields are required to forge your character.';
       return;
     }
 
     const finalDescription =
       this.description ||
-      `A ${this.gender} ${this.race} ${this.charClass} ready for adventure.`;
+      `A ${this.gender} ${this.character} ${this.charPersonality} ready for adventure.`;
 
-    console.log({ name: this.name, gender: this.gender, race: this.race, class: this.charClass, description: finalDescription });
-    this.error = '';
-  }
+    const avatarDraft = {
+      name: this.name,
+      gender: this.gender,
+      character: this.character,
+      personality: this.charPersonality,
+      description: finalDescription
+    };
 
-  private renderCard(label: string, selected: boolean, onClick: () => void): TemplateResult {
-    return html`
-      <div class="card-wrapper" @click=${onClick}>
-        <div class="card ${selected ? 'selected' : ''}">
-          <img src="${getImage(label)}" alt="${label}" />
-        </div>
-        <div class="card-label">${label}</div>
-      </div>
-    `;
+    localStorage.setItem('avatar_draft', JSON.stringify(avatarDraft));
+    Router.go('/world-settings');
   }
 
   render(): TemplateResult {
@@ -2791,12 +4995,15 @@ export class AvatarPage extends LitElement {
         <div class="identity-row">
           <div class="field-wrap">
             <label>Name</label>
-            <input
-              type="text"
-              placeholder="Enter character nameâ€¦"
-              .value=${this.name}
-              @input=${(e: Event) => { this.name = (e.target as HTMLInputElement).value; }}
-            />
+            <div class="name-input-wrap">
+              <app-input
+                variant="form"
+                placeholder="Enter character nameâ€¦"
+                .value=${this.name}
+                @value-change=${(e: CustomEvent) => this.name = e.detail}
+              ></app-input>
+              <button class="dice-btn" @click=${this.generateName} title="Random name">ðŸŽ²</button>
+            </div>
           </div>
 
           <div class="field-wrap gender">
@@ -2809,33 +5016,42 @@ export class AvatarPage extends LitElement {
               <option value="Female">Female</option>
             </select>
           </div>
-
-          <button class="dice-btn" @click=${this.generateName} title="Random name">ðŸŽ²</button>
         </div>
 
         <div class="panels">
-          <div class="panel">
-            <p class="panel-title">Race</p>
-            <div class="grid">
-              ${races.map(r => this.renderCard(r, this.race === r, () => (this.race = r)))}
+          <div class="field-wrap panel">
+            <label>Character</label>
+            <div class="panel-container">
+              <selection-panel
+                .items=${charactersItems}
+                .selected=${this.character}
+                @change=${(e: CustomEvent) => this.character = e.detail}
+              ></selection-panel>
             </div>
           </div>
-
-          <div class="panel">
-            <p class="panel-title">Class</p>
-            <div class="grid">
-              ${classes.map(c => this.renderCard(c, this.charClass === c, () => (this.charClass = c)))}
+          <div class="field-wrap panel">
+            <label>Personality</label>
+            <div class="panel-container">
+              <selection-panel
+                .items=${personalityTypesItems}
+                .selected=${this.charPersonality}
+                @change=${(e: CustomEvent) => this.charPersonality = e.detail}
+              ></selection-panel>
             </div>
           </div>
         </div>
 
         <div class="desc-section">
           <label>Character Description <span style="color:var(--muted)">(optional)</span></label>
-          <textarea
+          <app-input
+            variant="form"
+            mode="textarea"
             placeholder="Personality, backstory, abilitiesâ€¦"
             .value=${this.description}
-            @input=${(e: Event) => { this.description = (e.target as HTMLTextAreaElement).value; }}
-          ></textarea>
+            @value-change=${(e: CustomEvent) => {
+              this.description = e.detail;
+            }}
+          ></app-input>
         </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
@@ -2850,34 +5066,29 @@ export class AvatarPage extends LitElement {
   }
 }
 
+
 --- FILE: \pages\chat-page.ts ---
 
 import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import '../components/chat-box';
-import '../components/story-sidebar';
+import '../components/chat/chat-box';
+import '../components/chat/chat-sidebar';
+import '../components/settings/settings-overlay';
 
 @customElement('chat-page')
 export class ChatPage extends LitElement {
 
-  private handleLogout() {
-    localStorage.removeItem('user_id');
-    Router.go('/login');
-  }
-
   static styles = css`
-    /* â”€â”€ Full-screen layout: sidebar + main â”€â”€ */
     :host {
       display: flex;
       height: 100vh;
       width: 100vw;
       overflow: hidden;
       background: var(--bg, #FFFCF0);
-      font-family: 'Lora', Georgia, serif;
+      font-family: var(--regular-font);
     }
 
-    /* â”€â”€ Main area to the right of the sidebar â”€â”€ */
     .main {
       flex: 1;
       display: flex;
@@ -2886,113 +5097,121 @@ export class ChatPage extends LitElement {
       background: var(--bg, #FFFCF0);
     }
 
-    /* â”€â”€ Top bar â”€â”€ */
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 28px;
+      padding: var(--space-2) var(--space-5);
       background: var(--bg, #FFFCF0);
-      border-bottom: 1px solid var(--sand, #d9cdb8);
       flex-shrink: 0;
     }
 
     .tab-pill {
       display: flex;
       align-items: center;
-      gap: 6px;
-      background: var(--surface, #ffffff);
+      gap: var(--space-2);
+      background: var(--bg);
       border: 1px solid var(--sand, #d9cdb8);
       border-radius: 20px;
-      padding: 8px 16px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 14px;
-      font-weight: 500;
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      font-weight: bold;
       color: var(--text, #2a2118);
-    }
-
-    .tab-pill .spark {
-      color: var(--gold, #b8953a);
-      font-size: 15px;
     }
 
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: var(--space-3);
     }
 
-    .profile-pic {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      border: 2px solid var(--gold, #b8953a);
-      background: linear-gradient(135deg, #7ab3d4 30%, #3a7bd5 100%);
+    .export-btn {
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
-    .logout-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      gap: var(--space-2);
       background: none;
       border: 1.5px solid var(--sand, #d9cdb8);
-      border-radius: 10px;
-      padding: 7px 14px;
-      font-family: 'Lora', Georgia, serif;
-      font-size: 13px;
-      color: var(--ink-muted, #8a7a68);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2) var(--space-4);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
+      color: var(--primary);
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
 
-    .logout-btn:hover {
+    .export-btn:hover {
       border-color: var(--sand, #d9cdb8);
       background: var(--parchment, #ede6d6);
       color: var(--text, #2a2118);
     }
 
-    /* â”€â”€ Content: the chat fills this â”€â”€ */
     .content {
       flex: 1;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 28px;
+      padding: var(--space-6);
       gap: 0;
     }
   `;
 
+  @property({ type: Number })
+  @state() private storyId: number = 0;
+  @state() private settingsOpen = false;
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.updateStoryFromUrl();
+    window.addEventListener('popstate', this.updateStoryFromUrl);
+  }
+
+  disconnectedCallback() {
+    window.removeEventListener('popstate', this.updateStoryFromUrl);
+    super.disconnectedCallback();
+  }
+
+  private updateStoryFromUrl = () => {
+    const match = window.location.pathname.match(/\/story\/(\d+)/);
+    if (match) {
+      this.storyId = Number(match[1]);
+    }
+  };
+
   render() {
     return html`
-      <story-sidebar></story-sidebar>
+      <!--
+        'open-settings' bubbles up (composed:true) from story-sidebar's shadow DOM.
+        We catch it here and flip settingsOpen, which the overlay reacts to.
+      -->
+      <story-sidebar @open-settings=${() => this.settingsOpen = true}></story-sidebar>
 
       <div class="main">
-
-        <!-- Top bar -->
         <header class="topbar">
           <div class="tab-pill">
-            <span class="spark">âœ¦</span>
-            Story Chat
+            Avatar Name
           </div>
           <div class="topbar-right">
-            <div class="profile-pic">âœˆï¸</div>
-            <button class="logout-btn" @click=${this.handleLogout}>
-              â†© Logout
+            <button class="export-btn">
+              Download Story
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" height="20" width="20" fill="var(--ink-muted, #8a7a68)">
+                <path d="m648-140 112-112v92h40v-160H640v40h92L620-168l28 28Zm-448 20q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v268q-19-9-39-15.5t-41-9.5v-243H200v560h242q3 22 9.5 42t15.5 38H200Zm0-120v40-560 243-3 280Zm80-40h163q3-21 9.5-41t14.5-39H280v80Zm0-160h244q32-30 71.5-50t84.5-27v-3H280v80Zm0-160h400v-80H280v80ZM720-40q-83 0-141.5-58.5T520-240q0-83 58.5-141.5T720-440q83 0 141.5 58.5T920-240q0 83-58.5 141.5T720-40Z"/>
+              </svg>
             </button>
           </div>
         </header>
 
-        <!-- Chat fills the rest -->
         <div class="content">
-          <chat-box></chat-box>
+          <chat-box .storyId=${this.storyId}></chat-box>
         </div>
-
       </div>
+
+      <!-- Overlay lives at chat-page level so it centers over the full viewport -->
+      <settings-overlay
+        ?open=${this.settingsOpen}
+        @close=${() => this.settingsOpen = false}>
+      </settings-overlay>
     `;
   }
 }
@@ -3001,8 +5220,11 @@ export class ChatPage extends LitElement {
 
 import { LitElement, html} from 'lit';
 import { customElement } from 'lit/decorators.js';
-import '../components/login-form';
-import '../components/theme-toggle';
+
+import '../components/auth/login-form';
+import '../components/ui/theme-toggle';
+import '../components/ui/auth-layout';
+
 import { css } from 'lit';
 
 @customElement('login-page')
@@ -3014,35 +5236,162 @@ export class LoginPage extends LitElement {
         margin: 0;
       }
 
-  :host {
-    display: block;
-    position: fixed;
-    inset: 0;
-    height: 100vh;
+    :host {
+      display: block;
+      height: 100vh;
+    }
+
+  @media (max-width: 768px){
+      .container {
+        justify-content: center;
+      }
+    }
+
+ `;
+
+  render() {
+    return html`
+      <auth-layout>
+        <theme-toggle slot="top"></theme-toggle>
+        <login-input></login-input>
+      </auth-layout>
+    `;
   }
+}
+
+--- FILE: \pages\onboarding-page.ts ---
+
+import { LitElement, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import '../components/ui/theme-toggle';
+import'../components/story/story-onboarding';
+
+import { css } from 'lit';
+
+@customElement('onboarding-page')
+export class Onboarding extends LitElement {
+
+ static styles = css`
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    :host {
+      display: block;
+      position: fixed;
+      inset: 0;
+      height: 100vh;
+    }
 
   .container{
       background-color: transparent;
       display: flex;
       width: 100%;
       height: 100%;
-      margin:auto;
-      overflow: hidden;
-  }
+      margin: auto;
+    }
 
   @media (max-width: 768px){
       .container {
         justify-content: center;
       }
-      }
+    }
 
-  .login-page{
-      flex:1;
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 140px;
-      align-items: center;
-      z-index: 1;
+  .login-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--onboarding-img) center/cover no-repeat,
+              var(--bg);
+
+    background-size: cover, cover;
+    z-index: 0;
+  }
+
+ `;
+
+  render() {
+    return html`
+      <div class="login-background"></div>
+      <div class="container">
+        <theme-toggle></theme-toggle>
+        <story-onboarding></story-onboarding>
+      </div>
+    `;
+  }
+}
+
+--- FILE: \pages\register-page.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
+
+import '../components/auth/register-form';
+import '../components/ui/theme-toggle';
+import '../components/ui/auth-layout';
+
+@customElement('register-page')
+export class RegisterPage extends LitElement {
+
+  static styles = css`
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    :host {
+      display: block;
+      height: 100vh;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        justify-content: center;
+      }
+    }
+  `;
+
+  render() {
+    return html`
+      <auth-layout>
+        <theme-toggle slot="top"></theme-toggle>
+        <register-form></register-form>
+      </auth-layout>
+    `;
+  }
+}
+
+--- FILE: \pages\resetpass-page.ts ---
+
+import { LitElement, html, css } from 'lit';
+import { customElement, } from 'lit/decorators.js';
+import '../components/auth/reset-password';
+import '../components/ui/theme-toggle';
+
+@customElement('reset-password-page')
+export class ResetPasswordPage extends LitElement {
+
+  static styles = css`
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+  .container{
+    background-color: transparent;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    margin:auto;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px){
+    .container {
+      justify-content: center;
+    }
   }
 
   .login-background {
@@ -3057,207 +5406,12 @@ export class LoginPage extends LitElement {
     z-index: 0;
   }
 
- `;
+`;
 
   render() {
     return html`
       <div class="login-background">
-        <div class="container">
         <theme-toggle></theme-toggle>
-          <div class="login-page">
-            <login-input></login-input>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-}
-
---- FILE: \pages\register-page.ts ---
-
-import { LitElement, html, css } from 'lit';
-import { customElement } from 'lit/decorators.js';
-import '../components/register-form';
-import '../components/theme-toggle';
-
-@customElement('register-page')
-export class RegisterPage extends LitElement {
-
-  static styles = css`
-    html, body {
-      height: 100%;
-      margin: 0;
-    }
-
-    :host {
-      display: block;
-      position: fixed;
-      inset: 0;
-      height: 100vh;
-    }
-
-    .container {
-      background-color: transparent;
-      display: flex;
-      width: 100%;
-      height: 100%;
-      margin: auto;
-      overflow: hidden;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        justify-content: center;
-      }
-    }
-
-    .login-page {
-      flex: 1;
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 140px;
-      align-items: center;
-      z-index: 1;
-    }
-
-    .login-background {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--img-object) right top no-repeat,
-                  var(--img-castle) center/cover no-repeat,
-                  var(--bg);
-      background-size: 15% auto, cover;
-      z-index: 0;
-    }
-  `;
-
-  render() {
-    return html`
-      <div class="login-background">
-        <div class="container">
-          <theme-toggle></theme-toggle>
-
-          <div class="login-page">
-            <register-form></register-form>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-}
-
-
-
-// import { LitElement, html } from 'lit';
-// import { Router } from '@vaadin/router';
-// import '../components/register-form';
-// import { css } from 'lit';
-// import styles from '../styles/register-page.css?inline';
-// import { unsafeCSS } from 'lit';
-
-// class RegisterPage extends LitElement {
-//   static styles = css`${unsafeCSS(styles)}`;
-
-//   username = '';
-//   email = '';
-//   password = '';
-
-//   handleRegister() {
-//     console.log('Register: ', this.username, this.email, this.password);
-//     Router.go('/login');
-//   }
-
-//   toggleTheme() {
-//     this.classList.toggle('dark-mode');
-//     document.body.classList.toggle('dark-mode');
-//     localStorage.setItem('register-theme', this.classList.contains('dark-mode') ? 'dark' : 'light');
-//   }
-
-//   connectedCallback(): void {
-//       super.connectedCallback();
-//       const saved = localStorage.getItem('register-theme');
-//       if (saved == 'dark') {
-//         this.classList.add('dark-mode');
-//       }
-//   }
-
-//   render() {
-//     return html`
-//       <div class="container">
-//           <button class="theme-toggle" @click=${this.toggleTheme}>
-//           ${this.classList.contains('dark-mode') ? 'â˜€ï¸' : 'ðŸŒ™'}
-//           </button>
-//         <div class="register-background"></div>
-
-//         <div class="register-page">
-//           <div class="form-container">
-//             <h2>Registration</h2>
-
-//             <register-input 
-//               label="Username" 
-//               placeholder="Username" 
-//               @input-changed=${(e: any) => this.username = e.detail}>
-//             </register-input>
-
-//             <register-input 
-//               label="Email" 
-//               placeholder="Email" 
-//               type="email" 
-//               @input-changed=${(e: any) => this.email = e.detail}>
-//             </register-input>
-
-//             <register-input 
-//               label="Password" 
-//               placeholder="Password" 
-//               type="password" 
-//               @input-changed=${(e: any) => this.password = e.detail}>
-//             </register-input>
-
-//             <button @click=${() => this.handleRegister()}>Register</button>
-//           </div>
-//         </div>
-//         <a href="/chat" class="skip-link-fixed">Skip for now ></a>
-//       </div>
-//     `;
-//   }
-// }
-
-// customElements.define('register-page', RegisterPage);
-
---- FILE: \pages\resetpass-page.ts ---
-
-import { LitElement, html, css } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import '../components/reset-password';
-import styles from '../styles/resetpass-page.css?inline';
-import { unsafeCSS } from 'lit';
-
-@customElement('reset-password-page')
-export class ResetPasswordPage extends LitElement {
-
-  static styles = css`${unsafeCSS(styles)}`;
-
-  @state() darkMode = false;
-
-  toggleTheme() {
-    this.darkMode = !this.darkMode;
-
-    this.setAttribute(
-      'theme',
-      this.darkMode ? 'dark' : 'light'
-    );
-  }
-
-  render() {
-    return html`
-      <div class="background">
-
-        <button class="theme-toggle" @click=${this.toggleTheme}>
-          ${this.darkMode ? 'â˜€ï¸' : 'ðŸŒ™'}
-        </button>
-
         <div class="container">
           <reset-password></reset-password>
         </div>
@@ -3267,75 +5421,317 @@ export class ResetPasswordPage extends LitElement {
   }
 }
 
---- FILE: \styles\resetpass-page.css ---
+--- FILE: \pages\world-setting-page.ts ---
 
-html, body {
-  height: 100%;
-  margin: 0;
+import { LitElement, html, css } from 'lit';
+import type { TemplateResult } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
+
+import { createAvatar, createStorySetting, createStory } from '../api/api';
+
+import '../components/ui/theme-toggle';
+import '../components/ui/selection-panel';
+import '../styles/theme.css';
+
+const images = import.meta.glob('../assets/**/*.jpg', {
+  eager: true,
+  import: 'default'
+}) as Record<string, string>;
+
+const worldPresets = [
+  'Candy Kingdom',
+  'Magical Forest',
+  'Space Adventure',
+  'Underwater World',
+  'Animal Kingdom',
+  'Dinosaur Island',
+  'Pirate Seas',
+  'Superhero Academy',
+  'Custom'
+];
+
+function createWorldItems(list: string[]) {
+  return list.map(name => {
+    const key = name.toLowerCase().replace(/\s+/g, '-');
+    const path = `../assets/worlds/${key}.jpg`;
+    return { label: name, image: images[path] || '' };
+  });
 }
 
-:host {
-  display: block;
-  position: fixed;
-  inset: 0;
-  height: 100vh;
+const worldItems = createWorldItems(worldPresets);
 
-  /* Background */
-  --img-object: url('/images/Objects-1.png');
-  --img-castle: url('/images/OBJECTS.png');
-  --bg-primary: #FFFCF0;
+@customElement('world-setting-page')
+export class WorldSettingPage extends LitElement {
 
-  --btn-bg: #2c2c2c;
-}
+  static styles = css`
+    :host {
+      --surface: #FFFCF0;
+      --border:    #2a2520;
+      --border-hi: #3d3730;
+      --gold:      #c9a84c;
+      --gold-dim:  #7a6230;
+      --muted:     #6b6358;
+      --shadow-glow: 0px 0px 5px 5px #e8e0d0;
+      --radius:    10px;
+      --font-head: 'Cinzel', 'Palatino Linotype', serif;
+      --font-body: 'Cormorant Garamond', 'Georgia', serif;
 
-:host([theme="dark"]) {
-  --img-object: url('/images/Vector.png');
-  --img-castle: url('/images/OBJECTS-2.png');
-  --bg-primary: #121212;
-  --btn-bg: white;
-}
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;
 
-.background {
-  position: absolute;
-  inset: 0;
+      background:
+        url('/images/Objects-1.png') right top no-repeat,
+        url('/images/OBJECTS.png') center/cover no-repeat,
+        var(--bg);
+      background-size: 15% auto, cover;
+      padding: var(--space-5);
+      box-sizing: border-box;
+      font-family: var(--regular-font);
+      color: #000;
+    }
 
-  background:
-    var(--img-object) right top no-repeat,
-    var(--img-castle) center / cover no-repeat,
-    var(--bg-primary);
+    main {
+      display: block;
+      border-radius: 20px;
+      width: 50%;
+      color: var(--text);
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      box-sizing: border-box;
+      padding: var(--space-6) var(--space-5) var(--space-7);
+    }
 
-  background-size: 15% auto, cover;
-}
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;   /* everything centered */
+      gap: var(--space-7);
+    }
 
-.container {
-  position: relative;
-  z-index: 10;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    /* â”€â”€ Header â€” identical to avatar-page â”€â”€ */
+    .page-header {
+      text-align: center;
+      padding-bottom: var(--space-2);
+      border-bottom: 1px solid var(--border);
+      width: 80%;
+    }
+    .page-header h1 {
+      font-family: var(--title-font);
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 var(--space-1);
+    }
+    .page-header p {
+      font-size: var(--text-sm);
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin: 0;
+    }
 
-.theme-toggle {
-  position: absolute;
-  bottom: 40px;
-  left: 40px;
+    /* â”€â”€ Panel + description share this max-width â”€â”€ */
+    .panel-wrap {
+      width: 100%;
+      background: var(--bg);
+      border-radius: 14px;
+      box-shadow: var(--shadow-glow);
+      max-width: 500px;   /* constrains panel to 3-column grid */
+    }
 
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: none;
+    .desc-section {
+      width: 100%;
+      max-width: 500px;   /* matches panel exactly */
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
 
-  font-size: 24px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin: 0;
-  background: var(--btn-bg);
-  color: var(--btn-text);
+    label {
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
 
-  z-index: 20;
+    textarea {
+      background: var(--surface);
+      border: none;
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--regular-font);
+      font-size: var(--text-md);
+      padding: var(--space-3) var(--space-4);
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      box-shadow: var(--shadow-glow);
+      transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
+      min-height: 110px;
+      resize: vertical;
+      line-height: var(--line-height-body);
+    }
+    textarea:focus {
+      box-shadow:
+        0 0 0 2px rgba(201, 168, 76, 0.15),
+        0 0 12px rgba(201, 168, 76, 0.25);
+      transform: translateY(-1px);
+    }
+    textarea:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .error {
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
+      letter-spacing: 0.1em;
+      color: var(--error);
+      text-align: center;
+    }
+
+    .bottom {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .create-btn {
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      border-radius: var(--radius);
+      color: var(--gold);
+      font-family: var(--title-font);
+      font-size: var(--text-xs);
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: var(--space-4) var(--space-7);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+    .create-btn:hover {
+      background: rgba(201, 168, 76, 0.1);
+      border-color: var(--gold);
+      box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
+    }
+
+    @media (max-width: 680px) {
+      main { width: 90%; }
+      .panel-wrap, .desc-section { max-width: 100%; }
+    }
+  `;
+
+  @state() private world: string | null = null;
+  @state() private description: string = '';
+  @state() private error: string = '';
+
+  private get isCustom() { return this.world === 'Custom'; }
+
+  private async handleConfirm(): Promise<void> {
+    if (!this.world) {
+      this.error = 'Choose a world before your story can begin.';
+      return;
+    }
+
+    const finalDescription =
+      (this.isCustom && this.description)
+        ? this.description
+        : `A story set in a ${this.world} world.`;
+
+    try {
+      const avatarDraftRaw = localStorage.getItem('avatar_draft');
+      const userId = Number(localStorage.getItem('user_id'));
+
+      if (!avatarDraftRaw || !userId) throw new Error('Missing data');
+
+      const avatarDraft = JSON.parse(avatarDraftRaw);
+
+      const avatar = await createAvatar(
+        avatarDraft.name,
+        avatarDraft.description
+      );
+
+      const setting = await createStorySetting(finalDescription);
+
+      const story = await createStory(
+        userId,
+        avatar.avatar_id,
+        setting.story_setting_id
+      );
+
+      localStorage.removeItem('avatar_draft');
+
+      localStorage.setItem('story_id', String(story.story_id));
+
+      Router.go('/chat');
+
+    } catch (err) {
+      this.error = 'Failed to start story.';
+    }
+  }
+
+  render(): TemplateResult {
+    return html`
+      <main>
+        <theme-toggle></theme-toggle>
+        <div class="container">
+
+          <header class="page-header">
+            <h1>Choose Your World</h1>
+            <p>Every legend needs a stage. Set yours.</p>
+          </header>
+
+          <div class="panel-wrap">
+            <selection-panel
+              title="World Setting"
+              .items=${worldItems}
+              .selected=${this.world}
+              @change=${(e: CustomEvent) => {
+                this.world = e.detail;
+                if (!this.isCustom) this.description = '';
+              }}
+            ></selection-panel>
+          </div>
+
+          <div class="desc-section">
+            <label>
+              Custom Description
+              ${!this.isCustom
+                ? html`<span style="color:var(--muted)"> â€” select Custom to enable</span>`
+                : ''}
+            </label>
+            <textarea
+              ?disabled=${!this.isCustom}
+              placeholder=${this.isCustom
+                ? 'Describe your world â€” its lore, tone, dangersâ€¦'
+                : 'Select "Custom" above to write your own setting.'}
+              .value=${this.description}
+              @input=${(e: Event) => {
+                this.description = (e.target as HTMLTextAreaElement).value;
+              }}
+            ></textarea>
+          </div>
+
+          ${this.error ? html`<div class="error">${this.error}</div>` : ''}
+
+          <div class="bottom">
+            <button class="create-btn" @click=${this.handleConfirm}>Begin Story</button>
+          </div>
+
+        </div>
+      </main>
+    `;
+  }
 }
 
 --- FILE: \styles\theme.css ---
@@ -3348,9 +5744,11 @@ html, body {
 
   --img-object: url('/images/Objects-1.png');
   --img-castle: url('/images/OBJECTS.png');
+  --onboarding-img: url('/onboarding-bg/light_bg.png');
 
   --primary: #2C2C2C;
-  --accent: #d5ad0f;
+  --secondary: #f4f4f4;
+  --accent: #9b8661;
 
   --border: #ccc; /*Dont need this*/
   --error: #c0392b;
@@ -3359,9 +5757,46 @@ html, body {
   --link-hover: #555;
 
   --input-border: #ccc;
+  --onboarding-h1: #9b8661;
+  --subtittle: #444;
 
+  --shadow-glow: 0px 0px 5px 5px #e8e0d0;
 
+  /* Font families */
+  --title-font: Georgia, Verdana, serif;
+  --regular-font: Verdana, sans-serif;
+
+  /* Spacings */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem;  /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem;    /* 16px */
+  --space-5: 1.5rem;  /* 24px */
+  --space-6: 2rem;    /* 32px */
+  --space-7: 3rem;    /* 48px */
+
+  /* Font sizes */
+  --text-xs: 0.75rem;   /* 12px */
+  --text-sm: 0.875rem;  /* 14px */
+  --text-md: 1rem;      /* 16px (base) */
+  --text-lg: 1.125rem;  /* 18px */
+  --text-xl: 1.25rem;   /* 20px */
+  --text-2xl: 1.5rem;   /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem;  /* 36px */
+  --text-5xl: 3rem;    /* 48px */
+
+  /* Line height */
+--line-height-body: 1.5;
+--line-height-title: 1.2;
+
+/* Border Radius */
+--radius-sm: 10px;
+--radius-md: 15px;
+--radius-lg: 20px;
 }
+
+
 
 :root[data-theme="dark"] {
   --bg: #0d0c0a;
@@ -3370,6 +5805,7 @@ html, body {
 
   --img-object: url('/images/Vector.png');
   --img-castle: url('/images/OBJECTS-2.png');
+  --onboarding-img: url('/onboarding-bg/dark_bg.png');
 
   --primary: #c9a84c;
   --accent: #d5ad0f;
@@ -3379,7 +5815,286 @@ html, body {
 
   --link: #c9a84c;
   --link-hover: #e8e0d0;
+  --onboarding-h1: #fff;
+  --subtittle:#e8e0d0;
 }
+
+--- FILE: \tests\app.test.ts ---
+
+/// <reference types="vitest" />
+
+import { fixture, html } from '@open-wc/testing';
+import { describe, it, expect, vi } from 'vitest';
+
+import { AvatarPage } from '../pages/avatar-page';
+import { SelectionPanel } from '../components/ui/selection-panel';
+
+import '../pages/avatar-page';
+import '../components/ui/selection-panel';
+
+describe('AvatarPage', () => {
+
+  // ---------------------------------------------------
+  // Dice button generates random name
+  // ---------------------------------------------------
+
+  it('clicking dice button generates a random name', async () => {
+
+    const element = await fixture<AvatarPage>(
+      '<avatar-page></avatar-page>'
+    );
+
+    const button =
+      element.shadowRoot!.querySelector('.dice-btn') as HTMLButtonElement;
+
+    button.click();
+
+    await element.updateComplete;
+
+    expect(element['name']).not.toBe('');
+  });
+
+  // ---------------------------------------------------
+  // Empty validation
+  // ---------------------------------------------------
+
+  it('shows error when create button clicked with empty fields', async () => {
+
+    const element = await fixture<AvatarPage>(
+      '<avatar-page></avatar-page>'
+    );
+
+    const button =
+      element.shadowRoot!.querySelector('.create-btn') as HTMLButtonElement;
+
+    button.click();
+
+    await element.updateComplete;
+
+    expect(element['error']).toBe(
+      'All fields are required to forge your character.'
+    );
+  });
+
+  // ---------------------------------------------------
+  // Successful avatar creation
+  // ---------------------------------------------------
+
+  it('saves avatar to localStorage on successful creation', async () => {
+
+    const element = await fixture<AvatarPage>(
+      '<avatar-page></avatar-page>'
+    );
+
+    element['name'] = 'Arin';
+    element['gender'] = 'Male';
+    element['character'] = 'Robot';
+    element['charPersonality'] = 'Brave';
+
+    const setItemSpy =
+      vi.spyOn(Storage.prototype, 'setItem');
+
+    const button =
+      element.shadowRoot!.querySelector('.create-btn') as HTMLButtonElement;
+
+    button.click();
+
+    await element.updateComplete;
+
+    expect(setItemSpy).toHaveBeenCalled();
+
+    setItemSpy.mockRestore();
+  });
+
+  // ---------------------------------------------------
+  // Default description fallback
+  // ---------------------------------------------------
+
+  it('creates default description when description is empty', async () => {
+
+    const element = await fixture<AvatarPage>(
+      '<avatar-page></avatar-page>'
+    );
+
+    element['name'] = 'Arin';
+    element['gender'] = 'Male';
+    element['character'] = 'Robot';
+    element['charPersonality'] = 'Brave';
+
+    const button =
+      element.shadowRoot!.querySelector('.create-btn') as HTMLButtonElement;
+
+    button.click();
+
+    await element.updateComplete;
+
+    const saved = JSON.parse(
+      localStorage.getItem('avatar_draft') || '{}'
+    );
+
+    expect(saved.description).toBe(
+      'A Male Robot Brave ready for adventure.'
+    );
+  });
+
+});
+
+describe('SelectionPanel', () => {
+
+  // ---------------------------------------------------
+  // Next arrow changes carousel index
+  // ---------------------------------------------------
+
+  it('clicking next arrow changes carousel index', async () => {
+
+    const element = await fixture<SelectionPanel>(html`
+      <selection-panel
+        .items=${[
+          { label: 'Robot', image: 'robot.jpg' },
+          { label: 'Dragon', image: 'dragon.jpg' }
+        ]}
+      ></selection-panel>
+    `);
+
+    const buttons =
+      element.shadowRoot!.querySelectorAll('.arrow-btn');
+
+    const nextButton = buttons[1] as HTMLButtonElement;
+
+    nextButton.click();
+
+    await element.updateComplete;
+
+    expect(element['carouselIndex']).toBe(1);
+  });
+
+  // ---------------------------------------------------
+  // Previous arrow wraps correctly
+  // ---------------------------------------------------
+
+  it('clicking previous arrow wraps carousel correctly', async () => {
+
+    const element = await fixture<SelectionPanel>(html`
+      <selection-panel
+        .items=${[
+          { label: 'Robot', image: 'robot.jpg' },
+          { label: 'Dragon', image: 'dragon.jpg' }
+        ]}
+      ></selection-panel>
+    `);
+
+    const buttons =
+      element.shadowRoot!.querySelectorAll('.arrow-btn');
+
+    const prevButton = buttons[0] as HTMLButtonElement;
+
+    prevButton.click();
+
+    await element.updateComplete;
+
+    expect(element['carouselIndex']).toBe(1);
+  });
+
+  // ---------------------------------------------------
+  // Change event emitted
+  // ---------------------------------------------------
+
+  it('emits change event when center card clicked', async () => {
+
+    const element = await fixture<SelectionPanel>(html`
+      <selection-panel
+        .items=${[
+          { label: 'Robot', image: 'robot.jpg' }
+        ]}
+      ></selection-panel>
+    `);
+
+    let receivedValue = '';
+
+    element.addEventListener('change', (e: Event) => {
+      receivedValue = (e as CustomEvent).detail;
+    });
+
+    const centerCard =
+      element.shadowRoot!.querySelector('.center') as HTMLElement;
+
+    centerCard.click();
+
+    await element.updateComplete;
+
+    expect(receivedValue).toBe('Robot');
+  });
+
+  // ---------------------------------------------------
+  // Correct number of dots rendered
+  // ---------------------------------------------------
+
+  it('renders correct number of carousel dots', async () => {
+
+    const element = await fixture<SelectionPanel>(html`
+      <selection-panel
+        .items=${[
+          { label: 'Robot', image: 'robot.jpg' },
+          { label: 'Dragon', image: 'dragon.jpg' },
+          { label: 'Wizard', image: 'wizard.jpg' }
+        ]}
+      ></selection-panel>
+    `);
+
+    const dots =
+      element.shadowRoot!.querySelectorAll('.dot');
+
+    expect(dots.length).toBe(3);
+  });
+
+  // ---------------------------------------------------
+  // Active dot updates after navigation
+  // ---------------------------------------------------
+
+  it('updates active dot after clicking next', async () => {
+
+    const element = await fixture<SelectionPanel>(html`
+      <selection-panel
+        .items=${[
+          { label: 'Robot', image: 'robot.jpg' },
+          { label: 'Dragon', image: 'dragon.jpg' }
+        ]}
+      ></selection-panel>
+    `);
+
+    const buttons =
+      element.shadowRoot!.querySelectorAll('.arrow-btn');
+
+    const nextButton = buttons[1] as HTMLButtonElement;
+
+    nextButton.click();
+
+    await element.updateComplete;
+
+    const activeDot =
+      element.shadowRoot!.querySelector('.dot.active');
+
+    expect(activeDot).not.toBeNull();
+  });
+
+});
+
+--- FILE: \tests\setup.ts ---
+
+import { vi } from 'vitest';
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+});
 
 --- FILE: \types\types.ts ---
 
@@ -3419,6 +6134,9 @@ import './pages/register-page';
 import './pages/login-page';
 import './pages/resetpass-page';
 import './pages/avatar-page';
+import './pages/onboarding-page';
+import './pages/world-setting-page';
+import './pages/admin-page';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -3429,13 +6147,23 @@ export class AppRoot extends LitElement {
     const router = new Router(outlet);
 
     router.setRoutes([
-      { path: '/',                redirect: '/login' },
+      { path: '/',                redirect: '/onboarding' },
       { path: '/login',           component: 'login-page' },
       { path: '/register',        component: 'register-page' },
       { path: '/chat',            component: 'chat-page' },
-      { path: '/story/:storyId',  component: 'chat-page' },  // â† sidebar navigates here
+      { path: '/admin',           component: 'admin-page' },
+      {
+        path: '/story/:storyId',
+        action: (context) => {
+          const el = document.createElement('chat-page') as any;
+          el.storyId = Number(context.params.storyId); // âœ… PASS PARAM
+          return el;
+        }
+      },
       { path: '/avatar',          component: 'avatar-page' },
+      { path: '/world-settings',  component: 'world-setting-page'},
       { path: '/resetpass',       component: 'reset-password-page' },
+      { path: '/onboarding',      component: 'onboarding-page'},
     ]);
   }
 
