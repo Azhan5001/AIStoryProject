@@ -198,7 +198,7 @@ static styles = css`
       this.loading = true;
 
       // 🔥 CHANGE (store userId + check stories)
-      const userId = await login(this.username, this.password);
+      await login(this.username, this.password);
 
       const stories = await getUserStories();
 
