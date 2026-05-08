@@ -1,6 +1,8 @@
 /* DEFAULT (light / your current theme) */
 :root {
   --bg: #FFFCF0;
+  --bg-secondary: #FFFCF0;
+  --bg-tertiary: #dcdace;
   --surface: #ffffff;
   --text: #000;
 
@@ -62,6 +64,9 @@
 
 :root[data-theme="dark"] {
   --bg: #0d0c0a;
+  --bg-secondary: #353535;
+  --bg-tertiary: #555555;
+
   --surface: #141210;
   --text: #e8e0d0;
 
@@ -69,8 +74,9 @@
   --img-castle: url('/images/OBJECTS-2.png');
   --onboarding-img: url('/onboarding-bg/dark_bg.png');
 
-  --primary: #c9a84c;
-  --accent: #d5ad0f;
+  --primary: #ffffff;
+  --secondary: #313131;
+  /* --accent: #d5ad0f; */
 
   --border: #3d3730;
   --error: #e74c3c;

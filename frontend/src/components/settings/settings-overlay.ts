@@ -72,7 +72,7 @@ export class SettingsOverlay extends LitElement {
 
     /* ── Modal card ── */
     .modal {
-      background: #f9f6ef;
+      background: var(--bg-secondary);
       border-radius: 18px;
       box-shadow:
         0 8px 40px rgba(30, 24, 16, 0.18),
@@ -101,10 +101,10 @@ export class SettingsOverlay extends LitElement {
     }
 
     .modal-title {
-      font-family: var(--heading-font, Georgia, serif);
-      font-size: 1.2rem;
+      font-family: var(--title-font);
+      font-size: var(--text-xl);
       font-weight: 700;
-      color: var(--text, #2a2118);
+      color: var(--primary);
       margin: 0;
       letter-spacing: -0.01em;
     }
@@ -119,15 +119,14 @@ export class SettingsOverlay extends LitElement {
       border: none;
       border-radius: 50%;
       cursor: pointer;
-      color: var(--ink-muted, #8a7a68);
-      font-size: 1.1rem;
+      color: var(--accent);
+      font-size: var(--text-lg);
       transition: background 0.15s, color 0.15s;
       line-height: 1;
     }
 
     .close-btn:hover {
-      background: var(--sand, #d9cdb8);
-      color: var(--text, #2a2118);
+      background: var(--secondary);
     }
 
     /* ── Body: sidebar + panel ── */
@@ -135,7 +134,7 @@ export class SettingsOverlay extends LitElement {
       display: flex;
       flex: 1;
       overflow: hidden;
-      padding: 0 18px 18px;
+      padding: 0 var(--space-4) var(--space-4);
       gap: 14px;
     }
 
@@ -143,9 +142,9 @@ export class SettingsOverlay extends LitElement {
     .sidebar {
       width: 200px;
       flex-shrink: 0;
-      background: #fff;
+      background: var(--surface);
       border-radius: 14px;
-      border: 1px solid #e8e1d5;
+      border: 1px solid var(--accent);
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -154,8 +153,8 @@ export class SettingsOverlay extends LitElement {
     .user-card {
       display: flex;
       align-items: center;
-      gap: 11px;
-      padding: 16px 16px 14px;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-4) var(--space-3);
       border-bottom: 1px solid #ede6d6;
     }
 
@@ -176,19 +175,19 @@ export class SettingsOverlay extends LitElement {
     }
 
     .user-name {
-      font-family: var(--regular-font, sans-serif);
-      font-size: 0.88rem;
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
       font-weight: 700;
-      color: var(--text, #2a2118);
+      color: var(--primary);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .user-sub {
-      font-family: var(--regular-font, sans-serif);
-      font-size: 0.73rem;
-      color: var(--ink-muted, #8a7a68);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
+      color: var(--subtittle);
       margin-top: 1px;
     }
 

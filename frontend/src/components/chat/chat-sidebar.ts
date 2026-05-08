@@ -17,6 +17,7 @@ export class StorySidebar extends LitElement {
   @state() private collapsed = false;
   @state() private searchQuery = '';
   @state() private username = 'My Account';
+  @state() private menuOpen = false;
 
   static styles = css`
     :host {
@@ -152,28 +153,32 @@ export class StorySidebar extends LitElement {
     }
 
     .create-story-btn {
+      background: none;
+      border: none;
+      box-shadow: none;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       gap: var(--space-2);
-      margin: var(--space-2) var(--space-3) var(--space-1);
-      padding: var(--space-3) var(--space-4);
-      background: var(--bg);
+      margin: var(--space-2) var(--space-3);
+      padding: var(--space-3) ;
       color: var(--primary);
-      border: 1px solid var(--accent);
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-sm);
       font-family: var(--regular-font);
-      font-size: var(--text-sm);
-      font-weight: 700;
+      font-size: var(--text-xs);
       cursor: pointer;
       flex-shrink: 0;
       transition: background 0.15s, transform 0.1s;
     }
 
     .create-story-btn:hover {
-      background: #c49e0a;
-      box-shadow: 0 4px 10px rgba(213,173,15,0.4);
-      transform: translateY(-1px);
+      background: var(--secondary);
+    }
+
+    .create-story-btn svg {
+      width: 16px;  
+      height: 16px;
+      fill: var(--accent);
     }
 
     :host(.collapsed) .create-story-btn {
@@ -181,7 +186,7 @@ export class StorySidebar extends LitElement {
     }
 
     .search-wrap {
-      padding: var(--space-3) var(--space-3) var(--space-1);
+      padding: var(--space-1) var(--space-3) var(--space-1);
       flex-shrink: 0;
       overflow: hidden;
       transition: opacity 0.15s, height 0.2s, padding 0.2s;
@@ -201,7 +206,7 @@ export class StorySidebar extends LitElement {
       background: var(--bg, #FFFCF0);
       border: 1px solid var(--sand, #d9cdb8);
       border-radius: var(--radius-lg);
-      padding: var(--space-2) var(--space-3);
+      padding: var(--space-1) var(--space-3);
     }
 
     .search-icon {
@@ -349,15 +354,17 @@ export class StorySidebar extends LitElement {
     :host(.collapsed) .empty-list { display: none; }
 
     /* ─── Footer ─── */
+    .footer-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
     .sidebar-footer {
       padding: var(--space-3) var(--space-4);
       border-top: 1px solid var(--parchment, #ede6d6);
       display: flex;
       align-items: center;
       gap: var(--space-3);
-      flex-shrink: 0;
-      /* Make the whole footer a hover target */
-      border-radius: 0 0 0 0;
       cursor: pointer;
       transition: background 0.15s;
       position: relative;
@@ -367,22 +374,19 @@ export class StorySidebar extends LitElement {
       background: var(--bg, #FFFCF0);
     }
 
-    /* Subtle "open settings" hint that appears on hover */
-    .sidebar-footer:hover .settings-hint {
-      opacity: 1;
-    }
-
     :host(.collapsed) .sidebar-footer {
       justify-content: center;
       padding: var(--space-3) 0;
     }
 
     .avatar {
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
+      padding: 5px;
+      fill: var(--accent);
       border-radius: 50%;
-      background: var(--parchment, #ede6d6);
-      border: 1.5px solid var(--sand, #d9cdb8);
+      background: var(--secondary);
+      border: 1px solid var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -414,7 +418,6 @@ export class StorySidebar extends LitElement {
 
     .user-role { font-size: var(--text-xs); color: var(--ink-muted, #8a7a68); }
 
-    /* Settings gear icon — replaces crown on hover in expanded mode */
     .footer-right {
       flex-shrink: 0;
       display: flex;
@@ -432,17 +435,96 @@ export class StorySidebar extends LitElement {
       color: var(--text, #2a2118);
     }
 
-    .icon-crown,
-    .icon-gear {
+    .icon-settings {
       position: absolute;
       transition: opacity 0.15s;
+      fill: var(--accent);
     }
 
-    .icon-crown { opacity: 1; }
-    .icon-gear  { opacity: 0; }
+    /* ─── Context Menu ─── */
+    .context-menu {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: var(--space-3, 12px);
+      right: var(--space-3, 12px);
+      background: var(--surface, #ffffff);
+      border: 1px solid var(--sand, #d9cdb8);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(42, 33, 24, 0.12), 0 2px 6px rgba(42, 33, 24, 0.06);
+      overflow: hidden;
+      z-index: 100;
 
-    .sidebar-footer:hover .icon-crown { opacity: 0; }
-    .sidebar-footer:hover .icon-gear  { opacity: 1; }
+      /* Animation */
+      transform-origin: bottom center;
+      animation: menu-in 0.15s ease forwards;
+    }
+
+    @keyframes menu-in {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    :host(.collapsed) .context-menu {
+      left: calc(100% + 8px);
+      bottom: 0;
+      right: auto;
+      width: 168px;
+      transform-origin: bottom left;
+    }
+
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3, 12px);
+      padding: 10px var(--space-4, 16px);
+      font-family: var(--regular-font);
+      font-size: var(--text-xs);
+      font-weight: 500;
+      color: var(--primary);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+      user-select: none;
+    }
+
+    .context-menu-item:hover {
+      background: var(--bg, #FFFCF0);
+      color: var(--text, #2a2118);
+    }
+
+    .context-menu-item.danger {
+      color: var(--error);
+    }
+
+    .context-menu-item svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      opacity: 0.8;
+      fill: var(--primary);
+    }
+
+    .context-menu-item.danger svg {
+      fill: none;
+    }
+
+    .context-menu-divider {
+      height: 1px;
+      background: var(--parchment, #ede6d6);
+      margin: 2px 0;
+    }
+
+    /* Overlay to catch outside clicks */
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99;
+    }
   `;
 
   connectedCallback() {
@@ -521,11 +603,28 @@ export class StorySidebar extends LitElement {
     );
   }
 
-  /** Fire an event the chat-page listens to — opens the settings overlay */
+  private toggleMenu(e: Event) {
+    e.stopPropagation();
+    this.menuOpen = !this.menuOpen;
+  }
+
+  private closeMenu() {
+    this.menuOpen = false;
+  }
+
   private openSettings() {
+    this.menuOpen = false;
     this.dispatchEvent(new CustomEvent('open-settings', {
-      bubbles: true,   // bubbles up through the DOM
-      composed: true,  // crosses shadow DOM boundaries
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  private handleLogout() {
+    this.menuOpen = false;
+    this.dispatchEvent(new CustomEvent('logout', {
+      bubbles: true,
+      composed: true,
     }));
   }
 
@@ -557,7 +656,8 @@ export class StorySidebar extends LitElement {
         @click=${() => Router.go('/avatar')}>+</button>
 
       <button class="create-story-btn" @click=${() => Router.go('/avatar')}>
-        Create a New Story!
+        Create New Story
+         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
       </button>
 
       <div class="section-label">Stories</div>
@@ -595,28 +695,45 @@ export class StorySidebar extends LitElement {
         }
       </div>
 
-      <!-- Footer — click anywhere to open settings -->
-      <div class="sidebar-footer" @click=${this.openSettings} title="Open settings">
-        <div class="avatar">👤</div>
+      <!-- Footer -->
+      <div class="footer-wrap">
 
-        <div class="user-info">
-          <div class="user-name">${this.username}</div>
-          <div class="user-role">Explorer</div>
-        </div>
+        <!-- Context menu (rendered above the footer) -->
+        ${this.menuOpen ? html`
+          <div class="menu-overlay" @click=${this.closeMenu}></div>
+          <div class="context-menu" @click=${(e: Event) => e.stopPropagation()}>
+            <div class="context-menu-item" @click=${this.openSettings}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
+              <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
+              Settings
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item danger" @click=${this.handleLogout}>
+              <!-- Logout icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+              Log out
+            </div>
+          </div>
+        ` : ''}
 
-        <!-- Crown fades to gear on hover -->
-        <div class="footer-right">
-          <!-- Crown (default) -->
-          <svg class="icon-crown" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-               viewBox="0 0 24 24" fill="currentColor">
-            <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
-          </svg>
-          <!-- Gear (hover) -->
-          <svg class="icon-gear" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-          </svg>
+        <div class="sidebar-footer" @click=${this.toggleMenu} title="Account options">
+          <svg class="avatar" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm296.5-343.5Q560-607 560-640t-23.5-56.5Q513-720 480-720t-56.5 23.5Q400-673 400-640t23.5 56.5Q447-560 480-560t56.5-23.5ZM480-640Zm0 400Z"/></svg>
+
+
+          <div class="user-info">
+            <div class="user-name">${this.username}</div>
+            <div class="user-role">Explorer</div>
+          </div>
+          
+          <div class="footer-right">
+              <svg class="icon-settings" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
+              <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
+            </svg>
+          </div>
         </div>
       </div>
     `;
