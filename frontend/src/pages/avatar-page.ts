@@ -44,6 +44,7 @@ export class AvatarPage extends LitElement {
       --radius:    10px;
       --font-head: 'Cinzel', 'Palatino Linotype', serif;
       --font-body: 'Cormorant Garamond', 'Georgia', serif;
+      --max-panel-width: 400px;
 
       display: flex;
       justify-content: center;
@@ -232,6 +233,7 @@ export class AvatarPage extends LitElement {
       display: grid;
       grid-template-columns: 1fr;
       gap: var(--space-5);
+      
     }
 
     @media (min-width: 1492px) {
@@ -240,9 +242,9 @@ export class AvatarPage extends LitElement {
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 876px) {
       main {
-        width: 80%;
+        width: 75%;
       }
     }
 
@@ -258,7 +260,7 @@ export class AvatarPage extends LitElement {
       }
     }
 
-    @media (max-width: 480px) {
+    @media (max-width: 620px) {
       main {
         width: 95%;
         padding: var(--space-4) var(--space-3) var(--space-6);
@@ -274,6 +276,7 @@ export class AvatarPage extends LitElement {
       background: var(--bg);
       border-radius: 14px;
       box-shadow: var(--shadow-glow);
+      padding: var(--space-5);
     }
 
     /* ── Description ─────────────────────────────────────── */

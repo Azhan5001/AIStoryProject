@@ -51,6 +51,7 @@ export class WorldSettingPage extends LitElement {
       --radius:    10px;
       --font-head: 'Cinzel', 'Palatino Linotype', serif;
       --font-body: 'Cormorant Garamond', 'Georgia', serif;
+      --max-width: 34.37rem;
 
       display: flex;
       justify-content: center;
@@ -94,7 +95,8 @@ export class WorldSettingPage extends LitElement {
       text-align: center;
       padding-bottom: var(--space-2);
       border-bottom: 1px solid var(--border);
-      width: 80%;
+      width: 100%;
+      max-width: 40rem;
     }
     .page-header h1 {
       font-family: var(--title-font);
@@ -114,16 +116,25 @@ export class WorldSettingPage extends LitElement {
 
     /* ── Panel + description share this max-width ── */
     .panel-wrap {
+      display: flex;
+      flex-direction: column;
       width: 100%;
+      max-width: var(--max-width);
+      gap: var(--space-2);
+    }
+    
+    .panel-container {
+      width: 100%;
+      box-sizing: border-box;
       background: var(--bg);
       border-radius: 14px;
       box-shadow: var(--shadow-glow);
-      max-width: 500px;   /* constrains panel to 3-column grid */
+      padding: var(--space-6);
     }
 
     .desc-section {
       width: 100%;
-      max-width: 500px;   /* matches panel exactly */
+      max-width: var(--max-width);   /* matches panel exactly */
       display: flex;
       flex-direction: column;
       gap: var(--space-2);
@@ -151,7 +162,7 @@ export class WorldSettingPage extends LitElement {
       box-shadow: var(--shadow-glow);
       transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
       min-height: 110px;
-      resize: vertical;
+      resize: none;
       line-height: var(--line-height-body);
     }
     textarea:focus {
@@ -200,9 +211,22 @@ export class WorldSettingPage extends LitElement {
       box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
     }
 
-    @media (max-width: 680px) {
-      main { width: 90%; }
-      .panel-wrap, .desc-section { max-width: 100%; }
+    @media (max-width: 876px) {
+      main {
+        width: 75%;
+      }
+    }
+
+    @media (max-width: 620px) {
+      main {
+        width: 95%;
+        padding: var(--space-4) var(--space-3) var(--space-6);
+      }
+
+      :host {
+        padding: var(--space-3);
+        align-items: flex-start;
+      }
     }
   `;
 
@@ -265,17 +289,19 @@ export class WorldSettingPage extends LitElement {
             <h1>Choose Your World</h1>
             <p>Every legend needs a stage. Set yours.</p>
           </header>
-
           <div class="panel-wrap">
-            <selection-panel
-              title="World Setting"
-              .items=${worldItems}
-              .selected=${this.world}
-              @change=${(e: CustomEvent) => {
-                this.world = e.detail;
-                if (!this.isCustom) this.description = '';
-              }}
-            ></selection-panel>
+            <label>Character</label>
+            <div class="panel-container">
+              <selection-panel
+                title="World Setting"
+                .items=${worldItems}
+                .selected=${this.world}
+                @change=${(e: CustomEvent) => {
+                  this.world = e.detail;
+                  if (!this.isCustom) this.description = '';
+                }}
+              ></selection-panel>
+            </div>
           </div>
 
           <div class="desc-section">

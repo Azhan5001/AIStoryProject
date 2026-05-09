@@ -21,13 +21,13 @@ export class SelectionPanel extends LitElement {
   static styles = css`
     :host {
       display: block;
-      width: 90%;
+      width: 100%;
     }
 
     .panel {
       width: 100%;
       border-radius: 14px;
-      padding: var(--space-5);
+
     }
 
     .title {
@@ -41,7 +41,7 @@ export class SelectionPanel extends LitElement {
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-      gap: var(--space-3);
+      gap: var(--space-5);
     }
 
     /* ── Carousel layout (mobile only) ── */
@@ -102,8 +102,8 @@ export class SelectionPanel extends LitElement {
     }
 
     .carousel-card {
-      width: 100px;
-      height: 100px;
+      width: 110px;
+      height: 110px;
       border-radius: 50%;
       border: 2px solid var(--border);
       overflow: hidden;
@@ -188,7 +188,7 @@ export class SelectionPanel extends LitElement {
        grid stays as-is until mobile */
 
     /* Mobile: swap grid → carousel */
-    @media (max-width: 480px) {
+    @media (max-width: 620px) {
       .grid {
         display: none;
       }

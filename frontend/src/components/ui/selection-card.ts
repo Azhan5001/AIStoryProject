@@ -8,6 +8,10 @@ export class SelectionCard extends LitElement {
   @property({ type: Boolean }) selected = false;
 
   static styles = css`
+    :host{
+      --card-size: 6.50rem;
+    }
+
     .wrapper {
       display: flex;
       flex-direction: column;
@@ -16,8 +20,8 @@ export class SelectionCard extends LitElement {
       cursor: pointer;
     }
     .card {
-      width: 88px;
-      height: 88px;
+      width: var(--card-size);
+      height: var(--card-size);
       border-radius: 50%;
       border: 2px solid var(--border);
       overflow: hidden;
@@ -41,10 +45,14 @@ export class SelectionCard extends LitElement {
       border-color: var(--gold);
       box-shadow: 0 0 0 3px rgba(201,168,76,0.18);
     }
+    .selected img {
+      filter: brightness(1) saturate(1);
+    }
     .label {
       font-size: var(--text-xs);
       text-transform: uppercase;
       color: var(--muted);
+      text-align: center;
       letter-spacing: 0.08em;
     }
   `;
