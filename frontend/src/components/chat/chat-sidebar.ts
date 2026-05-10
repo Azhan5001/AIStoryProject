@@ -2,6 +2,8 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { getUserStories, getAvatar, getUsername } from '../../api/api';
 import { Router } from '@vaadin/router';
+import { repeat } from 'lit/directives/repeat.js';
+
 
 interface Story {
   story_id: number;
@@ -560,8 +562,7 @@ export class StorySidebar extends LitElement {
       if (this.stories.length > 0 && this.selectedId === null) {
         const latest = this.stories[this.stories.length - 1];
         this.selectedId = latest.story_id;
-        Router.go(`/story/${latest.story_id}`);
-      }
+        window.history.replaceState( {}, '', `/story/${latest.story_id}`);}
     } catch (e) {
       console.error('Failed to load stories', e);
     }
@@ -583,7 +584,9 @@ export class StorySidebar extends LitElement {
       composed: true
     }));
 
-    Router.go(`/story/${id}`);
+     requestAnimationFrame(() => {
+      window.history.pushState({}, '', `/story/${id}`);
+    });
   }
 
   private toggleCollapse() {
