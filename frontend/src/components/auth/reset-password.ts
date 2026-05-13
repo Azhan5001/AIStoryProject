@@ -19,7 +19,7 @@ export class ResetPassword extends LitElement {
 
     :host {
       margin-right: var(--space-7);
-      color: var(--primary);
+      color: var(--text);
       display: block;
       width: 100%;
       font-family: var(--regular-font);
@@ -153,7 +153,6 @@ export class ResetPassword extends LitElement {
     .card h2 {
       font-size: var(--text-2xl);
       font-family: var(--title-font);
-      color: var(--primary);
     }
 
     .card p {

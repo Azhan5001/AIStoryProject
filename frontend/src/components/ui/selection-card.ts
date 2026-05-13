@@ -97,7 +97,7 @@ export class SelectionCard extends LitElement {
     .label {
       font-size: var(--text-xs);
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--text);
       text-align: center;
       letter-spacing: 0.08em;
     }

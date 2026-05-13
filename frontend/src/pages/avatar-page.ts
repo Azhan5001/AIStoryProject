@@ -35,8 +35,6 @@ export class AvatarPage extends LitElement {
   static styles = css`
     /* ── Tokens ─────────────────────────────────────────── */
     :host {
-      --surface: #FFFCF0;
-      --border:    #2a2520;
       --border-hi: #3d3730;
       --gold:      #c9a84c;
       --gold-dim:  #7a6230;
@@ -99,13 +97,13 @@ export class AvatarPage extends LitElement {
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--gold);
+      color: var(--accent);
       margin: 0 0 var(--space-1);
     }
 
     .page-header p {
       font-size: var(--text-sm);
-      color: var(--muted);
+      color: var(--text);
       letter-spacing: 0.06em;
       margin: 0;
     }
@@ -131,16 +129,16 @@ export class AvatarPage extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--accent);
     }
 
-    /* ── Name input wrapper — dice lives inside ── */
+
     .name-input-wrap {
       display: flex;
       align-items: center;
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-glow);
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow);
       transition: box-shadow 0.2s, transform 0.15s;
       overflow: hidden;
     }
@@ -154,6 +152,7 @@ export class AvatarPage extends LitElement {
 
     .name-input-wrap app-input {
       flex: 1;
+      background: var(--bg);
     }
 
     .name-input-wrap app-input input,
@@ -166,8 +165,8 @@ export class AvatarPage extends LitElement {
       flex-shrink: 0;
       background: none;
       border: none;
-      border-left: 1px solid var(--sand, #d9cdb8);
-      color: var(--gold);
+      border-left: 1px solid var(--border);
+      color: var(--accent);
       font-size: var(--text-lg, 1.2rem);
       padding: 0 var(--space-3);
       height: 100%;
@@ -180,12 +179,8 @@ export class AvatarPage extends LitElement {
       min-height: 44px;
     }
 
-    .dice-btn:hover {
-      background: rgba(201, 168, 76, 0.09);
-    }
-
     input[type="text"], select, textarea {
-      background: var(--surface);
+      background: var(--bg);
       border: none;
       border-radius: var(--radius);
       color: var(--text);
@@ -195,7 +190,7 @@ export class AvatarPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
       transition: box-shadow 0.2s, transform 0.15s;
     }
 
@@ -275,7 +270,7 @@ export class AvatarPage extends LitElement {
     .panel-container {
       background: var(--bg);
       border-radius: 14px;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
       padding: var(--space-5);
     }
 
@@ -297,7 +292,7 @@ export class AvatarPage extends LitElement {
     }
 
     app-input[variant="form"] textarea {
-      background: var(--surface);
+      background: var(--bg);
       border: none;
       border-radius: var(--radius);
       color: var(--text);
@@ -307,7 +302,7 @@ export class AvatarPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
       transition: box-shadow 0.2s, transform 0.15s;
       min-height: 120px;
       resize: none;
@@ -337,10 +332,10 @@ export class AvatarPage extends LitElement {
     }
 
     .create-btn {
-      background: transparent;
+      background: var(--bg);
       border: 1px solid var(--gold-dim);
       border-radius: var(--radius);
-      color: var(--gold);
+      color: var(--accent);
       font-family: var(--title-font);
       font-size: var(--text-sm);
       letter-spacing: 0.3em;
@@ -351,9 +346,8 @@ export class AvatarPage extends LitElement {
     }
 
     .create-btn:hover {
-      background: rgba(201, 168, 76, 0.1);
-      border-color: var(--gold);
-      box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
+      background: #f2e1b378;
+      border-color: var(--accent);
     }
   `;
 
@@ -397,7 +391,7 @@ export class AvatarPage extends LitElement {
       <div class="container">
 
         <header class="page-header">
-          <h1>Create Your Character</h1>
+          <h1>Create Your Avatar</h1>
           <p>Choose wisely. Your legend begins here.</p>
         </header>
 
@@ -411,7 +405,9 @@ export class AvatarPage extends LitElement {
                 .value=${this.name}
                 @value-change=${(e: CustomEvent) => this.name = e.detail}
               ></app-input>
-              <button class="dice-btn" @click=${this.generateName} title="Random name">🎲</button>
+              <button class="dice-btn" @click=${this.generateName} title="Random name">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="var(--accent)"><path d="M342.5-257.5Q360-275 360-300t-17.5-42.5Q325-360 300-360t-42.5 17.5Q240-325 240-300t17.5 42.5Q275-240 300-240t42.5-17.5Zm0-360Q360-635 360-660t-17.5-42.5Q325-720 300-720t-42.5 17.5Q240-685 240-660t17.5 42.5Q275-600 300-600t42.5-17.5Zm180 180Q540-455 540-480t-17.5-42.5Q505-540 480-540t-42.5 17.5Q420-505 420-480t17.5 42.5Q455-420 480-420t42.5-17.5Zm180 180Q720-275 720-300t-17.5-42.5Q685-360 660-360t-42.5 17.5Q600-325 600-300t17.5 42.5Q635-240 660-240t42.5-17.5Zm0-360Q720-635 720-660t-17.5-42.5Q685-720 660-720t-42.5 17.5Q600-685 600-660t17.5 42.5Q635-600 660-600t42.5-17.5ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/></svg>
+              </button>
             </div>
           </div>
 
@@ -466,7 +462,7 @@ export class AvatarPage extends LitElement {
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
 
         <div class="bottom">
-          <button class="create-btn" @click=${this.handleCreate}>Forge Character</button>
+          <button class="create-btn" @click=${this.handleCreate}>Create Avatar</button>
         </div>
 
       </div>

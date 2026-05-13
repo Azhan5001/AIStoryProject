@@ -48,7 +48,7 @@ export class StoryOnboarding extends LitElement {
     }
 
     h1 {
-      color: var(--onboarding-h1);
+      color: var(--accent);
       font-size: var(--text-5xl);
       font-family: var(--title-font);
       margin: 0;

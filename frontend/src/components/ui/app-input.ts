@@ -130,7 +130,7 @@ export class AppInput extends LitElement {
           box-sizing: border-box;
           border-radius: 10px;
 
-          background: var(--bg, #FFFCF0);
+          background: var(--bg);
           border: var(--input-border, 1px solid var(--border, #d9cdb8));
 
           font-family: var(--regular-font);
@@ -144,7 +144,7 @@ export class AppInput extends LitElement {
         /* ✅ FIX 3: correct variant selector */
         :host([variant="form"]) input,
         :host([variant="form"]) textarea {
-          background: var(--surface);
+          background: var(--bg);
           border: none;
           border-radius: var(--radius);
           font-family: var(--regular-font);
