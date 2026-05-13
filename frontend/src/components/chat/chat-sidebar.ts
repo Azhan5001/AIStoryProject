@@ -2,7 +2,6 @@ import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { getUserStories, getAvatar, getUsername } from '../../api/api';
 import { Router } from '@vaadin/router';
-import { repeat } from 'lit/directives/repeat.js';
 
 
 interface Story {
