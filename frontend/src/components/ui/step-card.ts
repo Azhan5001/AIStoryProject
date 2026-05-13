@@ -11,7 +11,7 @@ export class StepCard extends LitElement {
 
   static styles = css`
     .card {
-      background: #FFFCF0;
+      background: var(--bg-secondary);
       padding: var(--space-5) var(--space-4);
       max-width: 260px;
       min-height: 220px;
@@ -34,8 +34,8 @@ export class StepCard extends LitElement {
       height: 40px;
       font-weight: bold;
       border-radius: 50%;
-      background: #a9c995;
-      color: white;
+      background: var(--primary);
+      color: var(--secondary);
       font-size: var(--text-xl);
       display: flex;
       justify-content: center;
@@ -70,7 +70,7 @@ export class StepCard extends LitElement {
     }
 
     h2{
-      color: #605126;
+      color: var(--accent);
       font-size: var(--text-xl);
       text-align: center;
     }
@@ -78,7 +78,7 @@ export class StepCard extends LitElement {
     p{
       margin: 0;
       font-size: var(--text-md);
-      color: black;
+      color: var(--primary);
       text-align: center;
     }
   `;

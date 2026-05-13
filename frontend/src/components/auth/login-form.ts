@@ -92,7 +92,7 @@ static styles = css`
   button {
     width: 100%;
     padding: var(--space-4) var(--space-2);
-    background: var(--primary);
+    background: var(--button-bg);
     color: white;
     border: none;
     border-radius: 12px;
@@ -122,7 +122,7 @@ static styles = css`
   .signup {
     margin-top: var(--space-3);
     font-size: var(--text-md);
-    color: var(--accent);
+    color: var(--link);
     text-align: center;
   }
 
@@ -130,6 +130,7 @@ static styles = css`
     color: var(--link);
     text-decoration: none;
     font-weight: bold;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
   }
 
   .signup a:hover {
@@ -149,6 +150,7 @@ static styles = css`
   .skip a {
     color: var(--link);
     text-decoration: none;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
   }
 
   .skip a:hover {
@@ -164,12 +166,13 @@ static styles = css`
   }
 
   .forgot {
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-4);
     font-size: var(--text-md);
     font-weight: bold;
     color: var(--link);
     cursor: pointer;
     text-align: right;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
   }
 
   .forgot:hover {

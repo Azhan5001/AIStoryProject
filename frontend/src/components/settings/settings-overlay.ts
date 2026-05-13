@@ -155,19 +155,19 @@ export class SettingsOverlay extends LitElement {
       align-items: center;
       gap: var(--space-3);
       padding: var(--space-4) var(--space-4) var(--space-3);
-      border-bottom: 1px solid #ede6d6;
+      border-bottom: 1px solid var(--border);
     }
 
     .avatar {
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: #e0d9cc;
+      background: var(--secondary);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: #8a7a68;
+      color: var(--accent);
     }
 
     .user-info {
@@ -210,17 +210,17 @@ export class SettingsOverlay extends LitElement {
       font-family: var(--regular-font, sans-serif);
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--text, #2a2118);
+      color: var(--text);
       transition: background 0.13s;
       user-select: none;
     }
 
     .nav-item:hover {
-      background: #f0ebe0;
+      background: var(--bg-tertiary);
     }
 
     .nav-item.active {
-      background: #ede6d6;
+      background: var(--surface);
       font-weight: 600;
     }
 
@@ -234,25 +234,25 @@ export class SettingsOverlay extends LitElement {
       width: 22px;
       height: 22px;
       border-radius: 6px;
-      background: #e8e1d5;
+      background: var(--secondary);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      color: #8a7a68;
+      color: var(--accent);
     }
 
     .nav-arrow {
-      color: #c5baa8;
+      color: var(--subtittle);
       font-size: 0.75rem;
     }
 
     /* ── Right panel ── */
     .panel {
       flex: 1;
-      background: #f0ebe0;
+      background: var(--surface);
       border-radius: 14px;
-      border: 1px solid #e8e1d5;
+      border: 1px solid var(--border);
       overflow-y: auto;
       padding: 8px 6px;
     }
@@ -269,7 +269,7 @@ export class SettingsOverlay extends LitElement {
     }
 
     .setting-row:hover {
-      background: rgba(255,255,255,0.5);
+      background: var(--bg-tertiary);
     }
 
     .setting-row + .setting-row {
@@ -285,7 +285,7 @@ export class SettingsOverlay extends LitElement {
     /* ── Theme toggle pill ── */
     .toggle-pill {
       display: flex;
-      background: #e0d9cc;
+      background: var(--secondary);
       border-radius: 10px;
       padding: 3px;
       gap: 2px;
@@ -300,13 +300,13 @@ export class SettingsOverlay extends LitElement {
       cursor: pointer;
       border: none;
       background: transparent;
-      color: #8a7a68;
+      color: var(--text);
       transition: background 0.15s, color 0.15s;
     }
 
     .toggle-option.active {
-      background: #2a2118;
-      color: #f9f6ef;
+      background: var(--primary);
+      color: var(--secondary);
     }
 
     /* ── Font selector ── */
@@ -315,31 +315,31 @@ export class SettingsOverlay extends LitElement {
       font-size: 0.8rem;
       padding: 6px 10px;
       border-radius: 8px;
-      border: 1.5px solid #d9cdb8;
-      background: #f9f6ef;
-      color: var(--text, #2a2118);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
       cursor: pointer;
       outline: none;
       appearance: none;
       -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a7a68' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 8px center;
       padding-right: 26px;
     }
 
     .font-select:focus {
-      border-color: var(--gold, #b8953a);
+      border-color: var(--accent);
     }
 
     /* ── Other settings link ── */
     .other-settings {
       cursor: pointer;
-      color: var(--ink-muted, #8a7a68);
+      color: var(--subtittle);
     }
 
     .other-settings:hover {
-      color: var(--text, #2a2118);
+      color: var(--text);
     }
   `;
 

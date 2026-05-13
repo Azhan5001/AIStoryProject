@@ -40,10 +40,11 @@ export class Onboarding extends LitElement {
     inset: 0;
     width: 100%;
     height: 100%;
-    background: var(--onboarding-img) center/cover no-repeat,
-              var(--bg);
-
-    background-size: cover, cover;
+    background-image: var(--onboarding-img);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: var(--bg);
     z-index: 0;
   }
 

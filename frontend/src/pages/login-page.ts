@@ -21,7 +21,7 @@ export class LoginPage extends LitElement {
       height: 100vh;
     }
 
-  @media (max-width: 768px){
+    @media (max-width: 768px){
       .container {
         justify-content: center;
       }

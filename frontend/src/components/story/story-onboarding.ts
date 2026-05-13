@@ -124,7 +124,7 @@ export class StoryOnboarding extends LitElement {
         transform: translateY(-50%);
         left: 5%;
         right: 5%;
-        border-top: 2px dashed #c9c1ad;
+        border-top: 2px dashed var(--border);
         z-index: 0;
       }
 
@@ -134,24 +134,10 @@ export class StoryOnboarding extends LitElement {
       }
     }
 
-    /* tip */
-    .tip {
-      background: #f7f0df;
-      padding: var(--space-3);
-      border-radius: 16px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      width: 100%;
-      max-width: 26rem;
-      color: black;
-      text-align: center;
-    }
 
-    /* button */
     .start-btn {
       background: var(--primary);
-      color: white;
+      color: var(--secondary);
       border: none;
       padding: var(--space-4) var(--space-7);
       border-radius: 18px;
@@ -171,10 +157,10 @@ export class StoryOnboarding extends LitElement {
       border: none;
       font-size: var(--text-2xl);
       cursor: pointer;
-      background: rgba(255,255,255,0.6);
+      background: var(--surface);
       backdrop-filter: blur(6px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      color: #605126;
+      color: var(--accent);
       font-weight: 700;
     }
 
@@ -221,10 +207,6 @@ export class StoryOnboarding extends LitElement {
               .desc=${step.desc}>
             </step-card>
           `)}
-        </div>
-
-        <div class="tip">
-          ⭐ Tip: There are no wrong ideas! Every great story starts with your imagination.
         </div>
 
         <button class="start-btn" @click=${this.goToLogin}>Start</button>

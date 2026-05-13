@@ -83,7 +83,7 @@ export class RegisterForm extends LitElement {
     button {
       width: 100%;
       padding: var(--space-4) var(--space-2);
-      background: var(--primary);
+      background: var(--button-bg);
       color: white;
       border: none;
       border-radius: 12px;
@@ -110,7 +110,7 @@ export class RegisterForm extends LitElement {
     .signup {
       margin-top: var(--space-3);
       font-size: var(--text-md);
-      color: var(--accent);
+      color: var(--link);
       text-align: center;
     }
 

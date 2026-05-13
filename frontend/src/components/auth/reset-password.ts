@@ -19,7 +19,7 @@ export class ResetPassword extends LitElement {
 
     :host {
       margin-right: var(--space-7);
-      color: var(--text);
+      color: var(--primary);
       display: block;
       width: 100%;
       font-family: var(--regular-font);
@@ -52,7 +52,7 @@ export class ResetPassword extends LitElement {
     }
     
     .message-content{
-      background: white;
+      background: var(--bg);
       border-radius: 12px;
       text-align: center;
       width: 300px;
@@ -60,27 +60,27 @@ export class ResetPassword extends LitElement {
     }
 
     .message h3{
-     color: #4b4848;
+     color: var(--primary);
      font-weight: bold;
      font-size: var(--text-3xl);
      font-family: var(--regular-font);
      margin-bottom: var(--space-4);
     }
 
-    p{
+    p {
       font-size: var(--text-md);
-      color: #8e7c53;
+      color: var(--primary);
     }
 
     .reset-button {
       width: 100%;
       padding: var(--space-4) var(--space-2);
-      background: var(--primary);
+      background: var(--button-bg);
       color: white;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      margin-top: var(--space-4);
+      margin-top: var(--space-6);
       font-size: var(--text-lg);
     }
 
@@ -108,10 +108,11 @@ export class ResetPassword extends LitElement {
       padding: var(--space-3) var(--space-1);
       font-size: var(--text-sm);
       margin-top: var(--space-4);
-      background:var(--primary);
-      color: white;
+      background: var(--primary);
+      color: var(--secondary);
       border: none;
       border-radius: 12px;
+      cursor: pointer;
     }
 
     input, .reset-button{
@@ -152,11 +153,11 @@ export class ResetPassword extends LitElement {
     .card h2 {
       font-size: var(--text-2xl);
       font-family: var(--title-font);
-      color: var(--text);
+      color: var(--primary);
     }
 
     .card p {
-      color: var(--accent);
+      color: var(--primary);
       margin-bottom: var(--space-5);
     }
     `

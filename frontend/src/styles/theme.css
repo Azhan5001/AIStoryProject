@@ -13,6 +13,7 @@
   --primary: #2C2C2C;
   --secondary: #f4f4f4;
   --accent: #9b8661;
+  --button-bg: #2C2C2C;
 
   --border: #ccc; /*Dont need this*/
   --error: #c0392b;
@@ -74,15 +75,17 @@
   --img-castle: url('/images/OBJECTS-2.png');
   --onboarding-img: url('/onboarding-bg/dark_bg.png');
 
+  --input-border: #484848ef;
+  --button-bg: #282828;
+
   --primary: #ffffff;
   --secondary: #313131;
-  /* --accent: #d5ad0f; */
-
+  /* --accent: #b19319; */
   --border: #3d3730;
   --error: #e74c3c;
 
-  --link: #c9a84c;
-  --link-hover: #e8e0d0;
+  --link: #9b8661;
+  --link-hover: #b2996f;
   --onboarding-h1: #fff;
   --subtittle:#e8e0d0;
 }
