@@ -29,7 +29,7 @@ export class StorySidebar extends LitElement {
       width: 272px;
       flex-shrink: 0;
       background: var(--surface, #ffffff);
-      border-right: 1px solid var(--sand, #d9cdb8);
+      border-right: 1px solid var(--input-border);
       color: var(--text, #2a2118);
       overflow: hidden;
       transition: width 0.25s ease;
@@ -47,7 +47,7 @@ export class StorySidebar extends LitElement {
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-4) var(--space-3);
-      border-bottom: 1px solid var(--parchment, #ede6d6);
+      border-bottom: 1px solid var(--input-border);
       flex-shrink: 0;
       height: 56px;
       box-sizing: border-box;
@@ -206,7 +206,7 @@ export class StorySidebar extends LitElement {
       align-items: center;
       gap: var(--space-2);
       background: var(--bg, #FFFCF0);
-      border: 1px solid var(--sand, #d9cdb8);
+      border: 1px solid var(--accent);
       border-radius: var(--radius-lg);
       padding: var(--space-1) var(--space-3);
     }
@@ -363,7 +363,7 @@ export class StorySidebar extends LitElement {
 
     .sidebar-footer {
       padding: var(--space-3) var(--space-4);
-      border-top: 1px solid var(--parchment, #ede6d6);
+      border-top: 1px solid var(--input-border);
       display: flex;
       align-items: center;
       gap: var(--space-3);

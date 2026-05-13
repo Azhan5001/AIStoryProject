@@ -40,7 +40,7 @@ export class ChatPage extends LitElement {
       align-items: center;
       gap: var(--space-2);
       background: var(--bg);
-      border: 1px solid var(--sand, #d9cdb8);
+      border: 1px solid var(--accent);
       border-radius: 20px;
       padding: var(--space-2) var(--space-4);
       font-family: var(--regular-font);
@@ -53,27 +53,6 @@ export class ChatPage extends LitElement {
       display: flex;
       align-items: center;
       gap: var(--space-3);
-    }
-
-    .export-btn {
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      background: none;
-      border: 1.5px solid var(--sand, #d9cdb8);
-      border-radius: var(--radius-lg);
-      padding: var(--space-2) var(--space-4);
-      font-family: var(--regular-font);
-      font-size: var(--text-xs);
-      color: var(--primary);
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-    }
-
-    .export-btn:hover {
-      border-color: var(--sand, #d9cdb8);
-      background: var(--parchment, #ede6d6);
-      color: var(--text, #2a2118);
     }
 
     .content {

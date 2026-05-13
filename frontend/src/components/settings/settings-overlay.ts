@@ -74,9 +74,6 @@ export class SettingsOverlay extends LitElement {
     .modal {
       background: var(--bg-secondary);
       border-radius: 18px;
-      box-shadow:
-        0 8px 40px rgba(30, 24, 16, 0.18),
-        0 2px 8px rgba(30, 24, 16, 0.10);
       width: 620px;
       max-width: calc(100vw - 40px);
       max-height: calc(100vh - 80px);
@@ -194,7 +191,7 @@ export class SettingsOverlay extends LitElement {
     .nav-list {
       list-style: none;
       margin: 0;
-      padding: 8px 0;
+      padding: var(--space-2) 0;
       flex: 1;
     }
 
@@ -203,7 +200,7 @@ export class SettingsOverlay extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 10px 16px;
+      padding: 10px var(--space-4);
       cursor: pointer;
       border-radius: 9px;
       margin: 0 6px;
@@ -254,26 +251,22 @@ export class SettingsOverlay extends LitElement {
       border-radius: 14px;
       border: 1px solid var(--border);
       overflow-y: auto;
-      padding: 8px 6px;
+      padding: var(--space-2) 6px;
     }
 
     .setting-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 14px 16px;
-      border-radius: 9px;
+      padding: 12px var(--space-4);
+      border-bottom: 1px solid var(--border);
       background: transparent;
       transition: background 0.13s;
       cursor: default;
     }
 
-    .setting-row:hover {
-      background: var(--bg-tertiary);
-    }
-
-    .setting-row + .setting-row {
-      border-top: 1px solid rgba(210,200,185,0.45);
+    .setting-row:last-child {
+      border-bottom: none;
     }
 
     .setting-label {
@@ -286,7 +279,7 @@ export class SettingsOverlay extends LitElement {
     .toggle-pill {
       display: flex;
       background: var(--secondary);
-      border-radius: 10px;
+      border-radius: var(--radius-sm);
       padding: 3px;
       gap: 2px;
     }
@@ -324,7 +317,7 @@ export class SettingsOverlay extends LitElement {
       -webkit-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
-      background-position: right 8px center;
+      background-position: right var(--space-2) center;
       padding-right: 26px;
     }
 
@@ -399,11 +392,7 @@ export class SettingsOverlay extends LitElement {
                     @click=${() => this.activeSection = 'general'}>
                   <span class="nav-item-left">
                     <span class="nav-icon">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                           fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 -960 960 960"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
                     </span>
                     General
                   </span>

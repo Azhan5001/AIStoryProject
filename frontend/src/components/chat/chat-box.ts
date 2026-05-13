@@ -83,7 +83,7 @@ export class ChatBox extends LitElement {
       padding: var(--space-3);
       gap: var(--space-3);
       transition: border-color 0.2s, box-shadow 0.2s;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
     }
 
     .input-field {
@@ -346,7 +346,7 @@ export class ChatBox extends LitElement {
               <app-input
                 mode="textarea"
                 autoGrow
-                placeholder="What happens next..."
+                placeholder="Create your story"
                 @input-submit=${this.onInputSubmit}
                 @value-change=${this.onValueChange}
               ></app-input>
