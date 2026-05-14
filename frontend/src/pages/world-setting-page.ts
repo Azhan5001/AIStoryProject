@@ -41,7 +41,6 @@ export class WorldSettingPage extends LitElement {
 
   static styles = css`
     :host {
-      --surface: #FFFCF0;
       --border:    #2a2520;
       --border-hi: #3d3730;
       --gold:      #c9a84c;
@@ -67,7 +66,7 @@ export class WorldSettingPage extends LitElement {
       padding: var(--space-5);
       box-sizing: border-box;
       font-family: var(--regular-font);
-      color: #000;
+      color: var(--text);
     }
 
     main {
@@ -104,12 +103,12 @@ export class WorldSettingPage extends LitElement {
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--gold);
+      color: var(--accent);
       margin: 0 0 var(--space-1);
     }
     .page-header p {
       font-size: var(--text-sm);
-      color: var(--muted);
+      color: var(--text);
       letter-spacing: 0.06em;
       margin: 0;
     }
@@ -128,7 +127,7 @@ export class WorldSettingPage extends LitElement {
       box-sizing: border-box;
       background: var(--bg);
       border-radius: 14px;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
       padding: var(--space-6);
     }
 
@@ -145,11 +144,11 @@ export class WorldSettingPage extends LitElement {
       font-size: var(--text-xs);
       letter-spacing: 0.2em;
       text-transform: uppercase;
-      color: var(--muted);
+      color: var(--accent);
     }
 
     textarea {
-      background: var(--surface);
+      background: var(--bg);
       border: none;
       border-radius: var(--radius);
       color: var(--text);
@@ -159,7 +158,7 @@ export class WorldSettingPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
       transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
       min-height: 110px;
       resize: none;
@@ -175,7 +174,7 @@ export class WorldSettingPage extends LitElement {
       opacity: 0.38;
       cursor: not-allowed;
       transform: none;
-      box-shadow: var(--shadow-glow);
+      box-shadow: var(--shadow);
     }
 
     .error {
@@ -193,22 +192,21 @@ export class WorldSettingPage extends LitElement {
     }
 
     .create-btn {
-      background: transparent;
+      background: var(--bg);
       border: 1px solid var(--gold-dim);
       border-radius: var(--radius);
-      color: var(--gold);
+      color: var(--accent);
       font-family: var(--title-font);
-      font-size: var(--text-xs);
+      font-size: var(--text-sm);
       letter-spacing: 0.3em;
       text-transform: uppercase;
       padding: var(--space-4) var(--space-7);
       cursor: pointer;
-      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+      transition: background 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
     }
     .create-btn:hover {
-      background: rgba(201, 168, 76, 0.1);
-      border-color: var(--gold);
-      box-shadow: 0 0 24px rgba(201, 168, 76, 0.12);
+      background: #f2e1b378;
+      border-color: var(--accent);
     }
 
     @media (max-width: 876px) {
@@ -290,10 +288,10 @@ export class WorldSettingPage extends LitElement {
             <p>Every legend needs a stage. Set yours.</p>
           </header>
           <div class="panel-wrap">
-            <label>Character</label>
+            <label>World Setting</label>
             <div class="panel-container">
               <selection-panel
-                title="World Setting"
+                title=""
                 .items=${worldItems}
                 .selected=${this.world}
                 @change=${(e: CustomEvent) => {
