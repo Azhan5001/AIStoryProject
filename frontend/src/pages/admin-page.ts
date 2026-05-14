@@ -1,21 +1,18 @@
 import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import '../styles/theme.css';
 
 @customElement('admin-page')
 export class AdminPage extends LitElement {
   static styles = css`
     :host {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: #f8f6ea;
-    color: #1f2937;
-    font-family: Inter, Arial, sans-serif;
-    overflow-y: scroll;
-    overflow-x: hidden;
+      display: block;
+      width: 100vw;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--regular-font);
+      overflow-x: hidden;
     }
 
     * {
@@ -23,105 +20,105 @@ export class AdminPage extends LitElement {
     }
 
     .layout {
-    display: flex;
-    min-height: 120vh;
-    width: 100%;
-    background:
-        radial-gradient(circle at top right, rgba(250, 204, 21, 0.18), transparent 35%),
-        #f8f6ea;
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+      background:
+        radial-gradient(circle at top right, rgba(155, 134, 97, 0.16), transparent 35%),
+        var(--bg);
     }
 
     .sidebar {
       width: 245px;
-      background: rgba(255, 253, 240, 0.92);
-      border-right: 1px solid #e8e1bd;
-      padding: 26px 22px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: var(--space-6) var(--space-5);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
     }
 
     .logo {
       width: 42px;
       height: 42px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #facc15, #f59e0b);
-      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.35);
+      border-radius: var(--radius-md);
+      background: var(--accent);
+      box-shadow: var(--shadow-glow);
     }
 
     .brand h2 {
       margin: 0;
-      font-size: 24px;
-      color: #111827;
-      font-family: Georgia, serif;
+      font-size: var(--text-2xl);
+      color: var(--text);
+      font-family: var(--title-font);
     }
 
     .brand p {
       margin: 2px 0 0;
-      font-size: 12px;
-      color: #6b7280;
+      font-size: var(--text-xs);
+      color: var(--subtittle);
     }
 
     .stars {
-      color: #f59e0b;
-      font-size: 14px;
-      margin-bottom: 26px;
+      color: var(--accent);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-6);
     }
 
     .menu-title {
-      font-size: 11px;
-      color: #9ca3af;
+      font-size: var(--text-xs);
+      color: var(--subtittle);
       letter-spacing: 1px;
-      margin-bottom: 10px;
+      margin-bottom: var(--space-3);
     }
 
     nav {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--space-2);
     }
 
     nav a {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: var(--space-3);
       padding: 13px 14px;
-      border-radius: 14px;
-      color: #374151;
+      border-radius: var(--radius-md);
+      color: var(--text);
       text-decoration: none;
-      font-size: 14px;
+      font-size: var(--text-sm);
       cursor: pointer;
       transition: 0.2s ease;
     }
 
     nav a:hover {
-      background: #fff7bf;
+      background: var(--secondary);
       transform: translateX(4px);
     }
 
     nav a.active {
-      background: linear-gradient(135deg, #facc15, #fde68a);
-      color: #111827;
+      background: var(--button-bg);
+      color: var(--surface);
       font-weight: 700;
-      box-shadow: 0 8px 18px rgba(250, 204, 21, 0.28);
+      box-shadow: var(--shadow);
     }
 
     .profile {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px;
-      border-radius: 18px;
-      background: #fff9cf;
-      border: 1px solid #f4df7a;
+      gap: var(--space-3);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--secondary);
+      border: 1px solid var(--border);
     }
 
     .avatar {
@@ -130,24 +127,24 @@ export class AdminPage extends LitElement {
       border-radius: 50%;
       display: grid;
       place-items: center;
-      background: #facc15;
-      box-shadow: 0 6px 14px rgba(250, 204, 21, 0.35);
+      background: var(--accent);
+      color: var(--surface);
     }
 
     .profile strong {
-      font-size: 14px;
-      color: #111827;
+      font-size: var(--text-sm);
+      color: var(--text);
     }
 
     .profile p {
       margin: 2px 0 0;
-      font-size: 11px;
-      color: #6b7280;
+      font-size: var(--text-xs);
+      color: var(--subtittle);
     }
 
     .main {
-        flex: 1;
-        padding: 0 34px 120px;
+      flex: 1;
+      padding: 0 var(--space-6) 120px;
     }
 
     .topbar {
@@ -155,34 +152,34 @@ export class AdminPage extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #e8e1bd;
+      border-bottom: 1px solid var(--border);
     }
 
     .top-left {
       display: flex;
       align-items: center;
-      gap: 22px;
+      gap: var(--space-5);
     }
 
     .breadcrumb {
-      font-size: 14px;
-      color: #6b7280;
+      font-size: var(--text-sm);
+      color: var(--subtittle);
     }
 
     .dashboard-btn {
       border: none;
-      border-radius: 14px;
+      border-radius: var(--radius-md);
       padding: 11px 28px;
-      background: linear-gradient(135deg, #facc15, #f59e0b);
-      color: #111827;
+      background: var(--button-bg);
+      color: var(--surface);
       font-weight: 700;
-      box-shadow: 0 8px 18px rgba(245, 158, 11, 0.28);
+      box-shadow: var(--shadow);
       cursor: pointer;
     }
 
     .icons {
       display: flex;
-      gap: 12px;
+      gap: var(--space-3);
     }
 
     .icons span {
@@ -191,18 +188,18 @@ export class AdminPage extends LitElement {
       border-radius: 50%;
       display: grid;
       place-items: center;
-      background: #fff9cf;
-      border: 1px solid #f4df7a;
-      color: #111827;
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      color: var(--text);
     }
 
     .hero {
-      margin: 28px 0 24px;
-      padding: 24px 28px;
-      border-radius: 24px;
-      background: linear-gradient(135deg, #fff8c8, #ffffff);
-      border: 1px solid #f4df7a;
-      box-shadow: 0 14px 35px rgba(17, 24, 39, 0.08);
+      margin: var(--space-6) 0 var(--space-5);
+      padding: var(--space-5) var(--space-6);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -210,39 +207,41 @@ export class AdminPage extends LitElement {
 
     .hero h1 {
       margin: 0;
-      font-size: 30px;
-      color: #111827;
-      font-family: Georgia, serif;
+      font-size: var(--text-3xl);
+      color: var(--text);
+      font-family: var(--title-font);
+      line-height: var(--line-height-title);
     }
 
     .hero p {
       margin: 6px 0 0;
-      color: #6b7280;
-      font-size: 14px;
+      color: var(--subtittle);
+      font-size: var(--text-sm);
+      line-height: var(--line-height-body);
     }
 
     .hero-badge {
-      background: #111827;
-      color: white;
+      background: var(--button-bg);
+      color: var(--surface);
       padding: 10px 16px;
       border-radius: 999px;
-      font-size: 13px;
-      box-shadow: 0 10px 20px rgba(17, 24, 39, 0.22);
+      font-size: var(--text-sm);
+      box-shadow: var(--shadow);
     }
 
     .cards {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 22px;
-      margin-bottom: 26px;
+      gap: var(--space-5);
+      margin-bottom: var(--space-6);
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid #e5e7eb;
-      border-radius: 22px;
-      padding: 24px;
-      box-shadow: 0 14px 28px rgba(17, 24, 39, 0.08);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow);
       transition: 0.2s ease;
       position: relative;
       overflow: hidden;
@@ -250,7 +249,7 @@ export class AdminPage extends LitElement {
 
     .card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 18px 38px rgba(17, 24, 39, 0.12);
+      box-shadow: var(--shadow-glow);
     }
 
     .card::after {
@@ -261,68 +260,68 @@ export class AdminPage extends LitElement {
       width: 95px;
       height: 95px;
       border-radius: 50%;
-      background: rgba(250, 204, 21, 0.18);
+      background: rgba(155, 134, 97, 0.14);
     }
 
     .card-icon {
       width: 44px;
       height: 44px;
-      border-radius: 14px;
+      border-radius: var(--radius-md);
       display: grid;
       place-items: center;
-      background: #fff7bf;
+      background: var(--secondary);
       font-size: 21px;
-      margin-bottom: 18px;
+      margin-bottom: var(--space-4);
     }
 
     .card h2 {
       margin: 0;
-      font-size: 34px;
-      color: #111827;
+      font-size: var(--text-4xl);
+      color: var(--text);
       font-weight: 800;
     }
 
     .card p {
       margin: 4px 0 0;
-      color: #4b5563;
-      font-size: 13px;
+      color: var(--subtittle);
+      font-size: var(--text-sm);
     }
 
     .trend {
-      margin-top: 14px;
-      font-size: 12px;
-      color: #16a34a;
+      margin-top: var(--space-4);
+      font-size: var(--text-xs);
+      color: var(--accent);
       font-weight: 700;
     }
 
     .content {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      gap: var(--space-5);
     }
 
     .panel {
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid #e5e7eb;
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 14px 30px rgba(17, 24, 39, 0.1);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      box-shadow: var(--shadow);
     }
 
     .panel h3 {
-      margin: 0 0 22px;
-      color: #111827;
-      font-size: 21px;
-      font-family: Georgia, serif;
+      margin: 0 0 var(--space-5);
+      color: var(--text);
+      font-size: var(--text-xl);
+      font-family: var(--title-font);
     }
 
     .reader,
     .story {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 0;
-      border-bottom: 1px solid #f3f4f6;
+      gap: var(--space-4);
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--border);
     }
 
     .reader:last-child,
@@ -333,10 +332,10 @@ export class AdminPage extends LitElement {
     .emoji {
       width: 38px;
       height: 38px;
-      border-radius: 13px;
+      border-radius: var(--radius-sm);
       display: grid;
       place-items: center;
-      background: #fff7bf;
+      background: var(--secondary);
       font-size: 18px;
     }
 
@@ -348,16 +347,16 @@ export class AdminPage extends LitElement {
     .reader-info strong,
     .story-info strong {
       display: block;
-      color: #111827;
-      font-size: 15px;
+      color: var(--text);
+      font-size: var(--text-sm);
       font-weight: 700;
     }
 
     .reader-info p,
     .story-info p {
       margin: 4px 0 0;
-      color: #6b7280;
-      font-size: 12px;
+      color: var(--subtittle);
+      font-size: var(--text-xs);
     }
 
     .status {
@@ -369,37 +368,37 @@ export class AdminPage extends LitElement {
     }
 
     .status.offline {
-      background: #cbd5e1;
+      background: var(--bg-tertiary);
       box-shadow: none;
     }
 
     .badge {
       padding: 7px 11px;
       border-radius: 999px;
-      background: #f1f5f9;
-      color: #475569;
-      font-size: 11px;
+      background: var(--secondary);
+      color: var(--text);
+      font-size: var(--text-xs);
       font-weight: 700;
     }
 
     .alert {
-      margin-top: 26px;
-      border-radius: 22px;
-      padding: 20px 24px;
-      background: linear-gradient(135deg, #fef3c7, #fffbea);
-      border: 1px solid #facc15;
-      box-shadow: 0 12px 25px rgba(250, 204, 21, 0.16);
+      margin-top: var(--space-6);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
     }
 
     .alert strong {
-      color: #111827;
-      font-size: 16px;
+      color: var(--text);
+      font-size: var(--text-md);
     }
 
     .alert p {
       margin: 6px 0 0;
-      color: #4b5563;
-      font-size: 13px;
+      color: var(--subtittle);
+      font-size: var(--text-sm);
     }
 
     @media (max-width: 1000px) {
@@ -430,7 +429,15 @@ export class AdminPage extends LitElement {
       .hero {
         flex-direction: column;
         align-items: flex-start;
-        gap: 14px;
+        gap: var(--space-4);
+      }
+
+      .topbar {
+        height: auto;
+        padding: var(--space-4) 0;
+        gap: var(--space-4);
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   `;
@@ -454,8 +461,6 @@ export class AdminPage extends LitElement {
 
             <nav>
               <a class="active">▦ Dashboard</a>
-              <a>📖 Stories</a>
-              <a>👥 Users</a>
               <a>⚙ Settings</a>
             </nav>
           </div>
