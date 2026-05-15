@@ -60,9 +60,11 @@ export class StoryExportBtn extends LitElement {
       background: none;
       border: 1.5px solid var(--accent);
       border-radius: var(--radius-lg);
+      min-height: 36px;
       padding: var(--space-2) var(--space-4);
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: var(--text-sm);
+      line-height: 1;
       color: var(--primary);
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s, background 0.15s;
@@ -72,6 +74,14 @@ export class StoryExportBtn extends LitElement {
       color: var(--primary); 
     }
     .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    @media (max-width: 639px) {
+      .export-btn {
+        padding: var(--space-2);
+        font-size: var(--text-xs);
+        min-height: 25px;
+      }
+    }
 
     /* ── Backdrop ── */
     .backdrop {

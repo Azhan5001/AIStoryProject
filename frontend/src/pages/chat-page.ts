@@ -12,20 +12,74 @@ export class ChatPage extends LitElement {
     :host {
       display: flex;
       height: 100vh;
-      width: 100vw;jk
+      width: 100vw;
       overflow: hidden;
       background: var(--bg, #FFFCF0);
       font-family: var(--regular-font);
     }
 
+    /* ── Sidebar ── */
+    story-sidebar {
+      flex-shrink: 0;
+      z-index: 10;
+      transition: transform 0.25s ease;
+    }
+
+    /* Mobile: sidebar hidden off-screen, shown as overlay when open */
+    @media (max-width: 639px) {
+      story-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        height: 100%;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(42, 33, 24, 0.15);
+      }
+
+      story-sidebar.sidebar-open {
+        transform: translateX(0);
+      }
+    }
+
+    /* Tablet: sidebar always visible, narrower (handled inside story-sidebar via --sidebar-width) */
+    @media (min-width: 640px) and (max-width: 1023px) {
+      story-sidebar {
+        --sidebar-width: 200px;
+      }
+    }
+
+    /* Mobile backdrop */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(42, 33, 24, 0.35);
+      z-index: 9;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @media (max-width: 639px) {
+      .sidebar-backdrop.visible {
+        display: block;
+      }
+    }
+
+    /* ── Main area ── */
     .main {
+      height: 100dvh;
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       background: var(--bg, #FFFCF0);
+      min-width: 0;
     }
 
+    /* ── Topbar ── */
     .topbar {
       display: flex;
       align-items: center;
@@ -33,35 +87,107 @@ export class ChatPage extends LitElement {
       padding: var(--space-2) var(--space-5);
       background: var(--bg, #FFFCF0);
       flex-shrink: 0;
+      gap: var(--space-2);
     }
 
-    .tab-pill {
+    @media (max-width: 639px) {
+      .topbar {
+        padding: var(--space-2) var(--space-3);
+      }
+    }
+
+    /* Hamburger — mobile only */
+    .hamburger {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      padding: 0;
+    }
+
+    .hamburger svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+      color: var(--accent);
+    }
+
+    @media (max-width: 639px) {
+      .hamburger {
+        display: flex;
+      }
+    }
+
+    .topbar-left {
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      background: var(--bg);
-      border: 1px solid var(--accent);
-      border-radius: 20px;
-      padding: var(--space-2) var(--space-4);
+      min-width: 0;
+    }
+
+    .tab-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      padding: var(--space-3) var(--space-4);
       font-family: var(--regular-font);
       font-size: var(--text-sm);
       font-weight: bold;
-      color: var(--text, #2a2118);
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      line-height: 1;
+    }
+
+    @media (max-width: 639px) {
+      .tab-pill {
+        font-size: var(--text-xs);
+        max-width: 160px;
+        background: transparent;
+        border: none;
+        padding: 0;
+        gap: 0;
+      }
     }
 
     .topbar-right {
       display: flex;
       align-items: center;
       gap: var(--space-3);
+      flex-shrink: 0;
     }
 
+    /* ── Content ── */
     .content {
       flex: 1;
       overflow: hidden;
+      padding: var(--space-6) var(--space-6) 0;
       display: flex;
       flex-direction: column;
       padding: var(--space-6);
       gap: 0;
+    }
+
+    @media (max-width: 639px) {
+      .content {
+        padding: var(--space-2) var(--space-3) 0; /* side padding for shadow room */
+      }
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .content {
+        padding: var(--space-3);
+      }
     }
   `;
 
@@ -69,6 +195,7 @@ export class ChatPage extends LitElement {
   @state() private storyId: number = 0;
   @state() private storyTitle = '';
   @state() private settingsOpen = false;
+  @state() private sidebarOpen = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -87,33 +214,58 @@ export class ChatPage extends LitElement {
       this.storyId = Number(match[1]);
     }
   };
+
   private handleStorySelected = (e: CustomEvent) => {
     this.storyId = e.detail.storyId;
     this.storyTitle = e.detail.storyTitle;
+    // Close sidebar on mobile after selecting a story
+    this.sidebarOpen = false;
   };
+
+  private openSidebar() {
+    this.sidebarOpen = true;
+  }
+
+  private closeSidebar() {
+    this.sidebarOpen = false;
+  }
 
   render() {
     return html`
-      <!--
-        'open-settings' bubbles up (composed:true) from story-sidebar's shadow DOM.
-        We catch it here and flip settingsOpen, which the overlay reacts to.
-      -->
+      <div
+        class="sidebar-backdrop ${this.sidebarOpen ? 'visible' : ''}"
+        @click=${this.closeSidebar}
+      ></div>
+
       <story-sidebar
-        @open-settings=${() => this.settingsOpen = true}
-        @story-selected=${this.handleStorySelected}>
+        class="${this.sidebarOpen ? 'sidebar-open' : ''}"
+        @open-settings=${() => { this.settingsOpen = true; this.sidebarOpen = false; }}
+        @story-selected=${this.handleStorySelected}
+        @sidebar-close=${this.closeSidebar}>
       </story-sidebar>
 
       <div class="main">
         <header class="topbar">
-          <div class="tab-pill">
-            Avatar Name
+          <div class="topbar-left">
+            <button
+              class="hamburger"
+              aria-label="Open navigation"
+              @click=${this.openSidebar}
+            >
+              <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                <rect x="1.5" y="1.5" width="5" height="15" rx="1.5" fill="currentColor" opacity="0.5"/>
+                <rect x="8.5" y="1.5" width="8" height="15" rx="1.5" fill="currentColor"/>
+              </svg>
+            </button>
+            <div class="tab-pill">
+              ${this.storyTitle || 'Avatar Name'}
+            </div>
           </div>
           <div class="topbar-right">
             <story-export-btn
               .storyId=${this.storyId}
               .storyTitle=${this.storyTitle}>
             </story-export-btn>
-
           </div>
         </header>
 
@@ -122,7 +274,6 @@ export class ChatPage extends LitElement {
         </div>
       </div>
 
-      <!-- Overlay lives at chat-page level so it centers over the full viewport -->
       <settings-overlay
         ?open=${this.settingsOpen}
         @close=${() => this.settingsOpen = false}>

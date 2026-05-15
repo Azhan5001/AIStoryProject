@@ -3,7 +3,6 @@ import { customElement, state } from 'lit/decorators.js';
 import { getUserStories, getAvatar, getUsername } from '../../api/api';
 import { Router } from '@vaadin/router';
 
-
 interface Story {
   story_id: number;
   avatar_id: number;
@@ -24,8 +23,9 @@ export class StorySidebar extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      width: 272px;
+      height: 100dvh;
+      /* Respect --sidebar-width set by parent for tablet; default 272px desktop */
+      width: var(--sidebar-width, 272px);
       flex-shrink: 0;
       background: var(--surface, #ffffff);
       border-right: 1px solid var(--input-border);
@@ -34,6 +34,22 @@ export class StorySidebar extends LitElement {
       transition: width 0.25s ease;
       font-family: var(--regular-font);
       box-sizing: border-box;
+    }
+
+    /* On mobile the host is position:fixed (set by chat-page), so full screen width is desired */
+    @media (max-width: 639px) {
+      :host {
+        width: 100vw;
+        max-width: 100vw;
+        z-index: 10;
+      }
+    }
+    /* In chat-box styles — replace mobile input-bar padding */
+    @media (max-width: 639px) {
+      .input-bar {
+        padding: var(--space-2) var(--space-3) var(--space-3); /* was var(--space-2) — too tight */
+        padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+      }
     }
 
     :host(.collapsed) {
@@ -56,7 +72,6 @@ export class StorySidebar extends LitElement {
       font-size: var(--text-xl);
       line-height: 1;
       flex-shrink: 0;
-      transition: opacity 0.15s ease;
     }
 
     :host(.collapsed) .logo-icon {
@@ -105,14 +120,53 @@ export class StorySidebar extends LitElement {
       padding: 0;
     }
 
+    /* Hide collapse toggle on mobile — chat-page controls visibility instead */
+    @media (max-width: 639px) {
+      .toggle-btn {
+        display: none;
+      }
+    }
+
     .toggle-btn:hover {
-      color: var(--text, #2a2118);
+      color: var(--text);
     }
 
     .toggle-btn svg {
       width: 18px;
       height: 18px;
       display: block;
+    }
+
+    .close-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+      padding: 0;
+    }
+
+    .close-btn:hover {
+      color: var(--text, #2a2118);
+    }
+
+    .close-btn svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    @media (max-width: 639px) {
+      .close-btn {
+        display: flex;
+      }
     }
 
     :host(.collapsed) .logo {
@@ -139,7 +193,7 @@ export class StorySidebar extends LitElement {
       align-items: center;
       justify-content: center;
       font-size: var(--text-xl);
-      color: var(--accent, #d5ad0f);
+      color: var(--accent);
       transition: background 0.15s, border-color 0.15s;
       flex-shrink: 0;
     }
@@ -162,7 +216,7 @@ export class StorySidebar extends LitElement {
       justify-content: space-between;
       gap: var(--space-2);
       margin: var(--space-2) var(--space-3);
-      padding: var(--space-3) ;
+      padding: var(--space-3);
       color: var(--primary);
       border-radius: var(--radius-sm);
       font-family: var(--regular-font);
@@ -177,7 +231,7 @@ export class StorySidebar extends LitElement {
     }
 
     .create-story-btn svg {
-      width: 16px;  
+      width: 16px;
       height: 16px;
       fill: var(--accent);
     }
@@ -311,6 +365,13 @@ export class StorySidebar extends LitElement {
 
     .story-item.active {
       background: var(--parchment, #ede6d6);
+    }
+
+    /* Larger tap targets on mobile */
+    @media (max-width: 639px) {
+      .story-item {
+        padding: var(--space-3) var(--space-4);
+      }
     }
 
     .story-item-icon {
@@ -454,21 +515,13 @@ export class StorySidebar extends LitElement {
       box-shadow: 0 8px 24px rgba(42, 33, 24, 0.12), 0 2px 6px rgba(42, 33, 24, 0.06);
       overflow: hidden;
       z-index: 100;
-
-      /* Animation */
       transform-origin: bottom center;
       animation: menu-in 0.15s ease forwards;
     }
 
     @keyframes menu-in {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(4px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
+      from { opacity: 0; transform: scale(0.95) translateY(4px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
     }
 
     :host(.collapsed) .context-menu {
@@ -520,7 +573,6 @@ export class StorySidebar extends LitElement {
       margin: 2px 0;
     }
 
-    /* Overlay to catch outside clicks */
     .menu-overlay {
       position: fixed;
       inset: 0;
@@ -561,7 +613,8 @@ export class StorySidebar extends LitElement {
       if (this.stories.length > 0 && this.selectedId === null) {
         const latest = this.stories[this.stories.length - 1];
         this.selectedId = latest.story_id;
-        window.history.replaceState( {}, '', `/story/${latest.story_id}`);}
+        window.history.replaceState({}, '', `/story/${latest.story_id}`);
+      }
     } catch (e) {
       console.error('Failed to load stories', e);
     }
@@ -583,7 +636,7 @@ export class StorySidebar extends LitElement {
       composed: true
     }));
 
-     requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       window.history.pushState({}, '', `/story/${id}`);
     });
   }
@@ -630,6 +683,14 @@ export class StorySidebar extends LitElement {
     }));
   }
 
+  private handleClose() {
+    // Dispatch a custom event so chat-page can close the overlay
+    this.dispatchEvent(new CustomEvent('sidebar-close', {
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
   private get sidebarIcon() {
     return html`
       <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -643,13 +704,17 @@ export class StorySidebar extends LitElement {
     const stories = this.filteredStories;
 
     return html`
-      <!-- Logo row -->
       <div class="logo">
         <span class="logo-icon"></span>
         <span class="logo-text">StoryRealm</span>
+        <!-- Desktop: collapse toggle -->
         <button class="toggle-btn"
           title=${this.collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           @click=${this.toggleCollapse}>
+          ${this.sidebarIcon}
+        </button>
+        <!-- Mobile: close button -->
+        <button class="close-btn" aria-label="Close navigation" @click=${this.handleClose}>
           ${this.sidebarIcon}
         </button>
       </div>
@@ -659,7 +724,7 @@ export class StorySidebar extends LitElement {
 
       <button class="create-story-btn" @click=${() => Router.go('/avatar')}>
         Create New Story
-         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
       </button>
 
       <div class="section-label">Stories</div>
@@ -697,21 +762,16 @@ export class StorySidebar extends LitElement {
         }
       </div>
 
-      <!-- Footer -->
       <div class="footer-wrap">
-
-        <!-- Context menu (rendered above the footer) -->
         ${this.menuOpen ? html`
           <div class="menu-overlay" @click=${this.closeMenu}></div>
           <div class="context-menu" @click=${(e: Event) => e.stopPropagation()}>
             <div class="context-menu-item" @click=${this.openSettings}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
-              <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
               Settings
             </div>
             <div class="context-menu-divider"></div>
             <div class="context-menu-item danger" @click=${this.handleLogout}>
-              <!-- Logout icon -->
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                 <polyline points="16 17 21 12 16 7"/>
@@ -724,17 +784,12 @@ export class StorySidebar extends LitElement {
 
         <div class="sidebar-footer" @click=${this.toggleMenu} title="Account options">
           <svg class="avatar" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm296.5-343.5Q560-607 560-640t-23.5-56.5Q513-720 480-720t-56.5 23.5Q400-673 400-640t23.5 56.5Q447-560 480-560t56.5-23.5ZM480-640Zm0 400Z"/></svg>
-
-
           <div class="user-info">
             <div class="user-name">${this.username}</div>
             <div class="user-role">Explorer</div>
           </div>
-          
           <div class="footer-right">
-              <svg class="icon-settings" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
-              <path d="M2 19h20v2H2v-2Zm0-3 4-9 6 4 4-6 4 11H2Z"/>
-            </svg>
+            <svg class="icon-settings" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
           </div>
         </div>
       </div>
