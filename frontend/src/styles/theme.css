@@ -52,15 +52,20 @@
   --text-5xl: 3rem;    /* 48px */
 
   /* Line height */
---line-height-body: 1.5;
---line-height-title: 1.2;
+  --line-height-body: 1.5;
+  --line-height-title: 1.2;
 
-/* Border Radius */
---radius-sm: 10px;
---radius-md: 15px;
---radius-lg: 20px;
+  /* Border Radius */
+  --radius-sm: 10px;
+  --radius-md: 15px;
+  --radius-lg: 20px;
+
+  /* UI Scale - affects all interface elements on chat page */
+  --ui-scale: 1;
+
+  /* Message Font Size - affects only chat message text */
+  --message-font-size: 1rem;
 }
-
 
 
 :root[data-theme="dark"] {

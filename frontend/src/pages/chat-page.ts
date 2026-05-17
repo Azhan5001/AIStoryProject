@@ -16,6 +16,7 @@ export class ChatPage extends LitElement {
       overflow: hidden;
       background: var(--bg, #FFFCF0);
       font-family: var(--regular-font);
+      font-size: calc(var(--text-md) * var(--ui-scale, 1));
     }
 
     /* ── Sidebar ── */
@@ -84,15 +85,15 @@ export class ChatPage extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--space-2) var(--space-5);
+      padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-5) * var(--ui-scale, 1));
       background: var(--bg, #FFFCF0);
       flex-shrink: 0;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
     }
 
     @media (max-width: 639px) {
       .topbar {
-        padding: var(--space-2) var(--space-3);
+        padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
       }
     }
 
@@ -128,7 +129,7 @@ export class ChatPage extends LitElement {
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
       min-width: 0;
     }
 
@@ -136,10 +137,10 @@ export class ChatPage extends LitElement {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-4);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
+      padding: calc(var(--space-3) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
       font-family: var(--regular-font);
-      font-size: var(--text-sm);
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
       font-weight: bold;
       color: var(--text);
       white-space: nowrap;
@@ -151,7 +152,7 @@ export class ChatPage extends LitElement {
 
     @media (max-width: 639px) {
       .tab-pill {
-        font-size: var(--text-xs);
+        font-size: calc(var(--text-xs) * var(--ui-scale, 1));
         max-width: 160px;
         background: transparent;
         border: none;
@@ -163,7 +164,7 @@ export class ChatPage extends LitElement {
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: var(--space-3);
+      gap: calc(var(--space-3) * var(--ui-scale, 1));
       flex-shrink: 0;
     }
 
@@ -171,22 +172,21 @@ export class ChatPage extends LitElement {
     .content {
       flex: 1;
       overflow: hidden;
-      padding: var(--space-6) var(--space-6) 0;
+      padding: calc(var(--space-6) * var(--ui-scale, 1)) calc(var(--space-6) * var(--ui-scale, 1)) 0;
       display: flex;
       flex-direction: column;
-      padding: var(--space-6);
       gap: 0;
     }
 
     @media (max-width: 639px) {
       .content {
-        padding: var(--space-2) var(--space-3) 0; /* side padding for shadow room */
+        padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1)) 0;
       }
     }
 
     @media (min-width: 640px) and (max-width: 1023px) {
       .content {
-        padding: var(--space-3);
+        padding: calc(var(--space-3) * var(--ui-scale, 1));
       }
     }
   `;
@@ -199,6 +199,25 @@ export class ChatPage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    
+    // Load and apply UI scale from localStorage
+    const savedUiScale = localStorage.getItem('uiScale');
+    if (savedUiScale) {
+      document.documentElement.style.setProperty('--ui-scale', savedUiScale);
+    }
+
+    // Load and apply message font size from localStorage
+    const savedMessageFontSize = localStorage.getItem('messageFontSize');
+    if (savedMessageFontSize) {
+      let fontSize = '1rem';
+      if (savedMessageFontSize === 'small') {
+        fontSize = '0.875rem';
+      } else if (savedMessageFontSize === 'large') {
+        fontSize = '1.125rem';
+      }
+      document.documentElement.style.setProperty('--message-font-size', fontSize);
+    }
+
     this.updateStoryFromUrl();
     window.addEventListener('popstate', this.updateStoryFromUrl);
   }
