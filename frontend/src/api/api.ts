@@ -162,3 +162,23 @@ export async function getAvatar(avatarId: number) {
 export function getUsername(): string {
   return localStorage.getItem('username') || 'My Account';
 }
+
+export async function getAdminUsers() {
+  const res = await fetch(`${BASE_URL}/admin/users`);
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch admin users');
+  }
+
+  return res.json();
+}
+
+export async function deleteAdminUser(userId: number) {
+  const res = await fetch(`${BASE_URL}/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to delete user');
+  }
+}

@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import { getAdminUsers, deleteAdminUser } from '../api/api';
 import '../styles/theme.css';
 
 type AdminView = 'dashboard' | 'users' | 'stories' | 'requests';
@@ -33,29 +34,8 @@ export class AdminPage extends LitElement {
   private currentView: AdminView = 'dashboard';
 
   @state()
-  private users: AdminUser[] = [
-    {
-      id: 1,
-      name: 'Aisha Lim',
-      email: 'aisha@example.com',
-      status: 'Active',
-      stories: 12,
-    },
-    {
-      id: 2,
-      name: 'Ben Kumar',
-      email: 'ben@example.com',
-      status: 'Active',
-      stories: 8,
-    },
-    {
-      id: 3,
-      name: 'Clara Tan',
-      email: 'clara@example.com',
-      status: 'Inactive',
-      stories: 5,
-    },
-  ];
+  private users: any[] = [];
+
 
   @state()
   private stories: AdminStory[] = [
@@ -608,6 +588,20 @@ export class AdminPage extends LitElement {
     this.currentView = view;
   }
 
+  async connectedCallback() {
+  super.connectedCallback();
+  await this.loadUsers();
+}
+
+private async loadUsers() {
+  try {
+    this.users = await getAdminUsers();
+  } catch (error) {
+    console.error(error);
+    alert('Failed to load users');
+  }
+}
+
   private getCurrentTitle() {
     if (this.currentView === 'dashboard') return 'Dashboard';
     if (this.currentView === 'users') return 'Manage Users';
@@ -615,23 +609,30 @@ export class AdminPage extends LitElement {
     return 'Requests';
   }
 
-  private deleteUser(userId: number) {
-    const selectedUser = this.users.find((user) => user.id === userId);
+private async deleteUser(userId: number) {
+  const selectedUser = this.users.find((user) => user.user_id === userId);
 
-    if (!selectedUser) {
-      return;
-    }
-
-    const confirmDelete = confirm(
-      `Are you sure you want to delete ${selectedUser.name}?`
-    );
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    this.users = this.users.filter((user) => user.id !== userId);
+  if (!selectedUser) {
+    return;
   }
+
+  const confirmDelete = confirm(
+    `Are you sure you want to delete ${selectedUser.username}?`
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await deleteAdminUser(userId);
+
+    this.users = this.users.filter((user) => user.user_id !== userId);
+  } catch (error) {
+    console.error(error);
+    alert('Failed to delete user');
+  }
+}
 
   private resolveRequest(requestId: number) {
     this.requests = this.requests.map((request) =>
@@ -789,7 +790,7 @@ export class AdminPage extends LitElement {
                       <td>
                         <button
                           class="table-action delete-btn"
-                          @click=${() => this.deleteUser(user.id)}
+                          @click=${() => this.deleteUser(user.user_id)}
                         >
                           Delete
                         </button>
