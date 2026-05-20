@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getAdminUsers, deleteAdminUser } from '../api/api';
+import { getAdminUsers, deleteAdminUser, getAdminStories} from '../api/api';
 import '../styles/theme.css';
 
 type AdminView = 'dashboard' | 'users' | 'stories' | 'requests';
@@ -38,29 +38,16 @@ export class AdminPage extends LitElement {
 
 
   @state()
-  private stories: AdminStory[] = [
-    {
-      id: 1,
-      title: 'The Magic Forest',
-      author: 'Aisha Lim',
-      ageGroup: 'Age 5–7',
-      status: 'Published',
-    },
-    {
-      id: 2,
-      title: 'Space Explorer',
-      author: 'Ben Kumar',
-      ageGroup: 'Age 8–10',
-      status: 'Published',
-    },
-    {
-      id: 3,
-      title: "Dragon's Quest",
-      author: 'Clara Tan',
-      ageGroup: 'Age 6–9',
-      status: 'Draft',
-    },
-  ];
+  private stories: any[] = [];
+
+  private async loadStories() {
+    try {
+      this.stories = await getAdminStories();
+    } catch (error) {
+      console.error(error);
+      alert('Failed to load stories');
+    }
+  }
 
   @state()
   private requests: SupportRequest[] = [
@@ -591,6 +578,7 @@ export class AdminPage extends LitElement {
   async connectedCallback() {
   super.connectedCallback();
   await this.loadUsers();
+  await this.loadStories();
 }
 
 private async loadUsers() {
@@ -642,9 +630,14 @@ private async deleteUser(userId: number) {
     );
   }
 
-  private viewStory(story: AdminStory) {
+  private viewStory(story: any) {
     alert(
-      `Story Title: ${story.title}\nAuthor: ${story.author}\nAge Group: ${story.ageGroup}\nStatus: ${story.status}`
+      `Story Details
+
+  Story ID: #${story.story_id}
+  Created By: User ${story.user_id}
+  Direction: ${story.current_direction || 'No direction yet'}
+  Created Date: ${story.created_at || '-'}`
     );
   }
 
@@ -804,68 +797,64 @@ private async deleteUser(userId: number) {
     `;
   }
 
-  private renderStories() {
-    return html`
-      <section class="hero">
-        <div>
-          <h1>View All Stories</h1>
-          <p>Monitor story content created by all users in the system.</p>
-        </div>
-        <div class="hero-badge">${this.stories.length} Stories</div>
-      </section>
+private renderStories() {
+  return html`
+    <section class="hero">
+      <div>
+        <h1>View All Stories</h1>
+        <p>Monitor story content created by all users in the system.</p>
+      </div>
+      <div class="hero-badge">${this.stories.length} Stories</div>
+    </section>
 
-      <section class="table-panel">
-        <h3>📖 All Stories</h3>
+    <section class="table-panel">
+      <h3>📖 All Stories</h3>
 
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Title</th>
-              <th>Author</th>
-              <th>Age Group</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Story ID</th>
+            <th>Created By</th>
+            <th>Story Direction</th>
+            <th>Date Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
 
-          <tbody>
-            ${this.stories.length === 0
-              ? html`
+        <tbody>
+          ${this.stories.length === 0
+            ? html`
+                <tr>
+                  <td colspan="5" class="empty-message">No stories found.</td>
+                </tr>
+              `
+            : this.stories.map(
+                (story) => html`
                   <tr>
-                    <td colspan="5" class="empty-message">No stories found.</td>
+                    <td>#${story.story_id}</td>
+                    <td>User ${story.user_id}</td>
+                    <td>${story.current_direction || 'No direction yet'}</td>
+                    <td>
+                      ${story.created_at
+                        ? story.created_at.slice(0, 10)
+                        : '-'}
+                    </td>
+                    <td>
+                      <button
+                        class="table-action view-btn"
+                        @click=${() => this.viewStory(story)}
+                      >
+                        View
+                      </button>
+                    </td>
                   </tr>
                 `
-              : this.stories.map(
-                  (story) => html`
-                    <tr>
-                      <td>${story.title}</td>
-                      <td>${story.author}</td>
-                      <td>${story.ageGroup}</td>
-                      <td>
-                        <span
-                          class="status-badge ${story.status === 'Draft'
-                            ? 'draft'
-                            : ''}"
-                        >
-                          ${story.status}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          class="table-action view-btn"
-                          @click=${() => this.viewStory(story)}
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  `
-                )}
-          </tbody>
-        </table>
-      </section>
-    `;
-  }
+              )}
+        </tbody>
+      </table>
+    </section>
+  `;
+}
 
   private renderRequests() {
     const openRequests = this.requests.filter(

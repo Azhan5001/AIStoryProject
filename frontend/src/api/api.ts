@@ -182,3 +182,13 @@ export async function deleteAdminUser(userId: number) {
     throw new Error('Failed to delete user');
   }
 }
+
+export async function getAdminStories() {
+  const res = await fetch(`${BASE_URL}/story/`);
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch stories');
+  }
+
+  return res.json();
+}
