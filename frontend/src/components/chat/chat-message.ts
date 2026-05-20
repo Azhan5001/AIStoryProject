@@ -27,7 +27,7 @@ export class ChatMessage extends LitElement {
       max-width: 68%;
       line-height: var(--line-height-body);
       font-family: var(--regular-font);
-      font-size: var(--text-sm);
+      font-size: var(--message-font-size, var(--text-sm));
       word-break: break-word;
     }
 
@@ -45,7 +45,7 @@ export class ChatMessage extends LitElement {
       border: 1.5px solid var(--sand, #d9cdb8);
       border-left: 3px solid var(--gold, #b8953a);
       border-radius: 14px 14px 14px 4px;
-      font-size: var(--text-sm);
+      font-size: var(--message-font-size, var(--text-sm));
       line-height: var(--line-height-body);
     }
 
