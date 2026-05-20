@@ -36,8 +36,10 @@ export async function login(username: string, password: string): Promise<number>
   // ✅ store only user_id
   localStorage.setItem('user_id', String(user.user_id));
   localStorage.setItem('username', user.username);
+  localStorage.setItem('email', user.email);
+  localStorage.setItem('access_level', user.access_level);
 
-  return user.user_id;
+  return user;
 }
 
 export async function register(

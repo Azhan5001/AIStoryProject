@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
 import '../ui/app-input';
 
-import { login, getUserStories } from '../../api/api'; // 🔥 CHANGE (added getUserStories)
+import { login, getUserStories} from '../../api/api'; // 🔥 CHANGE (added getUserStories)
 
 
 @customElement('login-input')
@@ -21,19 +21,9 @@ export class LoginForm extends LitElement {
     const userId = localStorage.getItem('user_id');
     if (!userId) return;
 
-    try {
-      const stories = await getUserStories();
 
-      if (stories.length === 0) {
-        Router.go('/avatar');
-      } else {
-        Router.go('/chat');
-      }
-    } catch {
-      // stay on login if error
-    }
   }
-
+  
 static styles = css`
   * {
     box-sizing: border-box;
@@ -201,15 +191,22 @@ static styles = css`
       this.loading = true;
 
       // 🔥 CHANGE (store userId + check stories)
-      await login(this.username, this.password);
+const user: any = await login(this.username, this.password);
 
-      const stories = await getUserStories();
+console.log('LOGIN USER:', user);
 
-      if (stories.length === 0) {
-        Router.go('/avatar');
-      } else {
-        Router.go('/chat');
-      }
+if (user.access_level === 'admin') {
+  Router.go('/admin');
+  return;
+}
+
+const stories = await getUserStories();
+
+if (stories.length === 0) {
+  Router.go('/avatar');
+} else {
+  Router.go('/chat');
+}
 
     } catch (err) {
       this.errorMessage = 'Invalid username or password';
