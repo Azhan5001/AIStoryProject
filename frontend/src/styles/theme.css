@@ -6,8 +6,8 @@
   --surface: #ffffff;
   --text: #000;
 
-  --img-object: url('/images/Objects-1.png');
-  --img-castle: url('/images/OBJECTS.png');
+  --img-object: url('/images/Objects-1.svg');
+  --img-castle: url('/images/OBJECTS.svg');
   --onboarding-img: url('/onboarding-bg/light_bg.png');
 
   --primary: #2C2C2C;
@@ -76,8 +76,8 @@
   --surface: #141210;
   --text: #e8e0d0;
 
-  --img-object: url('/images/Vector.png');
-  --img-castle: url('/images/OBJECTS-2.png');
+  --img-object: url('/images/vector.svg');
+  --img-castle: url('/images/OBJECTS-2.svg');
   --onboarding-img: url('/onboarding-bg/dark_bg.png');
 
   --input-border: #484848ef;

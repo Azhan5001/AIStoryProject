@@ -349,8 +349,6 @@ export class SelectionCard extends LitElement {
     const baseY = this._isAbove ? 0 : ARROW_H;   // base of triangle
     const tipY  = this._isAbove ? ARROW_H : 0;   // sharp tip
 
-    const pts = `${tipX - 9},${baseY} ${tipX + 9},${baseY} ${tipX},${tipY}`;
-
     const arrowSvg = html`
       <svg
         class="tooltip-arrow"

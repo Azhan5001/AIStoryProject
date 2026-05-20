@@ -2,7 +2,6 @@ import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
-import '../components/ui/theme-toggle';
 import '../components/ui/selection-panel';
 
 
@@ -52,10 +51,9 @@ export class AvatarPage extends LitElement {
       width: 100vw;
 
       background: 
-        url('/images/Objects-1.png') right top no-repeat,
-        url('/images/OBJECTS.png') center/cover no-repeat, 
+        var(--img-object) right top no-repeat,
+        var(--img-castle) center/cover no-repeat,
         var(--bg);
-
       background-size: 15% auto, cover;
       padding: var(--space-5);
       box-sizing: border-box;
@@ -387,7 +385,6 @@ export class AvatarPage extends LitElement {
   render(): TemplateResult {
     return html`
     <main>
-      <theme-toggle></theme-toggle>
       <div class="container">
 
         <header class="page-header">

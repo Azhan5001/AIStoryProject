@@ -5,7 +5,6 @@ import { Router } from '@vaadin/router';
 
 import { createAvatar, createStorySetting, createStory } from '../api/api';
 
-import '../components/ui/theme-toggle';
 import '../components/ui/selection-panel';
 import '../styles/theme.css';
 
@@ -280,7 +279,6 @@ export class WorldSettingPage extends LitElement {
   render(): TemplateResult {
     return html`
       <main>
-        <theme-toggle></theme-toggle>
         <div class="container">
 
           <header class="page-header">

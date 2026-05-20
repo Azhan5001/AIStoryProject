@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { Router } from '@vaadin/router';
 import '../components/chat/chat-box';
 import '../components/chat/chat-sidebar';
 import '../components/settings/settings-overlay';
@@ -242,6 +243,15 @@ export class ChatPage extends LitElement {
     this.sidebarOpen = false;
   };
 
+  private handleLogout() {
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('username');
+
+    this.sidebarOpen = false;
+
+    Router.go('/login');
+  }
+
   private openSidebar() {
     this.sidebarOpen = true;
   }
@@ -259,9 +269,13 @@ export class ChatPage extends LitElement {
 
       <story-sidebar
         class="${this.sidebarOpen ? 'sidebar-open' : ''}"
-        @open-settings=${() => { this.settingsOpen = true; this.sidebarOpen = false; }}
+        @open-settings=${() => {
+          this.settingsOpen = true;
+          this.sidebarOpen = false;
+        }}
         @story-selected=${this.handleStorySelected}
-        @sidebar-close=${this.closeSidebar}>
+        @sidebar-close=${this.closeSidebar}
+        @logout=${this.handleLogout}>
       </story-sidebar>
 
       <div class="main">
