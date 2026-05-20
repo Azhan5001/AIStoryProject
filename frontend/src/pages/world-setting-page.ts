@@ -49,7 +49,23 @@ export class WorldSettingPage extends LitElement {
       --radius:    10px;
       --font-head: 'Cinzel', 'Palatino Linotype', serif;
       --font-body: 'Cormorant Garamond', 'Georgia', serif;
-      --max-width: 34.37rem;
+      --max-width: calc(34.37rem * var(--ui-scale, 1));
+
+      /* Scale all design tokens by --ui-scale so every subcomponent inherits the setting */
+      --space-1: calc(0.25rem * var(--ui-scale, 1));
+      --space-2: calc(0.5rem  * var(--ui-scale, 1));
+      --space-3: calc(0.75rem * var(--ui-scale, 1));
+      --space-4: calc(1rem    * var(--ui-scale, 1));
+      --space-5: calc(1.5rem  * var(--ui-scale, 1));
+      --space-6: calc(2rem    * var(--ui-scale, 1));
+      --space-7: calc(3rem    * var(--ui-scale, 1));
+      --text-xs:  calc(0.75rem  * var(--ui-scale, 1));
+      --text-sm:  calc(0.875rem * var(--ui-scale, 1));
+      --text-md:  calc(1rem     * var(--ui-scale, 1));
+      --text-lg:  calc(1.125rem * var(--ui-scale, 1));
+      --radius-sm: calc(10px * var(--ui-scale, 1));
+      --radius-md: calc(15px * var(--ui-scale, 1));
+      --radius-lg: calc(20px * var(--ui-scale, 1));
 
       display: flex;
       justify-content: center;
@@ -70,7 +86,7 @@ export class WorldSettingPage extends LitElement {
 
     main {
       display: block;
-      border-radius: 20px;
+      border-radius: calc(20px * var(--ui-scale, 1));
       width: 50%;
       color: var(--text);
       font-family: var(--regular-font);
@@ -98,7 +114,7 @@ export class WorldSettingPage extends LitElement {
     }
     .page-header h1 {
       font-family: var(--title-font);
-      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-size: clamp(calc(1.6rem * var(--ui-scale, 1)), 3.5vw, calc(2.6rem * var(--ui-scale, 1)));
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -125,7 +141,7 @@ export class WorldSettingPage extends LitElement {
       width: 100%;
       box-sizing: border-box;
       background: var(--bg);
-      border-radius: 14px;
+      border-radius: calc(14px * var(--ui-scale, 1));
       box-shadow: var(--shadow);
       padding: var(--space-6);
     }
@@ -159,7 +175,7 @@ export class WorldSettingPage extends LitElement {
       box-sizing: border-box;
       box-shadow: var(--shadow);
       transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
-      min-height: 110px;
+      min-height: calc(110px * var(--ui-scale, 1));
       resize: none;
       line-height: var(--line-height-body);
     }
@@ -231,6 +247,14 @@ export class WorldSettingPage extends LitElement {
   @state() private description: string = '';
   @state() private error: string = '';
 
+  override connectedCallback() {
+    super.connectedCallback();
+    const savedUiScale = localStorage.getItem('uiScale');
+    if (savedUiScale) {
+      document.documentElement.style.setProperty('--ui-scale', savedUiScale);
+    }
+  }
+
   private get isCustom() { return this.world === 'Custom'; }
 
   private async handleConfirm(): Promise<void> {
@@ -283,7 +307,6 @@ export class WorldSettingPage extends LitElement {
 
           <header class="page-header">
             <h1>Choose Your World</h1>
-            <p>Every legend needs a stage. Set yours.</p>
           </header>
           <div class="panel-wrap">
             <label>World Setting</label>

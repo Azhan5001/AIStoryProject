@@ -40,7 +40,7 @@ export class SelectionPanel extends LitElement {
     /* ── Grid layout (default: tablet and up) ── */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(calc(90px * var(--ui-scale, 1)), 1fr));
       gap: var(--space-5);
     }
 
@@ -60,7 +60,7 @@ export class SelectionPanel extends LitElement {
       width: 100%;
       gap: 0;
       position: relative;
-      height: 160px;
+      height: calc(160px * var(--ui-scale, 1));
       overflow: visible;
     }
 
@@ -88,22 +88,22 @@ export class SelectionPanel extends LitElement {
 
     /* Side ghost cards */
     .carousel-slot.side-left {
-      transform: scale(0.65) translateX(-110px);
+      transform: scale(0.65) translateX(calc(-110px * var(--ui-scale, 1)));
       opacity: 0.45;
       filter: brightness(0.45) saturate(0.3);
       z-index: 1;
     }
 
     .carousel-slot.side-right {
-      transform: scale(0.65) translateX(110px);
+      transform: scale(0.65) translateX(calc(110px * var(--ui-scale, 1)));
       opacity: 0.45;
       filter: brightness(0.45) saturate(0.3);
       z-index: 1;
     }
 
     .carousel-card {
-      width: 110px;
-      height: 110px;
+      width: calc(110px * var(--ui-scale, 1));
+      height: calc(110px * var(--ui-scale, 1));
       border-radius: 50%;
       border: 2px solid var(--border);
       overflow: hidden;
@@ -144,11 +144,11 @@ export class SelectionPanel extends LitElement {
       background: none;
       border: 1px solid var(--gold-dim, #7a6230);
       border-radius: 50%;
-      width: 36px;
-      height: 36px;
+      width: calc(36px * var(--ui-scale, 1));
+      height: calc(36px * var(--ui-scale, 1));
       cursor: pointer;
       color: var(--gold, #c9a84c);
-      font-size: 16px;
+      font-size: calc(16px * var(--ui-scale, 1));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -164,13 +164,13 @@ export class SelectionPanel extends LitElement {
     /* Dot indicators */
     .carousel-dots {
       display: flex;
-      gap: 6px;
+      gap: calc(6px * var(--ui-scale, 1));
       align-items: center;
     }
 
     .dot {
-      width: 6px;
-      height: 6px;
+      width: calc(6px * var(--ui-scale, 1));
+      height: calc(6px * var(--ui-scale, 1));
       border-radius: 50%;
       background: var(--muted, #6b6358);
       opacity: 0.4;

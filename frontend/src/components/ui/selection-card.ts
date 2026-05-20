@@ -55,7 +55,7 @@ export class SelectionCard extends LitElement {
 
   static styles = css`
     :host {
-      --card-size: 6.50rem;
+      --card-size: calc(6.50rem * var(--ui-scale, 1));
       position: relative;
     }
 
@@ -201,7 +201,7 @@ export class SelectionCard extends LitElement {
     }
     .tt-title {
       font-family: var(--title-font, 'Cinzel', serif);
-      font-size: 0.63rem;
+      font-size: calc(0.63rem * var(--ui-scale, 1));
       letter-spacing: 0.18em;
       text-transform: uppercase;
       color: var(--gold, #c9a84c);
@@ -210,7 +210,7 @@ export class SelectionCard extends LitElement {
     }
     .tt-body {
       font-family: var(--regular-font, 'Cormorant Garamond', Georgia, serif);
-      font-size: 0.8rem;
+      font-size: calc(0.8rem * var(--ui-scale, 1));
       line-height: 1.65;
       color: #b8a990;
     }

@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import type { TemplateResult } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Router } from '@vaadin/router';
+
 import '../components/ui/selection-panel';
 
 
@@ -43,6 +44,22 @@ export class AvatarPage extends LitElement {
       --font-body: 'Cormorant Garamond', 'Georgia', serif;
       --max-panel-width: 400px;
 
+      /* Scale all design tokens by --ui-scale so every subcomponent inherits the setting */
+      --space-1: calc(0.25rem * var(--ui-scale, 1));
+      --space-2: calc(0.5rem  * var(--ui-scale, 1));
+      --space-3: calc(0.75rem * var(--ui-scale, 1));
+      --space-4: calc(1rem    * var(--ui-scale, 1));
+      --space-5: calc(1.5rem  * var(--ui-scale, 1));
+      --space-6: calc(2rem    * var(--ui-scale, 1));
+      --space-7: calc(3rem    * var(--ui-scale, 1));
+      --text-xs:  calc(0.75rem  * var(--ui-scale, 1));
+      --text-sm:  calc(0.875rem * var(--ui-scale, 1));
+      --text-md:  calc(1rem     * var(--ui-scale, 1));
+      --text-lg:  calc(1.125rem * var(--ui-scale, 1));
+      --radius-sm: calc(10px * var(--ui-scale, 1));
+      --radius-md: calc(15px * var(--ui-scale, 1));
+      --radius-lg: calc(20px * var(--ui-scale, 1));
+
       display: flex;
       justify-content: center;
       align-items: center;
@@ -64,7 +81,7 @@ export class AvatarPage extends LitElement {
     main {
       display: block;
       min-height: 20%;
-      border-radius: 20px;
+      border-radius: calc(20px * var(--ui-scale, 1));
       width: 50%;
       color: var(--text);
       font-family: var(--regular-font);
@@ -91,7 +108,7 @@ export class AvatarPage extends LitElement {
 
     .page-header h1 {
       font-family: var(--title-font);
-      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-size: clamp(calc(1.6rem * var(--ui-scale, 1)), 3.5vw, calc(2.6rem * var(--ui-scale, 1)));
       font-weight: 400;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -120,7 +137,7 @@ export class AvatarPage extends LitElement {
       flex: 1;
     }
 
-    .field-wrap.gender { flex: 0 0 160px; }
+    .field-wrap.gender { flex: 0 0 calc(160px * var(--ui-scale, 1)); }
 
     label {
       font-family: var(--regular-font);
@@ -174,7 +191,7 @@ export class AvatarPage extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 44px;
+      min-height: calc(44px * var(--ui-scale, 1));
     }
 
     input[type="text"], select, textarea {
@@ -356,6 +373,14 @@ export class AvatarPage extends LitElement {
   @state() private description: string = '';
   @state() private error: string = '';
 
+  override connectedCallback() {
+    super.connectedCallback();
+    const savedUiScale = localStorage.getItem('uiScale');
+    if (savedUiScale) {
+      document.documentElement.style.setProperty('--ui-scale', savedUiScale);
+    }
+  }
+
   private generateName(): void {
     this.name = randomNames[Math.floor(Math.random() * randomNames.length)];
   }
@@ -389,7 +414,7 @@ export class AvatarPage extends LitElement {
 
         <header class="page-header">
           <h1>Create Your Avatar</h1>
-          <p>Choose wisely. Your legend begins here.</p>
+
         </header>
 
         <div class="identity-row">
