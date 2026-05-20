@@ -56,30 +56,35 @@ export class StoryExportBtn extends LitElement {
     .export-btn {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
       background: none;
       border: 1.5px solid var(--accent);
       border-radius: var(--radius-lg);
-      min-height: 36px;
-      padding: var(--space-2) var(--space-4);
+      min-height: calc(36px * var(--ui-scale, 1));
+      padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
       font-family: var(--regular-font);
-      font-size: var(--text-sm);
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
       line-height: 1;
       color: var(--primary);
       cursor: pointer;
       transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
-    .export-btn:hover { 
-      background: var(--bg-tertiary); 
-      color: var(--primary); 
+    .export-btn:hover {
+      background: var(--bg-tertiary);
+      color: var(--primary);
     }
     .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    .export-btn svg {
+      width: calc(20px * var(--ui-scale, 1));
+      height: calc(20px * var(--ui-scale, 1));
+    }
+
     @media (max-width: 639px) {
       .export-btn {
-        padding: var(--space-2);
-        font-size: var(--text-xs);
-        min-height: 25px;
+        padding: calc(var(--space-2) * var(--ui-scale, 1));
+        font-size: calc(var(--text-xs) * var(--ui-scale, 1));
+        min-height: calc(25px * var(--ui-scale, 1));
       }
     }
 

@@ -129,17 +129,26 @@ export class SettingsOverlay extends LitElement {
       border-radius: 18px;
       width: 620px;
       height: 420px;
-      max-width: calc(100vw - 40px);
-      max-height: calc(100vh - 80px);
+      max-width: calc((100vw - 40px) / var(--ui-scale, 1));
+      max-height: calc((100vh - 80px) / var(--ui-scale, 1));
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      transform: scale(var(--ui-scale, 1));
+      transform-origin: center center;
       animation: slideUp 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
     }
 
     @keyframes slideUp {
-      from { transform: translateY(14px) scale(0.98); opacity: 0; }
-      to   { transform: translateY(0)    scale(1);    opacity: 1; }
+      from { transform: translateY(14px) scale(calc(0.98 * var(--ui-scale, 1))); opacity: 0; }
+      to   { transform: translateY(0)    scale(var(--ui-scale, 1));              opacity: 1; }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .modal {
+        width: 560px;
+        height: 380px;
+      }
     }
 
     /* ── Header ── */
@@ -349,6 +358,7 @@ export class SettingsOverlay extends LitElement {
         border-radius: 0;
         animation: slideUpFull 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
         overflow-y: auto;
+        transform: none;
       }
 
       @keyframes slideUpFull {

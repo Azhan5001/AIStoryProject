@@ -25,7 +25,8 @@ export class StorySidebar extends LitElement {
       flex-direction: column;
       height: 100dvh;
       /* Respect --sidebar-width set by parent for tablet; default 272px desktop */
-      width: var(--sidebar-width, 272px);
+      /* Scale slightly: grows at half the rate of --ui-scale so elements have room */
+      width: calc(var(--sidebar-width, 272px) * (0.5 + var(--ui-scale, 1) * 0.5));
       flex-shrink: 0;
       background: var(--surface, #ffffff);
       border-right: 1px solid var(--input-border);
@@ -53,24 +54,24 @@ export class StorySidebar extends LitElement {
     }
 
     :host(.collapsed) {
-      width: 56px;
-      min-width: 56px;
+      width: calc(56px * var(--ui-scale, 1));
+      min-width: calc(56px * var(--ui-scale, 1));
     }
 
     /* ─── Logo row ─── */
     .logo {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-4) var(--space-3);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
+      padding: calc(var(--space-4) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
       border-bottom: 1px solid var(--input-border);
       flex-shrink: 0;
-      height: 56px;
+      height: calc(56px * var(--ui-scale, 1));
       box-sizing: border-box;
     }
 
     .logo-icon {
-      font-size: var(--text-xl);
+      font-size: calc(var(--text-xl) * var(--ui-scale, 1));
       line-height: 1;
       flex-shrink: 0;
     }
@@ -81,7 +82,7 @@ export class StorySidebar extends LitElement {
 
     .logo-text {
       font-family: var(--title-font);
-      font-size: var(--text-sm);
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
       font-weight: 700;
       color: var(--text, #2a2118);
       letter-spacing: 0.02em;
@@ -109,9 +110,9 @@ export class StorySidebar extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
+      width: calc(28px * var(--ui-scale, 1));
+      height: calc(28px * var(--ui-scale, 1));
+      border-radius: calc(8px * var(--ui-scale, 1));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -133,8 +134,8 @@ export class StorySidebar extends LitElement {
     }
 
     .toggle-btn svg {
-      width: 18px;
-      height: 18px;
+      width: calc(18px * var(--ui-scale, 1));
+      height: calc(18px * var(--ui-scale, 1));
       display: block;
     }
 
@@ -143,9 +144,9 @@ export class StorySidebar extends LitElement {
       background: none;
       border: none;
       cursor: pointer;
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
+      width: calc(28px * var(--ui-scale, 1));
+      height: calc(28px * var(--ui-scale, 1));
+      border-radius: calc(8px * var(--ui-scale, 1));
       align-items: center;
       justify-content: center;
       color: var(--primary);
@@ -159,8 +160,8 @@ export class StorySidebar extends LitElement {
     }
 
     .close-btn svg {
-      width: 18px;
-      height: 18px;
+      width: calc(18px * var(--ui-scale, 1));
+      height: calc(18px * var(--ui-scale, 1));
       display: block;
     }
 
@@ -177,23 +178,23 @@ export class StorySidebar extends LitElement {
     }
 
     :host(.collapsed) .toggle-btn {
-      width: 36px;
-      height: 36px;
+      width: calc(36px * var(--ui-scale, 1));
+      height: calc(36px * var(--ui-scale, 1));
       margin: 0 auto;
     }
 
     .collapsed-new-btn {
       display: none;
-      margin: var(--space-2) auto 0;
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
+      margin: calc(var(--space-2) * var(--ui-scale, 1)) auto 0;
+      width: calc(36px * var(--ui-scale, 1));
+      height: calc(36px * var(--ui-scale, 1));
+      border-radius: calc(10px * var(--ui-scale, 1));
       border: 1.5px solid var(--sand, #d9cdb8);
       background: none;
       cursor: pointer;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-xl);
+      font-size: calc(var(--text-xl) * var(--ui-scale, 1));
       color: var(--accent);
       transition: background 0.15s, border-color 0.15s;
       flex-shrink: 0;
@@ -215,13 +216,13 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: var(--space-2);
-      margin: var(--space-2) var(--space-3);
-      padding: var(--space-3);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
+      margin: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
+      padding: calc(var(--space-3) * var(--ui-scale, 1));
       color: var(--primary);
       border-radius: var(--radius-sm);
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       cursor: pointer;
       flex-shrink: 0;
       transition: background 0.15s, transform 0.1s;
@@ -232,8 +233,8 @@ export class StorySidebar extends LitElement {
     }
 
     .create-story-btn svg {
-      width: 16px;
-      height: 16px;
+      width: calc(16px * var(--ui-scale, 1));
+      height: calc(16px * var(--ui-scale, 1));
       fill: var(--accent);
     }
 
@@ -242,7 +243,7 @@ export class StorySidebar extends LitElement {
     }
 
     .search-wrap {
-      padding: var(--space-1) var(--space-3) var(--space-1);
+      padding: calc(var(--space-1) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1)) calc(var(--space-1) * var(--ui-scale, 1));
       flex-shrink: 0;
       overflow: hidden;
       transition: opacity 0.15s, height 0.2s, padding 0.2s;
@@ -258,15 +259,15 @@ export class StorySidebar extends LitElement {
     .search-box {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
       background: var(--bg, #FFFCF0);
       border: 1px solid var(--accent);
       border-radius: var(--radius-lg);
-      padding: var(--space-1) var(--space-3);
+      padding: calc(var(--space-1) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
     }
 
     .search-icon {
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       color: var(--ink-muted, #8a7a68);
       flex-shrink: 0;
     }
@@ -276,7 +277,7 @@ export class StorySidebar extends LitElement {
       background: none;
       outline: none;
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       color: var(--text, #2a2118);
       width: 100%;
     }
@@ -286,7 +287,7 @@ export class StorySidebar extends LitElement {
     }
 
     .nav-section {
-      padding: var(--space-1) 0 var(--space-1);
+      padding: calc(var(--space-1) * var(--ui-scale, 1)) 0 calc(var(--space-1) * var(--ui-scale, 1));
       flex-shrink: 0;
       overflow: hidden;
       transition: opacity 0.15s;
@@ -302,15 +303,15 @@ export class StorySidebar extends LitElement {
     .nav-item {
       display: flex;
       align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-2) var(--space-4);
+      gap: calc(var(--space-3) * var(--ui-scale, 1));
+      padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       font-weight: 500;
       color: var(--ink-light, #5a4a38);
       cursor: pointer;
-      border-radius: 8px;
-      margin: var(--space-1) var(--space-2);
+      border-radius: calc(8px * var(--ui-scale, 1));
+      margin: calc(var(--space-1) * var(--ui-scale, 1)) calc(var(--space-2) * var(--ui-scale, 1));
       transition: background 0.15s;
     }
 
@@ -319,12 +320,12 @@ export class StorySidebar extends LitElement {
 
     .section-label {
       font-family: var(--title-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       font-weight: 600;
       color: var(--ink-muted, #8a7a68);
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      padding: var(--space-2) var(--space-4) var(--space-1);
+      padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1)) calc(var(--space-1) * var(--ui-scale, 1));
       flex-shrink: 0;
       white-space: nowrap;
       overflow: hidden;
@@ -340,7 +341,7 @@ export class StorySidebar extends LitElement {
     .stories-list {
       flex: 1;
       overflow-y: auto;
-      padding: var(--space-1) 0;
+      padding: calc(var(--space-1) * var(--ui-scale, 1)) 0;
     }
 
     .stories-list::-webkit-scrollbar { width: 4px; }
@@ -353,10 +354,10 @@ export class StorySidebar extends LitElement {
     .story-item {
       display: flex;
       align-items: center;
-      gap: var(--space-3);
-      padding: var(--space-2) var(--space-4);
-      margin: var(--space-1) var(--space-2);
-      border-radius: 8px;
+      gap: calc(var(--space-3) * var(--ui-scale, 1));
+      padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
+      margin: calc(var(--space-1) * var(--ui-scale, 1)) calc(var(--space-2) * var(--ui-scale, 1));
+      border-radius: calc(8px * var(--ui-scale, 1));
       cursor: pointer;
       transition: background 0.15s;
       min-width: 0;
@@ -371,18 +372,18 @@ export class StorySidebar extends LitElement {
     /* Larger tap targets on mobile */
     @media (max-width: 639px) {
       .story-item {
-        padding: var(--space-3) var(--space-4);
+        padding: calc(var(--space-3) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
       }
     }
 
     .story-item-icon {
-      font-size: var(--text-sm);
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
       flex-shrink: 0;
     }
 
     .story-item-label {
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       font-weight: 500;
       color: var(--ink-light, #5a4a38);
       white-space: nowrap;
@@ -407,8 +408,8 @@ export class StorySidebar extends LitElement {
     }
 
     .empty-list {
-      padding: var(--space-5) var(--space-4);
-      font-size: var(--text-xs);
+      padding: calc(var(--space-5) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       color: var(--ink-muted, #8a7a68);
       text-align: center;
       line-height: var(--line-height-body);
@@ -423,11 +424,11 @@ export class StorySidebar extends LitElement {
     }
 
     .sidebar-footer {
-      padding: var(--space-3) var(--space-4);
+      padding: calc(var(--space-3) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
       border-top: 1px solid var(--input-border);
       display: flex;
       align-items: center;
-      gap: var(--space-3);
+      gap: calc(var(--space-3) * var(--ui-scale, 1));
       cursor: pointer;
       transition: background 0.15s;
       position: relative;
@@ -443,9 +444,9 @@ export class StorySidebar extends LitElement {
     }
 
     .avatar {
-      width: 24px;
-      height: 24px;
-      padding: 5px;
+      width: calc(24px * var(--ui-scale, 1));
+      height: calc(24px * var(--ui-scale, 1));
+      padding: calc(5px * var(--ui-scale, 1));
       fill: var(--accent);
       border-radius: 50%;
       background: var(--secondary);
@@ -453,7 +454,7 @@ export class StorySidebar extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-sm);
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
       flex-shrink: 0;
       transition: border-color 0.15s;
     }
@@ -471,7 +472,7 @@ export class StorySidebar extends LitElement {
     :host(.collapsed) .user-info { display: none; }
 
     .user-name {
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       font-weight: 600;
       color: var(--text, #2a2118);
       white-space: nowrap;
@@ -479,15 +480,15 @@ export class StorySidebar extends LitElement {
       text-overflow: ellipsis;
     }
 
-    .user-role { font-size: var(--text-xs); color: var(--ink-muted, #8a7a68); }
+    .user-role { font-size: calc(var(--text-xs) * var(--ui-scale, 1)); color: var(--ink-muted, #8a7a68); }
 
     .footer-right {
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 22px;
-      height: 22px;
+      width: calc(22px * var(--ui-scale, 1));
+      height: calc(22px * var(--ui-scale, 1));
       color: var(--ink-muted, #8a7a68);
       transition: color 0.15s;
     }
@@ -500,6 +501,8 @@ export class StorySidebar extends LitElement {
 
     .icon-settings {
       position: absolute;
+      width: calc(24px * var(--ui-scale, 1));
+      height: calc(24px * var(--ui-scale, 1));
       transition: opacity 0.15s;
       fill: var(--accent);
     }
@@ -508,11 +511,11 @@ export class StorySidebar extends LitElement {
     .context-menu {
       position: absolute;
       bottom: calc(100% + 6px);
-      left: var(--space-3, 12px);
-      right: var(--space-3, 12px);
+      left: calc(var(--space-3, 12px) * var(--ui-scale, 1));
+      right: calc(var(--space-3, 12px) * var(--ui-scale, 1));
       background: var(--surface, #ffffff);
       border: 1px solid var(--sand, #d9cdb8);
-      border-radius: 10px;
+      border-radius: calc(10px * var(--ui-scale, 1));
       box-shadow: 0 8px 24px rgba(42, 33, 24, 0.12), 0 2px 6px rgba(42, 33, 24, 0.06);
       overflow: hidden;
       z-index: 100;
@@ -536,10 +539,10 @@ export class StorySidebar extends LitElement {
     .context-menu-item {
       display: flex;
       align-items: center;
-      gap: var(--space-3, 12px);
-      padding: 10px var(--space-4, 16px);
+      gap: calc(var(--space-3, 12px) * var(--ui-scale, 1));
+      padding: calc(10px * var(--ui-scale, 1)) calc(var(--space-4, 16px) * var(--ui-scale, 1));
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       font-weight: 500;
       color: var(--primary);
       cursor: pointer;
@@ -557,8 +560,8 @@ export class StorySidebar extends LitElement {
     }
 
     .context-menu-item svg {
-      width: 14px;
-      height: 14px;
+      width: calc(14px * var(--ui-scale, 1));
+      height: calc(14px * var(--ui-scale, 1));
       flex-shrink: 0;
       opacity: 0.8;
       fill: var(--primary);

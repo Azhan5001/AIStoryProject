@@ -64,9 +64,9 @@ export class ChatBox extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
       /* Horizontal padding must be >= shadow spread so shadow isn't clipped */
-      padding: var(--space-3) var(--space-4) var(--space-4);
+      padding: calc(var(--space-3) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1)) calc(var(--space-4) * var(--ui-scale, 1));
       background: var(--bg);
       flex-shrink: 0;
       /* Allow shadow to bleed outside without being clipped */
@@ -75,13 +75,13 @@ export class ChatBox extends LitElement {
 
     @media (max-width: 639px) {
       .input-bar {
-        padding: var(--space-2) var(--space-3);
+        padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
       }
     }
 
     @media (min-width: 640px) and (max-width: 1023px) {
       .input-bar {
-        padding: var(--space-2) var(--space-3);
+        padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
       }
     }
 
@@ -91,9 +91,9 @@ export class ChatBox extends LitElement {
       width: 100%;
       max-width: var(--chatBox-width);
       background: var(--bg);
-      border-radius: var(--radius-lg);
-      padding: var(--space-3);
-      gap: var(--space-3);
+      border-radius: calc(var(--radius-lg) * var(--ui-scale, 1));
+      padding: calc(var(--space-3) * var(--ui-scale, 1));
+      gap: calc(var(--space-3) * var(--ui-scale, 1));
       transition: border-color 0.2s, box-shadow 0.2s, border-radius 0.2s;
       box-shadow: var(--shadow);
     }
@@ -102,21 +102,21 @@ export class ChatBox extends LitElement {
     @media (max-width: 639px) {
       .input-row {
         border-radius: 999px;
-        padding: var(--space-2) var(--space-3);
-        gap: var(--space-2);
+        padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
+        gap: calc(var(--space-2) * var(--ui-scale, 1));
       }
 
       /* When text wraps, open up gracefully */
       .input-row.multiline {
         border-radius: var(--radius-xl, 24px);
-        padding: var(--space-2) var(--space-3);
+        padding: calc(var(--space-2) * var(--ui-scale, 1)) calc(var(--space-3) * var(--ui-scale, 1));
       }
     }
 
     .input-field {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
     }
 
     @media (max-width: 639px) {
@@ -156,8 +156,8 @@ export class ChatBox extends LitElement {
     }
 
     .loading-area {
-      width: 20px;
-      height: 20px;
+      width: calc(20px * var(--ui-scale, 1));
+      height: calc(20px * var(--ui-scale, 1));
       display: none;
       align-items: center;
       justify-content: center;
@@ -168,7 +168,7 @@ export class ChatBox extends LitElement {
       display: flex;
       justify-content: flex-end;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
     }
 
     app-input {
@@ -183,11 +183,15 @@ export class ChatBox extends LitElement {
     app-input input {
       --input-border: none;
     }
+    app-input textarea,
+    app-input input {
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
+    }
 
     /* Loading dot */
     .thinking-dot {
-      width: 7px;
-      height: 7px;
+      width: calc(7px * var(--ui-scale, 1));
+      height: calc(7px * var(--ui-scale, 1));
       border-radius: 50%;
       background: var(--accent);
       flex-shrink: 0;
@@ -204,8 +208,8 @@ export class ChatBox extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
-      height: 34px;
+      width: calc(34px * var(--ui-scale, 1));
+      height: calc(34px * var(--ui-scale, 1));
       flex-shrink: 0;
       background: var(--primary);
       color: var(--bg);
@@ -220,8 +224,8 @@ export class ChatBox extends LitElement {
     @media (max-width: 639px) {
       .send-btn,
       .voice-btn {
-        width: 36px;
-        height: 36px;
+        width: calc(36px * var(--ui-scale, 1));
+        height: calc(36px * var(--ui-scale, 1));
       }
     }
 
@@ -235,8 +239,8 @@ export class ChatBox extends LitElement {
     }
 
     .send-btn svg {
-      width: 16px;
-      height: 16px;
+      width: calc(16px * var(--ui-scale, 1));
+      height: calc(16px * var(--ui-scale, 1));
       position: relative;
       z-index: 1;
     }
@@ -258,8 +262,8 @@ export class ChatBox extends LitElement {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
-      height: 34px;
+      width: calc(34px * var(--ui-scale, 1));
+      height: calc(34px * var(--ui-scale, 1));
       flex-shrink: 0;
       background: var(--secondary);
       color: var(--text);
@@ -272,8 +276,8 @@ export class ChatBox extends LitElement {
     }
 
     .voice-btn svg {
-      width: 16px;
-      height: 16px;
+      width: calc(16px * var(--ui-scale, 1));
+      height: calc(16px * var(--ui-scale, 1));
       position: relative;
       z-index: 1;
     }
@@ -294,9 +298,9 @@ export class ChatBox extends LitElement {
     .tip-row {
       display: flex;
       align-items: center;
-      gap: var(--space-2);
+      gap: calc(var(--space-2) * var(--ui-scale, 1));
       font-family: var(--regular-font);
-      font-size: var(--text-xs);
+      font-size: calc(var(--text-xs) * var(--ui-scale, 1));
       color: var(--subtittle);
       font-style: italic;
     }

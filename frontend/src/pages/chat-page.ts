@@ -103,20 +103,20 @@ export class ChatPage extends LitElement {
       display: none;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: calc(36px * var(--ui-scale, 1));
+      height: calc(36px * var(--ui-scale, 1));
       background: none;
       border: none;
       cursor: pointer;
-      border-radius: 8px;
+      border-radius: calc(8px * var(--ui-scale, 1));
       flex-shrink: 0;
       transition: background 0.15s;
       padding: 0;
     }
 
     .hamburger svg {
-      width: 20px;
-      height: 20px;
+      width: calc(20px * var(--ui-scale, 1));
+      height: calc(20px * var(--ui-scale, 1));
       display: block;
       color: var(--accent);
     }

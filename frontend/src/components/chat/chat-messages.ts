@@ -48,34 +48,34 @@ export class ChatMessages extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: var(--space-1);
+      gap: calc(var(--space-1) * var(--ui-scale, 1));
       text-align: center;
-      padding: var(--space-6) var(--space-5);
+      padding: calc(var(--space-6) * var(--ui-scale, 1)) calc(var(--space-5) * var(--ui-scale, 1));
       color: var(--ink-muted, #8a7a68);
     }
 
     /* Mirrors .scene-icon-wrap from the HTML */
     .empty-icon {
-      width: 50px;
-      height: 50px;
+      width: calc(50px * var(--ui-scale, 1));
+      height: calc(50px * var(--ui-scale, 1));
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: var(--text-3xl);
-      margin-bottom: var(--space-2);
+      font-size: calc(var(--text-3xl) * var(--ui-scale, 1));
+      margin-bottom: calc(var(--space-2) * var(--ui-scale, 1));
       fill: var(--accent);
     }
 
     .empty-title {
       font-family: var(--regular-font);
-      font-size: var(--text-lg);
+      font-size: calc(var(--text-lg) * var(--ui-scale, 1));
       font-weight: 600;
       color: var(--text, #2a2118);
     }
 
     .empty-desc {
       font-family: var(--regular-font);
-      font-size: var(--text-sm);
+      font-size: calc(var(--text-sm) * var(--ui-scale, 1));
       color: var(--accent);
       line-height: var(--line-height-body);
       max-width: 260px;
