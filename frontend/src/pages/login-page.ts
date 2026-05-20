@@ -2,7 +2,6 @@ import { LitElement, html} from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import '../components/auth/login-form';
-import '../components/ui/theme-toggle';
 import '../components/ui/auth-layout';
 
 import { css } from 'lit';
@@ -32,7 +31,6 @@ export class LoginPage extends LitElement {
   render() {
     return html`
       <auth-layout>
-        <theme-toggle slot="top"></theme-toggle>
         <login-input></login-input>
       </auth-layout>
     `;

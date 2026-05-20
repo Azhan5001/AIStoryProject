@@ -23,7 +23,8 @@ export class ChatPage extends LitElement {
     story-sidebar {
       flex-shrink: 0;
       z-index: 10;
-      transition: transform 0.25s ease;
+      transition: width 0.25s ease, transform 0.25s ease;
+      will-change: width, transform;
     }
 
     /* Mobile: sidebar hidden off-screen, shown as overlay when open */

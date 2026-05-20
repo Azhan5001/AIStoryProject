@@ -1,7 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, } from 'lit/decorators.js';
 import '../components/auth/reset-password';
-import '../components/ui/theme-toggle';
 
 @customElement('reset-password-page')
 export class ResetPasswordPage extends LitElement {
@@ -44,7 +43,6 @@ export class ResetPasswordPage extends LitElement {
   render() {
     return html`
       <div class="login-background">
-        <theme-toggle></theme-toggle>
         <div class="container">
           <reset-password></reset-password>
         </div>

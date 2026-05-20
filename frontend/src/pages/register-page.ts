@@ -2,7 +2,6 @@ import { LitElement, html, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
 import '../components/auth/register-form';
-import '../components/ui/theme-toggle';
 import '../components/ui/auth-layout';
 
 @customElement('register-page')
@@ -29,7 +28,6 @@ export class RegisterPage extends LitElement {
   render() {
     return html`
       <auth-layout>
-        <theme-toggle slot="top"></theme-toggle>
         <register-form></register-form>
       </auth-layout>
     `;

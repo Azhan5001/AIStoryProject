@@ -31,7 +31,7 @@ export class StorySidebar extends LitElement {
       border-right: 1px solid var(--input-border);
       color: var(--text, #2a2118);
       overflow: hidden;
-      transition: width 0.25s ease;
+      transition: width 0.25s ease, min-width 0.25s ease;
       font-family: var(--regular-font);
       box-sizing: border-box;
     }
@@ -54,6 +54,7 @@ export class StorySidebar extends LitElement {
 
     :host(.collapsed) {
       width: 56px;
+      min-width: 56px;
     }
 
     /* ─── Logo row ─── */

@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import '../components/ui/theme-toggle';
 import'../components/story/story-onboarding';
 
 import { css } from 'lit';
@@ -54,7 +53,6 @@ export class Onboarding extends LitElement {
     return html`
       <div class="login-background"></div>
       <div class="container">
-        <theme-toggle></theme-toggle>
         <story-onboarding></story-onboarding>
       </div>
     `;
