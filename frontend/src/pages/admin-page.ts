@@ -5,20 +5,11 @@ import '../styles/theme.css';
 
 type AdminView = 'dashboard' | 'users' | 'stories' | 'requests';
 
-interface AdminUser {
+interface SupportRequest {
   id: number;
-  name: string;
-  email: string;
-  status: 'Active' | 'Inactive';
-  stories: number;
-}
-
-interface AdminStory {
-  id: number;
-  title: string;
-  author: string;
-  ageGroup: string;
-  status: 'Published' | 'Draft';
+  user: string;
+  issue: string;
+  status: 'Open' | 'Resolved';
 }
 
 interface SupportRequest {
