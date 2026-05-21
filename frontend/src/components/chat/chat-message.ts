@@ -33,7 +33,7 @@ export class ChatMessage extends LitElement {
 
     /* ── User bubble: warm sand, no dark colors ── */
     .user .bubble {
-      background: var(--parchment, #ede6d6);
+      background: var(--secondary, #ede6d6);
       color: var(--text, #2a2118);
       border: 1px solid var(--sand, #d9cdb8);
       border-radius: 14px 14px 4px 14px;

@@ -366,7 +366,7 @@ export class StorySidebar extends LitElement {
     .story-item:hover { background: var(--bg, #FFFCF0); }
 
     .story-item.active {
-      background: var(--parchment, #ede6d6);
+      background: var(--secondary, #ede6d6);
     }
 
     /* Larger tap targets on mobile */
