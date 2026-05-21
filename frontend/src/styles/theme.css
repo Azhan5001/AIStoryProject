@@ -5,13 +5,13 @@
   --bg-tertiary: #dcdace;
   --surface: #ffffff;
   --text: #000;
-
   --img-object: url('/images/Objects-1.svg');
   --img-castle: url('/images/OBJECTS.svg');
   --onboarding-img: url('/onboarding-bg/light_bg.png');
 
   --primary: #2C2C2C;
   --secondary: #ede6d6;
+  --sidebar-secondary: #ede6d6;
   --accent: #9b8661;
   --button-bg: #2C2C2C;
 
@@ -85,6 +85,7 @@
 
   --primary: #ffffff;
   --secondary: #313131;
+  --sidebar-secondary: #313131;
   /* --accent: #b19319; */
   --border: #3d3730;
   --error: #e74c3c;

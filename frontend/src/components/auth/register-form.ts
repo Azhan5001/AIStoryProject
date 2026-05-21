@@ -32,7 +32,6 @@ export class RegisterForm extends LitElement {
 
     :host {
       width: 30rem;
-      margin-right: var(--space-7);
       color: var(--text);
       font-family: var(--regular-font);
     }
