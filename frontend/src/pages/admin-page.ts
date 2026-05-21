@@ -954,13 +954,13 @@ private renderStories() {
             </nav>
           </div>
 
-          <div class="profile">
-            <div class="avatar">👤</div>
-            <div>
-              <strong>John</strong>
-              <p>Story Master ✨</p>
+            <div class="profile">
+              <div class="avatar">👤</div>
+              <div>
+                <strong>${localStorage.getItem('username') || 'User'}</strong>
+                <p>${localStorage.getItem('access_level') === 'admin' ? 'Admin ✨' : 'User'}</p>
+              </div>
             </div>
-          </div>
         </aside>
 
         <main class="main">
