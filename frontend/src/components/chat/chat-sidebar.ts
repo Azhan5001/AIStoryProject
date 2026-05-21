@@ -229,7 +229,7 @@ export class StorySidebar extends LitElement {
     }
 
     .create-story-btn:hover {
-      background: var(--secondary);
+      background: var(--sidebar-secondary);
     }
 
     .create-story-btn svg {
@@ -363,10 +363,10 @@ export class StorySidebar extends LitElement {
       min-width: 0;
     }
 
-    .story-item:hover { background: var(--bg, #FFFCF0); }
+    .story-item:hover { background: var(--sidebar-secondary); }
 
     .story-item.active {
-      background: var(--parchment, #ede6d6);
+      background: background: var(--sidebar-secondary);
     }
 
     /* Larger tap targets on mobile */
