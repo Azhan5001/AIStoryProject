@@ -714,20 +714,20 @@ private async deleteUser(userId: number) {
         <div class="panel">
           <h3>📖 Recent Stories</h3>
 
-          ${this.stories.length === 0
-            ? html`<p class="empty-message">No stories found.</p>`
-            : this.stories.slice(0, 3).map(
-                (story) => html`
-                  <div class="story">
-                    <span class="emoji">📘</span>
-                    <div class="story-info">
-                      <strong>${story.title}</strong>
-                      <p>by ${story.author}</p>
-                    </div>
-                    <span class="badge">${story.ageGroup}</span>
-                  </div>
-                `
-              )}
+          ${this.stories.slice(0, 3).map(
+          (story) => html`
+            <div class="story">
+              <span class="emoji">📘</span>
+              <div class="story-info">
+                <strong>Story #${story.story_id}</strong>
+                <p>Created by User ${story.user_id}</p>
+              </div>
+              <span class="badge">
+                ${story.created_at ? story.created_at.slice(0, 10) : '-'}
+              </span>
+            </div>
+          `
+        )}
         </div>
       </section>
 
