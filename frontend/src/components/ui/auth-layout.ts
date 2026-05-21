@@ -46,12 +46,12 @@ export class AuthLayout extends LitElement {
     .content {
       flex: 1;
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
       align-items: center;
       width: 100%;
       box-sizing: border-box;
       padding: var(--space-5);
-      padding-right: var(--space-7);
+      padding-left: 50%;
     }
 
     ::slotted(*) {
@@ -70,6 +70,7 @@ export class AuthLayout extends LitElement {
       .content {
         justify-content: center;
         padding: var(--space-4);
+        padding-left: var(--space-4);
       }
 
       .top-slot {

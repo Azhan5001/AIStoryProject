@@ -18,7 +18,6 @@ export class ResetPassword extends LitElement {
     }
 
     :host {
-      margin-right: var(--space-7);
       color: var(--text);
       display: block;
       width: 100%;
@@ -33,8 +32,7 @@ export class ResetPassword extends LitElement {
     }
 
     .card{
-      margin-left: auto;
-      margin-right: 10%;
+      margin: 0 auto;
       width:100%;
       max-width: 450px;
     }

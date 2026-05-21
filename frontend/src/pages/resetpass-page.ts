@@ -16,13 +16,18 @@ export class ResetPasswordPage extends LitElement {
     display: flex;
     width: 100%;
     height: 100%;
-    margin:auto;
+    margin: auto;
     overflow: hidden;
+    justify-content: center;
+    align-items: center;
+    padding-left: 50%;
+    box-sizing: border-box;
   }
 
   @media (max-width: 768px){
     .container {
       justify-content: center;
+      padding-left: 0;
     }
   }
 
