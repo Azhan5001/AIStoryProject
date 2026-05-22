@@ -22,7 +22,7 @@ export class StepCard extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      height: 100%;
+      height: clamp(260px, 25vh, 400px);
     }
 
     .card:hover {
@@ -52,8 +52,8 @@ export class StepCard extends LitElement {
     }
 
     .img-box img{
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
 

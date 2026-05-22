@@ -17,7 +17,7 @@ export class SettingsGeneralPanel extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px var(--space-4);
+      padding: var(--space-3) var(--space-2);
       border-bottom: 1px solid var(--border);
       background: transparent;
       transition: background 0.13s;
@@ -229,11 +229,6 @@ export class SettingsGeneralPanel extends LitElement {
           </select>
           ${this._selectArrow()}
         </div>
-      </div>
-
-      <!-- Other -->
-      <div class="setting-row other-settings">
-        <span class="setting-label">Other Settings…</span>
       </div>
     `;
   }

@@ -116,7 +116,7 @@ export class AccountPanel extends LitElement {
       align-items: center;
       justify-content: space-between;
       gap: var(--space-3);
-      padding: var(--space-3) var(--space-4) var(--space-2);
+      padding: var(--space-3) var(--space-2) var(--space-2);
     }
 
     .section-title {
@@ -134,7 +134,7 @@ export class AccountPanel extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px var(--space-4);
+      padding: var(--space-3) var(--space-2);
       border-bottom: 1px solid var(--border);
       background: transparent;
       transition: background 0.13s;
