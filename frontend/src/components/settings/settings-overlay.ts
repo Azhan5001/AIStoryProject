@@ -27,9 +27,9 @@ export class SettingsOverlay extends LitElement {
 
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
-      this.applyTheme(savedTheme as 'light' | 'dark');
+      this.theme = savedTheme as 'light' | 'dark';
     } else {
-      this.applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      this.theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
 
     const savedMessageFontSize = localStorage.getItem('messageFontSize');
