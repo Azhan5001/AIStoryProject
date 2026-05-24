@@ -62,30 +62,30 @@ export class StoryOnboarding extends LitElement {
       text-align: center;
     }
 
-    .steps-mobile,
+    .steps-mobile {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+      gap: var(--space-3);
+    }
+
     .steps-desktop {
       flex: 1;
       align-items: center;
     }
 
+    .steps-mobile step-card {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+    }
+
     /* ================= MOBILE ================= */
-    @media (max-width: 480px){
-      .steps-mobile {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        width: 100%;
-        gap: var(--space-2);
-      }
-
-      step-card {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        justify-content: center;
-      }
-
+    @media (max-width: 480px) {
       h1 {
         font-size: var(--text-2xl);
       }
@@ -93,7 +93,13 @@ export class StoryOnboarding extends LitElement {
       .subtitle {
         font-size: var(--text-md);
       }
+    }
 
+    /* ================= TABLET ================= */
+    @media (min-width: 481px) and (max-width: 767px) {
+      h1 {
+        font-size: var(--text-3xl);
+      }
     }
     
 
@@ -151,8 +157,8 @@ export class StoryOnboarding extends LitElement {
 
     /* arrows */
     .arrow {
-      width: 40px;
-      height: 40px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       border: none;
       font-size: var(--text-2xl);
@@ -162,6 +168,16 @@ export class StoryOnboarding extends LitElement {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       color: var(--accent);
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .arrow svg {
+      width: 32px;
+      height: 32px;
     }
 
     @media (min-width: 768px) {
@@ -185,7 +201,9 @@ export class StoryOnboarding extends LitElement {
 
         <!-- MOBILE -->
         <div class="steps-mobile">
-          <button class="arrow" @click=${this.prev}>←</button>
+          <button class="arrow" @click=${this.prev}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="var(--accent)"><path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z"/></svg>
+          </button>
 
           <step-card
             .number=${step.number}
@@ -194,7 +212,9 @@ export class StoryOnboarding extends LitElement {
             .desc=${step.desc}>
           </step-card>
 
-          <button class="arrow" @click=${this.next}>→</button>
+          <button class="arrow" @click=${this.next}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="var(--accent)"><path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg>
+          </button>
         </div>
 
         <!-- DESKTOP -->

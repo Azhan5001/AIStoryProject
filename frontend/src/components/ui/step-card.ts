@@ -32,6 +32,9 @@ export class StepCard extends LitElement {
     .number {
       width: 40px;
       height: 40px;
+      min-width: 40px;
+      min-height: 40px;
+      flex-shrink: 0;
       font-weight: bold;
       border-radius: 50%;
       background: var(--primary);
@@ -41,6 +44,8 @@ export class StepCard extends LitElement {
       justify-content: center;
       align-items: center;
       align-self: flex-start;
+      box-sizing: border-box;
+      aspect-ratio: 1 / 1;
     }
 
     .img-box{

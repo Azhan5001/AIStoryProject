@@ -70,7 +70,7 @@ export class StoryExportBtn extends LitElement {
       transition: border-color 0.15s, color 0.15s, background 0.15s;
     }
     .export-btn:hover {
-      background: var(--bg-tertiary);
+      background: var(--sidebar-secondary);
       color: var(--primary);
     }
     .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -138,9 +138,11 @@ export class StoryExportBtn extends LitElement {
     .close-btn {
       background: none; border: none; cursor: pointer;
       color: var(--accent, #9b8661); padding: 4px;
-      border-radius: 8px; display: flex; transition: background 0.15s;
+      border-radius: 50%; 
+      display: flex; 
+      transition: background 0.15s;
     }
-    .close-btn:hover { background: var(--parchment, #ede6d6); }
+    .close-btn:hover { background: var(--sidebar-secondary); }
 
     /* ── Scrollable area around the page card ── */
     .page-wrap {
@@ -254,7 +256,7 @@ export class StoryExportBtn extends LitElement {
       font-family: var(--regular-font); font-size: var(--text-sm);
       color: var(--primary); cursor: pointer; transition: background 0.15s;
     }
-    .cancel-btn:hover { background: var(--parchment, #ede6d6); }
+    .cancel-btn:hover { background: var(--sidebar-secondary); }
 
     /* ── Loading / empty states ── */
     .state-msg {

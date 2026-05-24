@@ -435,7 +435,7 @@ export class StorySidebar extends LitElement {
     }
 
     .sidebar-footer:hover {
-      background: var(--bg, #FFFCF0);
+      background: var(--sidebar-secondary);
     }
 
     :host(.collapsed) .sidebar-footer {
@@ -551,7 +551,7 @@ export class StorySidebar extends LitElement {
     }
 
     .context-menu-item:hover {
-      background: var(--bg, #FFFCF0);
+      background: var(--sidebar-secondary);
       color: var(--text, #2a2118);
     }
 

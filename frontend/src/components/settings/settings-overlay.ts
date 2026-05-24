@@ -183,7 +183,7 @@ export class SettingsOverlay extends LitElement {
     }
 
     .close-btn:hover {
-      background: var(--secondary);
+      background: var(--sidebar-secondary);
     }
 
     /* ── Body: sidebar + panel ── */
