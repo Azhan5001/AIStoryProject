@@ -15,6 +15,9 @@ export class ChatMessages extends LitElement {
   @property({ type: Array })
   messages: Message[] = [];
 
+  @property({ type: Boolean })
+  loading = false;
+
   static styles = css`
     :host {
       display: flex;
@@ -80,10 +83,36 @@ export class ChatMessages extends LitElement {
       line-height: var(--line-height-body);
       max-width: 260px;
     }
+
+    /* ── Loading spinner ── */
+    .loading-bubble {
+      display: flex;
+      align-items: center;
+      padding: calc(var(--space-2) * var(--ui-scale, 1)) 0;
+      animation: bubble-in 0.2s ease-out both;
+    }
+
+    .spinner {
+      width: calc(22px * var(--ui-scale, 1));
+      height: calc(22px * var(--ui-scale, 1));
+      border: calc(2.5px * var(--ui-scale, 1)) solid var(--sand, #d9cdb8);
+      border-top-color: var(--accent, #9b8661);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes bubble-in {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   `;
 
   updated(changedProps: Map<string, unknown>) {
-    if (changedProps.has('messages')) {
+    if (changedProps.has('messages') || changedProps.has('loading')) {
       const div = this.renderRoot.querySelector('.container') as HTMLDivElement;
       if (div) {
         requestAnimationFrame(() => { div.scrollTop = div.scrollHeight; });
@@ -95,11 +124,15 @@ export class ChatMessages extends LitElement {
     if (!this.messages.length) {
       return html`
         <div class="container">
-          <div class="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="empty-icon"><path d="M480-160q-48-38-104-59t-116-21q-42 0-82.5 11T100-198q-21 11-40.5-1T40-234v-482q0-11 5.5-21T62-752q46-24 96-36t102-12q58 0 113.5 15T480-740v484q51-32 107-48t113-16q36 0 70.5 6t69.5 18v-480q15 5 29.5 10.5T898-752q11 5 16.5 15t5.5 21v482q0 23-19.5 35t-40.5 1q-37-20-77.5-31T700-240q-60 0-116 21t-104 59Zm80-200v-380l200-200v400L560-360Zm-160 65v-396q-33-14-68.5-21.5T260-720q-37 0-72 7t-68 21v397q35-13 69.5-19t70.5-6q36 0 70.5 6t69.5 19Zm0 0v-396 396Z"/></svg>
-            <div class="empty-title">Start a Story</div>
-            <p class="empty-desc">Describe a scene to create a story.</p>
-          </div>
+          ${this.loading
+            ? html`<div class="loading-bubble"><div class="spinner"></div></div>`
+            : html`
+              <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="empty-icon"><path d="M480-160q-48-38-104-59t-116-21q-42 0-82.5 11T100-198q-21 11-40.5-1T40-234v-482q0-11 5.5-21T62-752q46-24 96-36t102-12q58 0 113.5 15T480-740v484q51-32 107-48t113-16q36 0 70.5 6t69.5 18v-480q15 5 29.5 10.5T898-752q11 5 16.5 15t5.5 21v482q0 23-19.5 35t-40.5 1q-37-20-77.5-31T700-240q-60 0-116 21t-104 59Zm80-200v-380l200-200v400L560-360Zm-160 65v-396q-33-14-68.5-21.5T260-720q-37 0-72 7t-68 21v397q35-13 69.5-19t70.5-6q36 0 70.5 6t69.5 19Zm0 0v-396 396Z"/></svg>
+                <div class="empty-title">Start a Story</div>
+                <p class="empty-desc">Describe a scene to create a story.</p>
+              </div>
+            `}
         </div>
       `;
     }
@@ -113,6 +146,7 @@ export class ChatMessages extends LitElement {
             .shouldAnimate=${msg.shouldAnimate ?? false}
           ></chat-message>
         `)}
+        ${this.loading ? html`<div class="loading-bubble"><div class="spinner"></div></div>` : ''}
       </div>
     `;
   }

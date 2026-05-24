@@ -415,7 +415,7 @@ export class ChatBox extends LitElement {
       <div class="box">
 
         <div class="messages-area">
-          <chat-messages .messages=${this.messages}></chat-messages>
+          <chat-messages .messages=${this.messages} .loading=${this.loading}></chat-messages>
         </div>
 
         <div class="input-bar">
