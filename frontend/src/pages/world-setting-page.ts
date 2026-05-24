@@ -14,22 +14,21 @@ const images = import.meta.glob('../assets/**/*.jpg', {
 }) as Record<string, string>;
 
 const worldPresets = [
-  'Candy Kingdom',
-  'Magical Forest',
-  'Space Adventure',
-  'Underwater World',
-  'Animal Kingdom',
-  'Dinosaur Island',
-  'Pirate Seas',
-  'Superhero Academy',
-  'Custom'
+  { label: 'Candy Kingdom',      description: 'A realm of mountains of meringue, rivers of caramel, and air that tastes of spun sugar — but rival sugar barons wage silent wars over the sacred Cocoa Springs, and the gumdrop forests swallow wanderers whole. Magic here is sticky and literal: conjure a butterscotch bridge, wield a jawbreaker shield.' },
+  { label: 'Magical Forest',     description: 'Ancient and conscious — roots that whisper, bioluminescent mushrooms, clearings where time moves at half speed. Foxes wear scholars\' masks, deer carry constellations, mossy stones are sleeping giants. Kind hearts find the path widening; greed finds it narrowing to nothing.' },
+  { label: 'Space Adventure',    description: 'A vast dark punctuated by newborn stars and dead ones. Space stations orbit gas giants, rogue pilots smuggle starlight, and the frontier beyond the Outer Drift is ungoverned and magnificent. The next hyperspace jump might find a civilisation a million years older than humanity — or the best bowl of noodles in the galaxy.' },
+  { label: 'Underwater World',   description: 'Coral cities lit by phosphorescence, sentient fish who serve as living libraries, sea-witches trading in memories. Sound travels in colours down here, emotions are contagious through the water, and the great leviathans of the abyss aren\'t monsters — they\'re ancient mapmakers, their flanks scarred with lost civilisations.' },
+  { label: 'Animal Kingdom',     description: 'Lions serve as magistrates, meerkats run the postal service, a parliament of owls debates in a hollow oak with its own postal code. The biggest political force isn\'t the lion pride — it\'s the unified bloc of migratory birds who have seen everything and forgotten nothing.' },
+  { label: 'Dinosaur Island',    description: 'An island that ignored the extinction memo. Hadrosaur herds shake the marshes at dawn, raptors run pack strategies sophisticated enough to qualify as military doctrine, and everything eats everything in perfect equilibrium. Human visitors are tolerated as a curiosity — occasionally as a snack.' },
+  { label: 'Pirate Seas',        description: 'Ninety percent ocean, every island a treasure or a trap. The Pirate Compact of the Amber Straits is recognised by seven governments, and the line between privateer and corsair is drawn in sand at low tide. The Sunken Chart — said to mark every hidden harbour in the world — is the most wanted object alive.' },
+  { label: 'Superhero Academy',  description: 'Accepts abilities from awe-inspiring to aggressively niche — there\'s a whole dorm wing for people whose only power involves pastry. Students study ethics alongside combat, flight theory alongside crisis communication. The faculty are retired heroes with complicated histories. The annual graduation exercise is a real emergency, no simulation.' },
+  { label: 'Custom',             description: 'The world is yours — its rules, history, texture, and tone entirely in your hands. A dying empire held together by strong tea. A city built inside a sleeping god. Something that has never existed in any story ever told. Describe it with as much or as little detail as you wish.' },
 ];
 
-function createWorldItems(list: string[]) {
-  return list.map(name => {
-    const key = name.toLowerCase().replace(/\s+/g, '-');
-    const path = `../assets/worlds/${key}.jpg`;
-    return { label: name, image: images[path] || '' };
+function createWorldItems(list: typeof worldPresets) {
+  return list.map(({ label, description }) => {
+    const key = label.toLowerCase().replace(/\s+/g, '-');
+    return { label, image: images[`../assets/worlds/${key}.jpg`] || '', description };
   });
 }
 
@@ -86,6 +85,7 @@ export class WorldSettingPage extends LitElement {
 
     main {
       display: block;
+      position: relative;
       border-radius: calc(20px * var(--ui-scale, 1));
       width: 50%;
       color: var(--text);
@@ -93,6 +93,28 @@ export class WorldSettingPage extends LitElement {
       font-size: var(--text-md);
       box-sizing: border-box;
       padding: var(--space-6) var(--space-5) var(--space-7);
+    }
+
+    .back-btn {
+      position: fixed;
+      top: var(--space-4);
+      left: var(--space-4);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--accent);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(201, 168, 76, 0.08);
+      border-color: var(--accent);
     }
 
     .container {
@@ -142,7 +164,7 @@ export class WorldSettingPage extends LitElement {
       box-sizing: border-box;
       background: var(--bg);
       border-radius: calc(14px * var(--ui-scale, 1));
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
       padding: var(--space-6);
     }
 
@@ -173,7 +195,7 @@ export class WorldSettingPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
       transition: box-shadow 0.2s, transform 0.15s, opacity 0.2s;
       min-height: calc(110px * var(--ui-scale, 1));
       resize: none;
@@ -189,7 +211,7 @@ export class WorldSettingPage extends LitElement {
       opacity: 0.38;
       cursor: not-allowed;
       transform: none;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
     }
 
     .error {
@@ -240,6 +262,10 @@ export class WorldSettingPage extends LitElement {
         padding: var(--space-3);
         align-items: flex-start;
       }
+
+      .back-btn {
+        display: none;
+      }
     }
   `;
 
@@ -256,6 +282,10 @@ export class WorldSettingPage extends LitElement {
   }
 
   private get isCustom() { return this.world === 'Custom'; }
+
+  private handleBack(): void {
+    Router.go('/avatar');
+  }
 
   private async handleConfirm(): Promise<void> {
     if (!this.world) {
@@ -303,6 +333,9 @@ export class WorldSettingPage extends LitElement {
   render(): TemplateResult {
     return html`
       <main>
+        <button class="back-btn" @click=${this.handleBack}>
+        <svg xmlns="http://www.w3.org/2000/svg" height="16px" fill="var(--accent)" viewBox="0 -960 960 960" width="16px"><path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+        Back</button>
         <div class="container">
 
           <header class="page-header">

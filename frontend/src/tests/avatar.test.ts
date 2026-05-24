@@ -84,10 +84,10 @@ describe('AvatarPage', () => {
   });
 
   // ---------------------------------------------------
-  // Default description fallback
+  // Empty description is saved as-is
   // ---------------------------------------------------
 
-  it('creates default description when description is empty', async () => {
+  it('saves empty description when description is not provided', async () => {
 
     const element = await fixture<AvatarPage>(
       '<avatar-page></avatar-page>'
@@ -109,9 +109,7 @@ describe('AvatarPage', () => {
       localStorage.getItem('avatar_draft') || '{}'
     );
 
-    expect(saved.description).toBe(
-      'A Male Robot Brave ready for adventure.'
-    );
+    expect(saved.description).toBe('');
   });
 
 });

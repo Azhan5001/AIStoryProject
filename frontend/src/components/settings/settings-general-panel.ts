@@ -214,18 +214,15 @@ export class SettingsGeneralPanel extends LitElement {
 
       <!-- Interface Scale -->
       <div class="setting-row">
-        <span class="setting-label">Interface Scale</span>
+        <span class="setting-label">Interface Size</span>
         <div class="select-wrapper">
           <select .value=${this.uiScale}
                   @change=${(e: Event) => this._emit('ui-scale-change', { scale: (e.target as HTMLSelectElement).value })}>
-            <option value="0.75">75%</option>
-            <option value="0.85">85%</option>
-            <option value="0.9">90%</option>
-            <option value="1">100%</option>
-            <option value="1.1">110%</option>
-            <option value="1.2">120%</option>
-            <option value="1.35">135%</option>
-            <option value="1.5">150%</option>
+            <option value="0.75">Extra Small</option>
+            <option value="0.85">Small</option>
+            <option value="1">Default</option>
+            <option value="1.2">Big</option>
+            <option value="1.5">Extra Big</option>
           </select>
           ${this._selectArrow()}
         </div>

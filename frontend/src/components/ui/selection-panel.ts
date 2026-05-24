@@ -6,6 +6,7 @@ type Item = {
   id?: string;
   label: string;
   image: string;
+  description?: string;
 };
 
 @customElement('selection-panel')
@@ -15,8 +16,11 @@ export class SelectionPanel extends LitElement {
   @property({ type: Array }) items: Item[] = [];
   @property() selected: string | null = null;
 
-  // carousel index for mobile
   @state() private carouselIndex = 0;
+  @state() private _dir: 'next' | 'prev' | null = null;
+
+  private _animTimer: ReturnType<typeof setTimeout> | null = null;
+  private _touchStartX = 0;
 
   static styles = css`
     :host {
@@ -84,6 +88,23 @@ export class SelectionPanel extends LitElement {
       opacity: 1;
       filter: none;
       z-index: 2;
+    }
+
+    /* Slide-in animations for the incoming center card */
+    .carousel-slot.center.animate-next {
+      animation: slide-in-right 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+    .carousel-slot.center.animate-prev {
+      animation: slide-in-left 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+
+    @keyframes slide-in-right {
+      from { transform: scale(0.75) translateX(70px); opacity: 0; }
+      to   { transform: scale(1)    translateX(0);    opacity: 1; }
+    }
+    @keyframes slide-in-left {
+      from { transform: scale(0.75) translateX(-70px); opacity: 0; }
+      to   { transform: scale(1)    translateX(0);     opacity: 1; }
     }
 
     /* Side ghost cards */
@@ -161,6 +182,10 @@ export class SelectionPanel extends LitElement {
       border-color: var(--gold, #c9a84c);
     }
 
+    .arrow-btn:active {
+      transform: scale(0.88);
+    }
+
     /* Dot indicators */
     .carousel-dots {
       display: flex;
@@ -180,6 +205,17 @@ export class SelectionPanel extends LitElement {
     .dot.active {
       background: var(--gold, #c9a84c);
       opacity: 1;
+      animation: dot-pop 0.25s ease;
+    }
+
+    @keyframes dot-pop {
+      0%   { transform: scale(1);   }
+      50%  { transform: scale(1.7); }
+      100% { transform: scale(1);   }
+    }
+
+    .carousel-desc {
+      display: none;
     }
 
     /* ── Responsive breakpoints ── */
@@ -194,6 +230,18 @@ export class SelectionPanel extends LitElement {
       }
       .carousel {
         display: flex;
+      }
+      .carousel-desc {
+        display: block;
+        margin-top: var(--space-3, 0.75rem);
+        font-family: var(--regular-font);
+        font-size: calc(var(--text-sm) * var(--ui-scale, 1));
+        line-height: 1.6;
+        color: var(--primary);
+        text-align: center;
+        min-height: calc(3rem * var(--ui-scale, 1));
+        padding: 0 var(--space-2, 0.5rem);
+        transition: opacity 0.2s ease;
       }
     }
   `;
@@ -214,17 +262,27 @@ export class SelectionPanel extends LitElement {
     }));
   }
 
-  private prev() {
-    this.carouselIndex = (this.carouselIndex - 1 + this.items.length) % this.items.length;
-    // auto-select the center item
+  private _navigate(dir: 'next' | 'prev') {
+    if (this._animTimer) clearTimeout(this._animTimer);
+    this._dir = dir;
+    this.carouselIndex = dir === 'prev'
+      ? (this.carouselIndex - 1 + this.items.length) % this.items.length
+      : (this.carouselIndex + 1) % this.items.length;
     const item = this.items[this.carouselIndex];
     if (item) this.carouselSelect(item.id ?? item.label);
+    this._animTimer = setTimeout(() => { this._dir = null; }, 350);
   }
 
-  private next() {
-    this.carouselIndex = (this.carouselIndex + 1) % this.items.length;
-    const item = this.items[this.carouselIndex];
-    if (item) this.carouselSelect(item.id ?? item.label);
+  private prev() { this._navigate('prev'); }
+  private next() { this._navigate('next'); }
+
+  private _onTouchStart(e: TouchEvent) {
+    this._touchStartX = e.touches[0].clientX;
+  }
+
+  private _onTouchEnd(e: TouchEvent) {
+    const dx = e.changedTouches[0].clientX - this._touchStartX;
+    if (Math.abs(dx) > 40) dx < 0 ? this.next() : this.prev();
   }
 
   private getSlotItem(offset: -1 | 0 | 1): Item | undefined {
@@ -234,9 +292,13 @@ export class SelectionPanel extends LitElement {
   }
 
   render() {
-    const leftItem  = this.getSlotItem(-1);
+    const leftItem   = this.getSlotItem(-1);
     const centerItem = this.getSlotItem(0);
-    const rightItem = this.getSlotItem(1);
+    const rightItem  = this.getSlotItem(1);
+
+    const centerAnim = this._dir === 'next' ? 'animate-next'
+                     : this._dir === 'prev' ? 'animate-prev'
+                     : '';
 
     return html`
       <div class="panel">
@@ -259,7 +321,9 @@ export class SelectionPanel extends LitElement {
 
         <!-- ── Carousel (mobile) ── -->
         <div class="carousel">
-          <div class="carousel-track">
+          <div class="carousel-track"
+            @touchstart=${this._onTouchStart}
+            @touchend=${this._onTouchEnd}>
 
             ${leftItem ? html`
               <div class="carousel-slot side-left"
@@ -271,7 +335,7 @@ export class SelectionPanel extends LitElement {
             ` : ''}
 
             ${centerItem ? html`
-              <div class="carousel-slot center"
+              <div class="carousel-slot center ${centerAnim}"
                 @click=${() => this.carouselSelect(centerItem.id ?? centerItem.label)}>
                 <div class="carousel-card ${this.selected === (centerItem.id ?? centerItem.label) ? 'selected' : ''}">
                   <img src="${centerItem.image}" alt="${centerItem.label}" />
@@ -301,6 +365,10 @@ export class SelectionPanel extends LitElement {
             </div>
             <button class="arrow-btn" @click=${this.next} aria-label="Next">&#8594;</button>
           </div>
+
+          ${centerItem?.description
+            ? html`<p class="carousel-desc">${centerItem.description}</p>`
+            : ''}
         </div>
 
       </div>

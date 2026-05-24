@@ -22,9 +22,6 @@ export class AccountPanel extends LitElement {
   @state() private draftUsername: string = '';
   @state() private usernameError: string = '';
 
-  @state() private confirmDelete: boolean = false;
-  @state() private deleteInput: string = '';
-
   @state() private saveSuccess: boolean = false;
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -82,24 +79,6 @@ export class AccountPanel extends LitElement {
     this.dispatchEvent(new CustomEvent('account-updated', {
       bubbles: true, composed: true,
       detail: { username: trimmed },
-    }));
-  }
-
-  private _openDeleteConfirm() {
-    this.deleteInput = '';
-    this.confirmDelete = true;
-  }
-
-  private _cancelDelete() {
-    this.confirmDelete = false;
-    this.deleteInput = '';
-  }
-
-  private _deleteAccount() {
-    if (this.deleteInput !== this.username) return;
-    localStorage.clear();
-    this.dispatchEvent(new CustomEvent('account-deleted', {
-      bubbles: true, composed: true,
     }));
   }
 
@@ -331,130 +310,6 @@ export class AccountPanel extends LitElement {
       to   { opacity: 1; transform: scale(1); }
     }
 
-    /* ── Divider ── */
-
-    /* ── Danger zone ── */
-    .danger-title {
-      font-family: var(--title-font);
-      font-size: var(--text-sm);
-      font-weight: 700;
-      color: var(--error);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      padding: var(--space-3) var(--space-4) var(--space-2);
-    }
-
-    .danger-row {
-      display: flex;
-      justify-content: flex-end;
-      padding: 12px var(--space-4);
-    }
-
-    .danger-desc {
-      display: none;
-    }
-
-    .btn-delete {
-      flex-shrink: 0;
-      padding: 5px 14px;
-      border-radius: 8px;
-      border: 1.5px solid var(--error);
-      background: transparent;
-      color: var(--error);
-      font-family: var(--regular-font);
-      font-size: var(--text-xs);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.13s, color 0.13s;
-      white-space: nowrap;
-    }
-
-    .btn-delete:hover {
-      background: var(--error);
-      color: #fff;
-    }
-
-    /* ── Delete confirm dialog ── */
-    .confirm-box {
-      margin: 0 var(--space-4) var(--space-3);
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-sm);
-      border: 1.5px solid var(--error);
-      background: color-mix(in srgb, var(--error) 6%, transparent);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-2);
-      animation: fadeIn 0.18s ease;
-    }
-
-    .confirm-label {
-      font-family: var(--regular-font);
-      font-size: var(--text-xs);
-      color: var(--primary);
-      line-height: var(--line-height-body);
-    }
-
-    .confirm-label strong {
-      font-weight: 700;
-      color: var(--error);
-    }
-
-    .confirm-input {
-      font-family: var(--regular-font);
-      font-size: var(--text-sm);
-      padding: 6px 10px;
-      border-radius: 8px;
-      border: 1.5px solid var(--input-border);
-      background: var(--surface);
-      color: var(--primary);
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    .confirm-input:focus {
-      border-color: var(--error);
-    }
-
-    .confirm-btns {
-      display: flex;
-      gap: var(--space-2);
-    }
-
-    .btn-confirm-delete {
-      flex: 1;
-      padding: 6px 0;
-      border-radius: 8px;
-      border: none;
-      background: var(--error);
-      color: #fff;
-      font-family: var(--regular-font);
-      font-size: var(--text-xs);
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-
-    .btn-confirm-delete:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .btn-confirm-delete:not(:disabled):hover { opacity: 0.85; }
-
-    .btn-confirm-cancel {
-      padding: 6px 14px;
-      border-radius: 8px;
-      border: 1.5px solid var(--border);
-      background: transparent;
-      color: var(--subtittle);
-      font-family: var(--regular-font);
-      font-size: var(--text-xs);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.13s;
-    }
-
-    .btn-confirm-cancel:hover { background: var(--bg-tertiary); }
   `;
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -519,38 +374,6 @@ export class AccountPanel extends LitElement {
         </div>
       </div>
 
-      <!-- ── Danger zone ── -->
-
-      ${this.confirmDelete ? html`
-        <div class="confirm-box">
-          <p class="confirm-label">
-            This action <strong>cannot be undone</strong>. Type your username
-            <strong>${this.username}</strong> to confirm.
-          </p>
-          <input
-            class="confirm-input"
-            .value=${this.deleteInput}
-            placeholder="Type your username…"
-            @input=${(e: Event) => this.deleteInput = (e.target as HTMLInputElement).value}
-            @keydown=${(e: KeyboardEvent) => { if (e.key === 'Escape') this._cancelDelete(); }}
-            autofocus
-          />
-          <div class="confirm-btns">
-            <button class="btn-confirm-cancel" @click=${this._cancelDelete}>Cancel</button>
-            <button
-              class="btn-confirm-delete"
-              ?disabled=${this.deleteInput !== this.username}
-              @click=${this._deleteAccount}
-            >
-              Yes, delete my account
-            </button>
-          </div>
-        </div>
-      ` : ''}
-
-      <div class="danger-row">
-        <button class="btn-delete" @click=${this._openDeleteConfirm}>Delete account</button>
-      </div>
     `;
   }
 }

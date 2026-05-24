@@ -3,31 +3,31 @@ import { customElement, property, state } from 'lit/decorators.js';
 
 const worldDescriptions: Record<string, string> = {
   'Candy Kingdom':
-    'A realm of impossible sweetness where mountains of meringue rise above rivers of liquid caramel, and the air itself tastes faintly of spun sugar. Ruled by confectionery monarchs whose castles are built from gingerbread and hardened toffee, this world hides a darker truth beneath its pastel surface — rival sugar barons wage silent wars over the sacred Cocoa Springs, and the gumdrop forests at the kingdom\'s edge are said to swallow wanderers whole. Magic here is sticky, literal, and delicious: a brave hero might conjure a bridge of butterscotch or wield a jawbreaker shield that outlasts any blade.',
+    'A realm of mountains of meringue, rivers of caramel, and air that tastes of spun sugar — but rival sugar barons wage silent wars over the sacred Cocoa Springs, and the gumdrop forests swallow wanderers whole. Magic here is sticky and literal: conjure a butterscotch bridge, wield a jawbreaker shield.',
 
   'Magical Forest':
-    'Ancient beyond memory, the Magical Forest breathes with a consciousness of its own — roots that whisper secrets between trees, bioluminescent mushrooms that pulse like a second moon, and clearings where time moves at half the pace of the outside world. Creatures here are neither fully beast nor fully spirit: foxes wear the masks of old scholars, deer carry constellations in their antlers, and the moss-covered stones are the slumbering faces of forgotten giants. Those who enter with kind hearts may find the path widening ahead of them; those who enter with greed will find it narrowing until it disappears entirely.',
+    'Ancient and conscious — roots that whisper, bioluminescent mushrooms, clearings where time moves at half speed. Foxes wear scholars\' masks, deer carry constellations, mossy stones are sleeping giants. Kind hearts find the path widening; greed finds it narrowing to nothing.',
 
   'Space Adventure':
-    'The universe stretches in every direction — a vast, humbling dark punctuated by the fire of newborn stars and the cold silence of dead ones. Space stations orbit gas giants like jewelled rings, crewed by engineers, exo-biologists, and rogue pilots who smuggle starlight in pressurised flasks. First-contact protocols are ignored as often as they\'re followed, and the frontier beyond the Outer Drift is ungoverned, lawless, and magnificent. Your ship is your home, your crew is your family, and the next jump through hyperspace might lead to a civilisation a million years older than humanity — or simply to the best bowl of noodles in the galaxy.',
+    'A vast dark punctuated by newborn stars and dead ones. Space stations orbit gas giants, rogue pilots smuggle starlight, and the frontier beyond the Outer Drift is ungoverned and magnificent. The next hyperspace jump might find a civilisation a million years older than humanity — or the best bowl of noodles in the galaxy.',
 
   'Underwater World':
-    'Beneath the waves lies a civilisation older than any on dry land — coral cities lit by captured phosphorescence, schools of sentient fish who serve as living libraries, and deep-sea trenches where even light is a stranger. The pressure down here reshapes everything: physics bends subtly, sound travels in colours, and emotions are contagious through the water like warmth. Sea-witches trade in memories, kelp forests hide the ruins of sunken empires, and the great leviathans that cruise the abyssal plain are not monsters but ancient mapmakers, their flanks scarred with the routes of civilisations long dissolved into the current.',
+    'Coral cities lit by phosphorescence, sentient fish who serve as living libraries, sea-witches trading in memories. Sound travels in colours down here, emotions are contagious through the water, and the great leviathans of the abyss aren\'t monsters — they\'re ancient mapmakers, their flanks scarred with lost civilisations.',
 
   'Animal Kingdom':
-    'In the Animal Kingdom, every creature speaks, governs, and has an opinion about architecture. Lions serve as magistrates, meerkats run the postal service, and a parliament of owls debates legislation in a hollow oak so old it has its own postal code. Society here is richly layered — the grasslands have their aristocracy, the burrows their working guilds, and the canopy its bohemian artists. Politics are intense, alliances are fragile, and the annual Great Migration doubles as the kingdom\'s most important election. A newcomer quickly learns that the biggest political force is not the lion pride — it is the unified bloc of migratory birds who have seen everything and forgotten nothing.',
+    'Lions serve as magistrates, meerkats run the postal service, a parliament of owls debates in a hollow oak with its own postal code. The biggest political force isn\'t the lion pride — it\'s the unified bloc of migratory birds who have seen everything and forgotten nothing.',
 
   'Dinosaur Island':
-    'Dinosaur Island erupted from the ocean forty million years too late to receive the memo about extinction — or perhaps too stubborn to care. Thundering herds of hadrosaurs shake the lowland marshes at dawn, pterosaurs ride thermals above volcanic ridgelines, and the great raptors of the interior have developed pack strategies sophisticated enough to qualify as military doctrine. The island exists in a permanent state of magnificent, terrifying equilibrium: everything eats, everything is eaten, and the cycle is so perfectly balanced that even the plants have opinions about survival. Human visitors are tolerated as a curiosity, occasionally as a snack.',
+    'An island that ignored the extinction memo. Hadrosaur herds shake the marshes at dawn, raptors run pack strategies sophisticated enough to qualify as military doctrine, and everything eats everything in perfect equilibrium. Human visitors are tolerated as a curiosity — occasionally as a snack.',
 
   'Pirate Seas':
-    'The Pirate Seas sprawl across a world where the ocean covers ninety percent of the globe and every island is a potential treasure, a trap, or a nation unto itself. Fleets of brigantines, war junks, and armoured sloops contest the major shipping lanes while smaller vessels dart between the maze of archipelagos that the cartographers haven\'t yet named. Piracy here is almost respectable — the Pirate Compact of the Amber Straits is recognised by seven legitimate governments — and the lines between privateer, merchant, and outright corsair are drawn in sand at low tide. The legendary Sunken Chart, said to mark every hidden harbour in the known world, is the most wanted object alive.',
+    'Ninety percent ocean, every island a treasure or a trap. The Pirate Compact of the Amber Straits is recognised by seven governments, and the line between privateer and corsair is drawn in sand at low tide. The Sunken Chart — said to mark every hidden harbour in the world — is the most wanted object alive.',
 
   'Superhero Academy':
-    'The Superhero Academy accepts students with abilities ranging from the genuinely awe-inspiring to the aggressively niche — there is, famously, a whole dormitory wing for people whose only power involves pastry. Yet the Academy\'s philosophy is that every power, given the right situation, is the difference between catastrophe and salvation. Students study ethics alongside combat, crisis communication alongside flight theory, and the ethics of surveillance alongside urban infrastructure. The faculty are retired heroes with complicated histories, the cafeteria food is legendarily bad, and the annual graduation exercise — a real emergency, no simulation — is the most-watched broadcast in the hemisphere.',
+    'Accepts abilities from awe-inspiring to aggressively niche — there\'s a whole dorm wing for people whose only power involves pastry. Students study ethics alongside combat, flight theory alongside crisis communication. The faculty are retired heroes with complicated histories. The annual graduation exercise is a real emergency, no simulation.',
 
   'Custom':
-    'The world is yours to imagine — its rules, its history, its texture and tone are entirely in your hands. Perhaps it is a dying empire held together by bureaucratic inertia and strong tea. Perhaps it is a city built inside a sleeping god. Perhaps it is something that has never existed before in any story ever told. Describe the place with as much or as little detail as you wish, and the story will grow to fit the shape of it. The only limit is the reach of your imagination, and even that is negotiable.',
+    'The world is yours — its rules, history, texture, and tone entirely in your hands. A dying empire held together by strong tea. A city built inside a sleeping god. Something that has never existed in any story ever told. Describe it with as much or as little detail as you wish.',
 };
 
 // Fixed dimensions used in both JS positioning and CSS
@@ -147,11 +147,9 @@ export class SelectionCard extends LitElement {
     .scroll-body {
       max-height: ${TOOLTIP_BODY_H}px;
       overflow-y: auto;
-      padding: 14px 12px 14px 16px;
+      padding: 14px 12px 0 16px;
       scrollbar-width: thin;
       scrollbar-color: var(--gold-dim, #7a6230) transparent;
-      /* Extra bottom padding so text never crowds the fade */
-      padding-bottom: 32px;
     }
     .scroll-body::-webkit-scrollbar       { width: 4px; }
     .scroll-body::-webkit-scrollbar-track { background: transparent; }
@@ -213,6 +211,7 @@ export class SelectionCard extends LitElement {
       font-size: calc(0.8rem * var(--ui-scale, 1));
       line-height: 1.65;
       color: #b8a990;
+      padding-bottom: 48px;
     }
 
     /* ════════════════════════════════

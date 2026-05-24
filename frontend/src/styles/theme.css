@@ -27,6 +27,7 @@
 
   --shadow-glow: 0px 0px 5px 5px #e8e0d0;
   --shadow: 0 0 3px 3px #00000031;
+  --shadow-avatar: 0 0 5px 5px #2c2c2c18;
   /* Font families */
   --title-font: Georgia, Verdana, serif;
   --regular-font: Verdana, sans-serif;
@@ -87,7 +88,7 @@
   --secondary: #313131;
   --sidebar-secondary: #313131;
   /* --accent: #b19319; */
-  --border: #3d3730;
+  --border: #5c554c;
   --error: #e74c3c;
 
   --link: #9b8661;
@@ -96,4 +97,5 @@
   --subtittle:#e8e0d0;
 
   --shadow: 0 0 2px 2px #4b4b4b63;
+  --shadow-avatar: 0 0 2px 2px #4b4b4b63;
 }

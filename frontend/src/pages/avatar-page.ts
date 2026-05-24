@@ -80,6 +80,7 @@ export class AvatarPage extends LitElement {
 
     main {
       display: block;
+      position: relative;
       min-height: 20%;
       border-radius: calc(20px * var(--ui-scale, 1));
       width: 50%;
@@ -88,6 +89,28 @@ export class AvatarPage extends LitElement {
       font-size: var(--text-md);
       box-sizing: border-box;
       padding: var(--space-6) var(--space-5) var(--space-7);
+    }
+
+    .back-btn {
+      position: fixed;
+      top: var(--space-4);
+      left: var(--space-4);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--accent);
+      font-family: var(--regular-font);
+      font-size: var(--text-sm);
+      padding: var(--space-2) var(--space-3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(201, 168, 76, 0.08);
+      border-color: var(--accent);
     }
 
     /* ── Layout ──────────────────────────────────────────── */
@@ -153,7 +176,7 @@ export class AvatarPage extends LitElement {
       align-items: center;
       background: var(--bg);
       border-radius: var(--radius-sm);
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
       transition: box-shadow 0.2s, transform 0.15s;
       overflow: hidden;
     }
@@ -205,7 +228,7 @@ export class AvatarPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
       transition: box-shadow 0.2s, transform 0.15s;
     }
 
@@ -280,12 +303,16 @@ export class AvatarPage extends LitElement {
         padding: var(--space-3);
         align-items: flex-start;
       }
+
+      .back-btn {
+        display: none;
+      }
     }
 
     .panel-container {
       background: var(--bg);
       border-radius: 14px;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
       padding: var(--space-5);
     }
 
@@ -317,7 +344,7 @@ export class AvatarPage extends LitElement {
       outline: none;
       width: 100%;
       box-sizing: border-box;
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-avatar);
       transition: box-shadow 0.2s, transform 0.15s;
       min-height: 120px;
       resize: none;
@@ -379,6 +406,22 @@ export class AvatarPage extends LitElement {
     if (savedUiScale) {
       document.documentElement.style.setProperty('--ui-scale', savedUiScale);
     }
+    const draft = localStorage.getItem('avatar_draft');
+    if (draft) {
+      try {
+        const parsed = JSON.parse(draft);
+        this.name             = parsed.name        ?? '';
+        this.gender           = parsed.gender      ?? '';
+        this.character        = parsed.character   ?? null;
+        this.charPersonality  = parsed.personality ?? null;
+        this.description      = parsed.description ?? '';
+      } catch { /* ignore corrupt draft */ }
+    }
+  }
+
+  private handleBack(): void {
+    localStorage.removeItem('avatar_draft');
+    Router.go('/chat');
   }
 
   private generateName(): void {
@@ -391,16 +434,12 @@ export class AvatarPage extends LitElement {
       return;
     }
 
-    const finalDescription =
-      this.description ||
-      `A ${this.gender} ${this.character} ${this.charPersonality} ready for adventure.`;
-
     const avatarDraft = {
       name: this.name,
       gender: this.gender,
       character: this.character,
       personality: this.charPersonality,
-      description: finalDescription
+      description: this.description
     };
 
     localStorage.setItem('avatar_draft', JSON.stringify(avatarDraft));
@@ -410,6 +449,10 @@ export class AvatarPage extends LitElement {
   render(): TemplateResult {
     return html`
     <main>
+      <button class="back-btn" @click=${this.handleBack}>
+      <svg xmlns="http://www.w3.org/2000/svg" height="16px" fill="var(--accent)" viewBox="0 -960 960 960" width="16px"><path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+      Back
+      </button>
       <div class="container">
 
         <header class="page-header">

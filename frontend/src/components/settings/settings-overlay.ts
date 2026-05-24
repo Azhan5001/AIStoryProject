@@ -17,8 +17,9 @@ export class SettingsOverlay extends LitElement {
   @state() private activeSection: 'general' | 'account' = 'general';
   @state() private theme: 'light' | 'dark' = 'light';
   @state() private messageFontSize: 'small' | 'medium' | 'large' = 'medium';
-  @state() private uiScale: '0.75' | '0.85' | '0.9' | '1' | '1.1' | '1.2' | '1.35' | '1.5' = '1';
+  @state() private uiScale: '0.75' | '0.85' | '1' | '1.2' | '1.5' = '1';
   @state() private displayUsername: string = 'John';
+  @state() private _closing = false;
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -77,10 +78,6 @@ export class SettingsOverlay extends LitElement {
 
   private _onAccountUpdated(e: CustomEvent) {
     this.displayUsername = e.detail.username;
-  }
-
-  private _onAccountDeleted() {
-    this._close();
   }
 
   // ── General panel event handlers ───────────────────────────────────────────
@@ -340,6 +337,11 @@ export class SettingsOverlay extends LitElement {
       display: none;
     }
 
+    /* ── Mobile tab bar (hidden on desktop) ── */
+    .mobile-tabs {
+      display: none;
+    }
+
     /* ── Mobile layout ── */
     @media (max-width: 768px) {
       :host {
@@ -366,6 +368,15 @@ export class SettingsOverlay extends LitElement {
         to   { transform: translateY(0);    opacity: 1; }
       }
 
+      .modal.closing {
+        animation: slideDownFull 0.28s ease-in both;
+      }
+
+      @keyframes slideDownFull {
+        from { transform: translateY(0);    opacity: 1; }
+        to   { transform: translateY(100%); opacity: 0; }
+      }
+
       /* Hide desktop header & sidebar entirely */
       .modal-header {
         display: none;
@@ -384,6 +395,7 @@ export class SettingsOverlay extends LitElement {
       .panel {
         border-radius: 0;
         border: none;
+        background: var(--bg-secondary);
         padding: 0 var(--space-4) var(--space-4);
         overflow: visible;
       }
@@ -411,80 +423,39 @@ export class SettingsOverlay extends LitElement {
         background: var(--border);
       }
 
-      /* Mobile account row — shown at top */
-      .mobile-account-row {
+      /* Mobile tab bar */
+      .mobile-tabs {
         display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        padding: var(--space-4) var(--space-4) var(--space-3);
-        border-bottom: 1px solid var(--border);
-        /* leave room for close button */
+        gap: 6px;
+        padding: var(--space-3) var(--space-4);
+        /* leave room for close button on the right */
         padding-right: calc(40px + var(--space-3, 12px) * 2);
-      }
-
-      .mobile-account-row .avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: var(--secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        border-bottom: 1px solid var(--border);
         flex-shrink: 0;
       }
 
-      .mobile-account-row .avatar svg {
-        width: 28px;
-        height: 28px;
-      }
-
-      .mobile-account-row .user-info {
-        min-width: 0;
-      }
-
-      .mobile-account-row .user-name {
+      .mobile-tab {
+        flex: 1;
+        padding: 8px 0;
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        background: transparent;
         font-family: var(--regular-font);
-        font-size: 0.9rem;
-        font-weight: 700;
-        color: var(--primary);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .mobile-account-row .user-sub {
-        font-family: var(--regular-font);
-        font-size: var(--text-xs);
+        font-size: var(--text-sm);
+        font-weight: 600;
         color: var(--accent);
-        margin-top: 2px;
         cursor: pointer;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-        transition: color 0.13s;
+        transition: background 0.13s, color 0.13s, border-color 0.13s;
       }
 
-      .mobile-account-row .user-sub:hover {
+      .mobile-tab.active {
+        background: var(--secondary);
+        border-color: var(--accent);
         color: var(--primary);
       }
 
-      /* Section title on mobile */
-      .mobile-section-title {
-        display: block;
-        font-family: var(--regular-font, sans-serif);
-        font-size: 0.7rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--subtittle);
-        padding: var(--space-4) 0 var(--space-2);
-      }
-    }
-
-    /* Hide mobile-only elements on desktop */
-    @media (min-width: 769px) {
-      .mobile-account-row,
-      .mobile-section-title {
-        display: none;
+      .mobile-tab:not(.active):hover {
+        background: var(--bg-tertiary);
       }
     }
   `;
@@ -492,7 +463,16 @@ export class SettingsOverlay extends LitElement {
   // ── Event handlers ─────────────────────────────────────────────────────────
 
   private _close() {
-    this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+    if (this._closing) return;
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      this._closing = true;
+      setTimeout(() => {
+        this._closing = false;
+        this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+      }, 280);
+    } else {
+      this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+    }
   }
 
   private _handleBackdropClick(e: MouseEvent) {
@@ -505,7 +485,7 @@ export class SettingsOverlay extends LitElement {
     return html`
       <div class="modal-backdrop" @click=${this._handleBackdropClick}
            style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;">
-        <div class="modal" @click=${(e: Event) => e.stopPropagation()}>
+        <div class="modal ${this._closing ? 'closing' : ''}" @click=${(e: Event) => e.stopPropagation()}>
 
           <!-- Mobile close button -->
           <button class="mobile-close-btn" @click=${this._close} aria-label="Close settings">
@@ -515,6 +495,14 @@ export class SettingsOverlay extends LitElement {
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
+
+          <!-- Mobile tab bar -->
+          <div class="mobile-tabs">
+            <button class="mobile-tab ${this.activeSection === 'general' ? 'active' : ''}"
+                    @click=${() => this.activeSection = 'general'}>General</button>
+            <button class="mobile-tab ${this.activeSection === 'account' ? 'active' : ''}"
+                    @click=${() => this.activeSection = 'account'}>Account</button>
+          </div>
 
           <!-- Desktop Header -->
           <header class="modal-header">
@@ -564,22 +552,8 @@ export class SettingsOverlay extends LitElement {
             <!-- Settings panel -->
             <div class="panel">
 
-              <!-- Mobile: account row at top -->
-              <div class="mobile-account-row">
-                <div class="avatar">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="var(--accent)">
-                    <path d="M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm296.5-343.5Q560-607 560-640t-23.5-56.5Q513-720 480-720t-56.5 23.5Q400-673 400-640t23.5 56.5Q447-560 480-560t56.5-23.5ZM480-640Zm0 400Z"/>
-                  </svg>
-                </div>
-                <div class="user-info">
-                  <div class="user-name">${this.displayUsername}</div>
-                  <div class="user-sub" @click=${() => this.activeSection = 'account'}>Edit Account</div>
-                </div>
-              </div>
-
-              <!-- Desktop: tabbed panels; Mobile: all settings flat -->
+              <!-- Desktop: tabbed panels; Mobile: section driven by tab bar -->
               ${this.activeSection === 'general' ? html`
-                <span class="mobile-section-title">General</span>
                 <settings-general-panel
                   .theme=${this.theme}
                   .messageFontSize=${this.messageFontSize}
@@ -589,10 +563,8 @@ export class SettingsOverlay extends LitElement {
                   @ui-scale-change=${this._onUiScaleChange}
                 ></settings-general-panel>
               ` : html`
-                <span class="mobile-section-title">Account</span>
                 <account-panel
                   @account-updated=${this._onAccountUpdated}
-                  @account-deleted=${this._onAccountDeleted}
                 ></account-panel>
               `}
             </div>
