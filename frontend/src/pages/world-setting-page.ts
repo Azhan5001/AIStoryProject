@@ -73,8 +73,8 @@ export class WorldSettingPage extends LitElement {
       width: 100vw;
 
       background:
-        url('/images/Objects-1.png') right top no-repeat,
-        url('/images/OBJECTS.png') center/cover no-repeat,
+      var(--img-object) right top no-repeat,
+        var(--img-castle) center/cover no-repeat,
         var(--bg);
       background-size: 15% auto, cover;
       padding: var(--space-5);
