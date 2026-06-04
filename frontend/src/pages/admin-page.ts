@@ -20,6 +20,7 @@ export class AdminPage extends LitElement {
   @state() private stories: any[] = [];
   @state() private menuOpen = false;
   @state() private settingsOpen = false;
+  @state() private mobileNavOpen = false;
 
   @state()
   private requests: SupportRequest[] = [
@@ -615,6 +616,204 @@ export class AdminPage extends LitElement {
       background: var(--bg-tertiary);
       color: var(--text);
     }
+
+    /* ── Mobile hamburger button ── */
+    .mobile-header {
+      display: none;
+    }
+
+    .hamburger {
+      display: none;
+    }
+
+    /* ── Mobile nav overlay backdrop ── */
+    .mobile-nav-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      z-index: 199;
+      animation: fade-in 0.2s ease;
+    }
+
+    .mobile-nav-backdrop.open {
+      display: block;
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* ── Responsive breakpoints ── */
+    @media (max-width: 768px) {
+      /* Show mobile header bar */
+      .mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--input-border);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        flex-shrink: 0;
+      }
+
+      .mobile-header-title {
+        font-family: var(--title-font);
+        font-size: calc(var(--text-sm) * var(--ui-scale, 1));
+        font-weight: 700;
+        color: var(--text);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .hamburger {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--secondary);
+        border: 1px solid var(--input-border);
+        border-radius: 8px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .hamburger svg {
+        width: 20px;
+        height: 20px;
+        fill: var(--accent);
+      }
+
+      /* Layout: stack vertically */
+      .layout {
+        flex-direction: column;
+      }
+
+      /* Sidebar becomes a slide-in drawer from the left */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100dvh;
+        width: 280px !important;
+        z-index: 200;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      /* Main takes full width */
+      .main {
+        width: 100%;
+        padding: 12px;
+        padding-bottom: 24px;
+      }
+
+      /* Hero: stack vertically */
+      .hero {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .hero h1 {
+        font-size: calc(var(--text-xl, 1.25rem) * var(--ui-scale, 1));
+      }
+
+      .hero-badge {
+        align-self: flex-start;
+      }
+
+      /* Cards: 2 columns on mobile */
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+
+      /* Content panels: single column */
+      .content {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      /* Tables: card-style on mobile using data-label */
+      .admin-table {
+        min-width: unset;
+        width: 100%;
+      }
+
+      .admin-table thead {
+        display: none;
+      }
+
+      .admin-table tbody tr {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .admin-table tbody tr:last-child {
+        border-bottom: none;
+      }
+
+      .admin-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 2px 0;
+        border-bottom: none;
+        font-size: calc(var(--text-xs) * var(--ui-scale, 1));
+      }
+
+      .admin-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--subtittle);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 10px;
+        flex-shrink: 0;
+        margin-right: 8px;
+      }
+
+      /* table-panel no longer needs overflow scroll */
+      .table-panel {
+        overflow-x: unset;
+      }
+
+      /* Slightly tighter cards */
+      .card {
+        padding: 12px;
+      }
+
+      .card h2 {
+        font-size: calc(var(--text-2xl, 1.5rem) * var(--ui-scale, 1));
+      }
+
+      /* Alert */
+      .alert {
+        margin-top: 16px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      /* Very small screens: single card column */
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
   `;
 
   private storyIcon() {
@@ -702,6 +901,16 @@ export class AdminPage extends LitElement {
 
   private changeView(view: AdminView) {
     this.currentView = view;
+    this.mobileNavOpen = false;
+  }
+
+  private toggleMobileNav(e: Event) {
+    e.stopPropagation();
+    this.mobileNavOpen = !this.mobileNavOpen;
+  }
+
+  private closeMobileNav() {
+    this.mobileNavOpen = false;
   }
 
   private getCurrentUsername() {
@@ -866,11 +1075,11 @@ export class AdminPage extends LitElement {
             ${this.users.map(
               (user) => html`
                 <tr>
-                  <td>${user.username}</td>
-                  <td>${user.email}</td>
-                  <td><span class="status-badge">${user.access_level}</span></td>
-                  <td>${user.created_at ? user.created_at.slice(0, 10) : '-'}</td>
-                  <td>
+                  <td data-label="Username">${user.username}</td>
+                  <td data-label="Email">${user.email}</td>
+                  <td data-label="Role"><span class="status-badge">${user.access_level}</span></td>
+                  <td data-label="Created">${user.created_at ? user.created_at.slice(0, 10) : '-'}</td>
+                  <td data-label="Action">
                     <button class="table-action delete-btn" @click=${() => this.deleteUser(user.user_id)}>
                       Delete
                     </button>
@@ -910,11 +1119,11 @@ export class AdminPage extends LitElement {
             ${this.stories.map(
               (story) => html`
                 <tr>
-                  <td>#${story.story_id}</td>
-                  <td>User ${story.user_id}</td>
-                  <td>${story.current_direction || 'No direction yet'}</td>
-                  <td>${story.created_at ? story.created_at.slice(0, 10) : '-'}</td>
-                  <td>
+                  <td data-label="Story ID">#${story.story_id}</td>
+                  <td data-label="Created By">User ${story.user_id}</td>
+                  <td data-label="Direction">${story.current_direction || 'No direction yet'}</td>
+                  <td data-label="Date">${story.created_at ? story.created_at.slice(0, 10) : '-'}</td>
+                  <td data-label="Action">
                     <button class="table-action view-btn" @click=${() => this.viewStory(story)}>View</button>
                   </td>
                 </tr>
@@ -953,10 +1162,10 @@ export class AdminPage extends LitElement {
             ${this.requests.map(
               (request) => html`
                 <tr>
-                  <td>${request.user}</td>
-                  <td>${request.issue}</td>
-                  <td><span class="status-badge">${request.status}</span></td>
-                  <td>
+                  <td data-label="User">${request.user}</td>
+                  <td data-label="Issue">${request.issue}</td>
+                  <td data-label="Status"><span class="status-badge">${request.status}</span></td>
+                  <td data-label="Action">
                     ${request.status === 'Open'
                       ? html`
                           <button class="table-action resolve-btn" @click=${() => this.resolveRequest(request.id)}>
@@ -976,8 +1185,25 @@ export class AdminPage extends LitElement {
 
   render() {
     return html`
+      <!-- Mobile backdrop -->
+      <div
+        class="mobile-nav-backdrop ${this.mobileNavOpen ? 'open' : ''}"
+        @click=${this.closeMobileNav}
+      ></div>
+
       <div class="layout">
-        <aside class="sidebar">
+        <!-- Mobile top bar -->
+        <header class="mobile-header">
+          <div class="hamburger" @click=${this.toggleMobileNav}>
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+            </svg>
+          </div>
+          <span class="mobile-header-title">Admin</span>
+          <div style="width:36px"></div>
+        </header>
+
+        <aside class="sidebar ${this.mobileNavOpen ? 'mobile-open' : ''}">
           <div class="sidebar-top">
             <div class="menu-title">Admin</div>
 
