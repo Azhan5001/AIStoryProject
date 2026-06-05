@@ -20,7 +20,7 @@ export async function getMessages(storyId: number) {
   return res.json();
 }
 
-export async function login(username: string, password: string): Promise<number> {
+export async function login(username: string, password: string): Promise<User> {
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: {

@@ -124,25 +124,6 @@ export class RegisterForm extends LitElement {
       text-decoration: underline;
     }
 
-    .skip {
-      text-align: right;
-      font-size: var(--text-xl);
-      position: absolute;
-      bottom: 40px;
-      right: 40px;
-      font-weight: bold;
-    }
-
-    .skip a {
-      color: var(--link);
-      text-decoration: none;
-    }
-
-    .skip a:hover {
-      color: var(--link-hover);
-      text-decoration: underline;
-    }
-
     label {
       font-weight: bold;
       font-size: var(--text-md);
@@ -177,6 +158,7 @@ export class RegisterForm extends LitElement {
       await register(this.username, this.email, this.password); // ✅ FIXED
 
       // Option 1: redirect to login
+      sessionStorage.setItem('justRegistered', '1');
       Router.go('/login');
 
       // Option 2 (better UX): auto login → chat
@@ -244,9 +226,6 @@ export class RegisterForm extends LitElement {
           <a href="/login">Login</a>
         </div>
 
-        <div class="skip">
-          <a href="/chat">Skip for now ></a>
-        </div>
       </form>
     `;
   }

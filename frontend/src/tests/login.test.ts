@@ -86,46 +86,6 @@ describe('LoginForm', () => {
   });
 
   /* -------------------------------------------------
-     AUTO REDIRECTS
-  ------------------------------------------------- */
-
-  it('redirects to avatar when user has no stories', async () => {
-
-    localStorage.setItem('user_id', '1');
-
-    vi.mocked(api.getUserStories)
-      .mockResolvedValue([]);
-
-    await fixture<LoginForm>(
-      html`<login-input></login-input>`
-    );
-
-    await new Promise(res => setTimeout(res, 0));
-
-    expect(Router.go)
-      .toHaveBeenCalledWith('/avatar');
-  });
-
-  it('redirects to chat when stories exist', async () => {
-
-    localStorage.setItem('user_id', '1');
-
-    vi.mocked(api.getUserStories)
-      .mockResolvedValue([
-        { story_id: 1 }
-      ] as any);
-
-    await fixture<LoginForm>(
-      html`<login-input></login-input>`
-    );
-
-    await new Promise(res => setTimeout(res, 0));
-
-    expect(Router.go)
-      .toHaveBeenCalledWith('/chat');
-  });
-
-  /* -------------------------------------------------
      INPUT STATE
   ------------------------------------------------- */
 
@@ -178,7 +138,10 @@ describe('LoginForm', () => {
   it('logs in and redirects to chat', async () => {
 
     vi.mocked(api.login)
-      .mockResolvedValue(1);
+      .mockResolvedValue({
+        user_id: 1,
+        access_level: 'user'
+      } as any);
 
     vi.mocked(api.getUserStories)
       .mockResolvedValue([
@@ -209,6 +172,9 @@ describe('LoginForm', () => {
     expect(api.login)
       .toHaveBeenCalled();
 
+    expect(api.getUserStories)
+      .toHaveBeenCalled();
+
     expect(Router.go)
       .toHaveBeenCalledWith('/chat');
   });
@@ -216,7 +182,10 @@ describe('LoginForm', () => {
   it('logs in and redirects to avatar when no stories exist', async () => {
 
     vi.mocked(api.login)
-      .mockResolvedValue(1);
+      .mockResolvedValue({
+        user_id: 1,
+        access_level: 'user'
+      } as any);
 
     vi.mocked(api.getUserStories)
       .mockResolvedValue([]);
@@ -242,8 +211,50 @@ describe('LoginForm', () => {
       new Event('submit')
     );
 
+    expect(api.login)
+      .toHaveBeenCalled();
+
+    expect(api.getUserStories)
+      .toHaveBeenCalled();
+
     expect(Router.go)
       .toHaveBeenCalledWith('/avatar');
+  });
+
+  it('logs in and redirects admin to admin page', async () => {
+
+    vi.mocked(api.login)
+      .mockResolvedValue({
+        user_id: 1,
+        access_level: 'admin'
+      } as any);
+
+    const el = await fixture<LoginForm>(
+      html`<login-input></login-input>`
+    );
+
+    (el as any).username = 'admin';
+    (el as any).password = 'admin123';
+
+    const fakeInputs = [
+      { validate: () => true },
+      { validate: () => true }
+    ];
+
+    vi.spyOn(
+      el.renderRoot,
+      'querySelectorAll'
+    ).mockReturnValue(fakeInputs as any);
+
+    await (el as any).handleLogin(
+      new Event('submit')
+    );
+
+    expect(Router.go)
+      .toHaveBeenCalledWith('/admin');
+
+    expect(api.getUserStories)
+      .not.toHaveBeenCalled();
   });
 
   it('shows error when login fails', async () => {

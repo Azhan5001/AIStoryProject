@@ -127,25 +127,6 @@ static styles = css`
     text-decoration: underline;
   }
 
-  .skip {
-    text-align: right;
-    font-size: var(--text-xl);
-    position: absolute;
-    bottom: 40px;
-    right: 40px;
-    font-weight: bold;
-  }
-
-  .skip a {
-    color: var(--link);
-    text-decoration: none;
-    transition: color 0.2s ease, text-decoration 0.2s ease;
-  }
-
-  .skip a:hover {
-    color: var(--link-hover);
-    text-decoration: underline;
-  }
 
   label {
     font-weight: bold;
@@ -258,9 +239,6 @@ if (stories.length === 0) {
           <a href="/register">Sign up</a>
         </div>
 
-        <div class="skip">
-          <a href="/chat">Skip for now ></a>
-        </div>
       </form>
     `;
   }

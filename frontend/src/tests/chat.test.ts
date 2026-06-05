@@ -2,7 +2,6 @@
 
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, beforeEach, expect, vi } from 'vitest';
-import { Router } from '@vaadin/router';
 import { StorySidebar } from '../components/chat/chat-sidebar';
 
 import '../pages/chat-page';
@@ -10,6 +9,7 @@ import '../components/chat/chat-box';
 import '../components/chat/chat-messages';
 import '../components/chat/chat-message';
 import '../components/chat/chat-sidebar';
+
 import * as api from '../api/api';
 
 import type { ChatPage } from '../pages/chat-page';
@@ -49,7 +49,6 @@ vi.mock('../components/chat/chat-Bot', () => ({
   getBotResponse: vi.fn(async () => 'Mock AI response')
 }));
 
-
 vi.mock('../api/api', async () => {
 
   const actual = await vi.importActual<any>('../api/api');
@@ -71,6 +70,7 @@ vi.mock('@vaadin/router', () => ({
     go: vi.fn()
   }
 }));
+
 
 // ======================================================
 // CHAT PAGE TESTS
@@ -167,7 +167,9 @@ describe('ChatBox', () => {
 
     vi.spyOn(api, 'getMessages').mockResolvedValue([]);
 
-    vi.spyOn(api, 'sendMessage').mockResolvedValue(undefined);
+    vi.spyOn(api, 'sendMessage').mockImplementation(
+      async () => undefined
+    );
   });
 
   it('loads messages on connectedCallback', async () => {
@@ -245,53 +247,76 @@ describe('ChatBox', () => {
     expect(button.disabled).to.equal(false);
   });
 
-    it('adds user message when sending', async () => {
+  it('adds user message when sending', async () => {
 
-        const el = await fixture<ChatBox>(
-            html`<chat-box></chat-box>`
-        );
+    const el = await fixture<ChatBox>(
+      html`<chat-box .storyId=${1}></chat-box>`
+    );
 
-        const fakeInput = {
-            getValue: () => 'Hello',
-            clear: vi.fn()
-        };
+    vi.spyOn(api, 'sendMessage').mockResolvedValue(undefined);
 
-        vi.spyOn(el.renderRoot, 'querySelector').mockReturnValue(fakeInput as any);
+    vi.spyOn(api, 'getMessages').mockResolvedValue([
+      {
+        content: 'Hello',
+        role: 'user',
+        message_id: '1'
+      },
+      {
+        content: 'Mock AI response',
+        role: 'assistant',
+        message_id: '2'
+      }
+    ] as any);
 
-        await (el as any).onSendClick();
+    const input = el.shadowRoot?.querySelector('app-input') as any;
 
-        // wait for fake bot response delay
-        await new Promise(res => setTimeout(res, 700));
+    input.getValue = vi.fn(() => 'Hello');
+    input.clear = vi.fn();
 
-        await el.updateComplete;
+    await (el as any).onSendClick();
 
-        expect((el as any).messages.length).toBe(2);
+    await new Promise(res => setTimeout(res, 0));
+    await el.updateComplete;
 
-        expect((el as any).messages[0].message).toBe('Hello');
-        expect((el as any).messages[0].sender).toBe('user');
+    expect((el as any).messages.length).toBe(2);
 
-        expect((el as any).messages[1].sender).toBe('robot');
-    });
+    expect((el as any).messages[0].message).toBe('Hello');
+    expect((el as any).messages[0].sender).toBe('user');
+
+    expect((el as any).messages[1].sender).toBe('robot');
+  });
 
   it('adds robot response after sending', async () => {
 
-    vi.useFakeTimers();
-
     const el = await fixture<ChatBox>(
-      html`<chat-box></chat-box>`
+      html`<chat-box .storyId=${1}></chat-box>`
     );
 
-    const promise = (el as any).handleMessage('Hello');
+    vi.spyOn(api, 'sendMessage').mockResolvedValue(undefined);
 
-    vi.runAllTimers();
+    vi.spyOn(api, 'getMessages').mockResolvedValue([
+      {
+        content: 'Hello',
+        role: 'user',
+        message_id: '1'
+      },
+      {
+        content: 'Mock AI response',
+        role: 'assistant',
+        message_id: '2'
+      }
+    ] as any);
 
-    await promise;
+    await (el as any).handleMessage('Hello');
+
+    await el.updateComplete;
 
     expect((el as any).messages.length).to.equal(2);
 
     expect((el as any).messages[1].sender).to.equal('robot');
 
-    vi.useRealTimers();
+    expect((el as any).messages[1].message)
+      .to.equal('Mock AI response');
   });
 
   it('does not send empty message', async () => {
@@ -307,10 +332,17 @@ describe('ChatBox', () => {
 
   it('shows loading indicator while generating response', async () => {
 
-    vi.useFakeTimers();
+    let resolvePromise!: () => void;
+
+    vi.spyOn(api, 'sendMessage').mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          resolvePromise = resolve;
+        })
+    );
 
     const el = await fixture<ChatBox>(
-      html`<chat-box></chat-box>`
+      html`<chat-box .storyId=${1}></chat-box>`
     );
 
     const promise = (el as any).handleMessage('Hello');
@@ -319,11 +351,11 @@ describe('ChatBox', () => {
 
     expect((el as any).loading).to.equal(true);
 
-    vi.runAllTimers();
+    resolvePromise();
 
     await promise;
 
-    vi.useRealTimers();
+    expect((el as any).loading).to.equal(false);
   });
 
 });
@@ -448,6 +480,8 @@ describe('ChatMessage', () => {
   });
 
 });
+
+
 // ======================================================
 // STORY SIDEBAR TESTS
 // ======================================================
@@ -480,17 +514,12 @@ describe('StorySidebar', () => {
     });
   });
 
-  /* -------------------------------------------------
-     LOAD STORIES
-  ------------------------------------------------- */
-
   it('loads and displays stories', async () => {
 
     const el = await fixture<StorySidebar>(
       html`<story-sidebar></story-sidebar>`
     );
 
-    // wait for async loadStories()
     await new Promise(res => setTimeout(res, 0));
 
     await el.updateComplete;
@@ -507,10 +536,6 @@ describe('StorySidebar', () => {
       .toContain('Wizard');
   });
 
-  /* -------------------------------------------------
-     USERNAME
-  ------------------------------------------------- */
-
   it('renders username from API', async () => {
 
     const el = await fixture<StorySidebar>(
@@ -525,10 +550,6 @@ describe('StorySidebar', () => {
     expect(username.textContent)
       .toContain('Azhan');
   });
-
-  /* -------------------------------------------------
-     STORY CLICK
-  ------------------------------------------------- */
 
   it('navigates when story is clicked', async () => {
 
@@ -545,15 +566,20 @@ describe('StorySidebar', () => {
 
     const firstItem = items[0] as HTMLElement;
 
+    const listener = vi.fn();
+
+    el.addEventListener('story-selected', listener);
+
     firstItem.click();
 
-    expect(Router.go)
-      .toHaveBeenCalledWith('/story/1');
-  });
+    // wait for requestAnimationFrame pushState
+    await new Promise(requestAnimationFrame);
 
-  /* -------------------------------------------------
-     SEARCH FILTER
-  ------------------------------------------------- */
+    expect(listener).toHaveBeenCalled();
+
+    expect(window.location.pathname)
+      .toBe('/story/1');
+  });
 
   it('filters stories when typing in search', async () => {
 
@@ -585,10 +611,6 @@ describe('StorySidebar', () => {
       .toContain('Wizard');
   });
 
-  /* -------------------------------------------------
-     COLLAPSE TOGGLE
-  ------------------------------------------------- */
-
   it('toggles collapsed class', async () => {
 
     const el = await fixture<StorySidebar>(
@@ -615,10 +637,6 @@ describe('StorySidebar', () => {
     ).toBe(false);
   });
 
-  /* -------------------------------------------------
-     SETTINGS EVENT
-  ------------------------------------------------- */
-
   it('dispatches open-settings event', async () => {
 
     const el = await fixture<StorySidebar>(
@@ -632,18 +650,21 @@ describe('StorySidebar', () => {
       listener
     );
 
-    const footer = (el.shadowRoot!
-      .querySelector('.sidebar-footer')) as HTMLDivElement;
+    const footer = el.shadowRoot!
+      .querySelector('.sidebar-footer') as HTMLDivElement;
 
     footer.click();
+
+    await el.updateComplete;
+
+    const settingsButton = el.shadowRoot!
+      .querySelector('.context-menu-item') as HTMLDivElement;
+
+    settingsButton.click();
 
     expect(listener)
       .toHaveBeenCalled();
   });
-
-  /* -------------------------------------------------
-     EMPTY STATE
-  ------------------------------------------------- */
 
   it('shows empty state when no stories exist', async () => {
 

@@ -78,7 +78,6 @@ export class AppInput extends LitElement {
     }));
   }
 
-  // ✅ ✅ ✅ FIX 1: VALIDATION METHOD ADDED BACK
   public validate(): boolean {
     if (this.required && !this.value.trim()) {
       this.error = 'This field is required';
